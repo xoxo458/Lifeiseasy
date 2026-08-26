@@ -71,11 +71,11 @@ def extract(pdf_path: str) -> tuple[list[RawLine], Statement]:
     return lines, statement
 
 
-def _row_groups(words: list[dict]) -> list[list[dict]]:
+def _row_groups(words: list[dict], tolerance: float = _LINE_TOLERANCE) -> list[list[dict]]:
     """Cluster words into visual lines by their vertical position."""
     rows: list[list[dict]] = []
     for word in sorted(words, key=lambda w: (round(w["top"], 1), w["x0"])):
-        if rows and abs(word["top"] - rows[-1][0]["top"]) <= _LINE_TOLERANCE:
+        if rows and abs(word["top"] - rows[-1][0]["top"]) <= tolerance:
             rows[-1].append(word)
         else:
             rows.append([word])
@@ -84,13 +84,13 @@ def _row_groups(words: list[dict]) -> list[list[dict]]:
     return rows
 
 
-def _column_bounds(words: list[dict]) -> list[tuple[str, float, float]]:
+def _column_bounds(words: list[dict], tolerance: float = _LINE_TOLERANCE) -> list[tuple[str, float, float]]:
     """Locate each column's x-range from the printed header row.
 
     Returns ``[(field, x_start, x_end), ...]``; boundaries sit halfway between
     neighbouring header labels, which keeps right-aligned amount columns intact.
     """
-    for row in _row_groups(words):
+    for row in _row_groups(words, tolerance):
         text = " ".join(w["text"] for w in row)
         if "Balance" not in text or "Debit" not in text or "Date" not in text:
             continue
@@ -125,13 +125,14 @@ def _find_label(row: list[dict], label: str) -> tuple[float, float] | None:
 
 
 def _page_lines(
-    words: list[dict], bounds: list[tuple[str, float, float]], page_no: int
+    words: list[dict], bounds: list[tuple[str, float, float]], page_no: int,
+    tolerance: float = _LINE_TOLERANCE,
 ) -> list[RawLine]:
     """Assign every word on the page to a column, one RawLine per visual line."""
-    header_bottom = _header_bottom(words)
+    header_bottom = _header_bottom(words, tolerance)
     lines: list[RawLine] = []
 
-    for row in _row_groups(words):
+    for row in _row_groups(words, tolerance):
         if row[0]["top"] <= header_bottom:
             continue
         cells: dict[str, list[str]] = {}
@@ -148,8 +149,8 @@ def _page_lines(
     return lines
 
 
-def _header_bottom(words: list[dict]) -> float:
-    for row in _row_groups(words):
+def _header_bottom(words: list[dict], tolerance: float = _LINE_TOLERANCE) -> float:
+    for row in _row_groups(words, tolerance):
         text = " ".join(w["text"] for w in row)
         if "Balance" in text and "Debit" in text and "Date" in text:
             return max(w["bottom"] for w in row)

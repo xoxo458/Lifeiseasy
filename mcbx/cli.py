@@ -23,15 +23,23 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("-o", "--output", help="output .xlsx path (single input) or directory")
     parser.add_argument(
         "--engine",
-        choices=("auto", "text", "vision"),
+        choices=("auto", "text", "ocr", "vision"),
         default="auto",
-        help="auto (default): use the text layer when the PDF has one, else Claude vision",
+        help="auto (default): text layer if present, else Claude vision. "
+             "'ocr' is offline Tesseract - free, but materially less accurate "
+             "on scans (see README)",
     )
     parser.add_argument(
         "--wrap-join",
         choices=("none", "space"),
         default="none",
         help="how to rejoin cells wrapped over several printed lines (default: none)",
+    )
+    parser.add_argument(
+        "--ocr-scale",
+        type=float,
+        default=4.0,
+        help="ocr engine: page render multiplier (default: 4.0, ~300dpi)",
     )
     parser.add_argument(
         "--pages-per-call", type=int, default=4, help="vision engine: pages per request (default: 4)"
@@ -66,6 +74,14 @@ def convert(pdf_path: Path, args, log) -> tuple[Statement, Report]:
         from .engine_text import extract as extract_text
 
         lines, statement = extract_text(str(pdf_path))
+    elif engine == "ocr":
+        from .engine_ocr import extract as extract_ocr
+
+        lines, statement = extract_ocr(
+            str(pdf_path),
+            scale=args.ocr_scale,
+            progress=None if args.quiet else (lambda d, t: log(f"  OCR page {d}/{t}")),
+        )
     else:
         from .engine_vision import extract as extract_vision
 

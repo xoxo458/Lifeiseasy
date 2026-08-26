@@ -382,3 +382,22 @@ def test_excel_handles_a_statement_with_no_rows(tmp_path):
     excel.write(st, str(out), report)
     ws = load_workbook(out)["Statement"]
     assert ws.cell(row=excel.HEADER_ROW, column=1).value == "Tran. Date"
+
+
+# --- offline OCR engine -----------------------------------------------------
+
+def test_ocr_engine_reads_a_clean_statement(fixture_pdf):
+    """Tesseract handles a crisp render; watermarked photos are another matter
+    (see the accuracy note in the README)."""
+    from mcbx.engine_ocr import extract as extract_ocr, tesseract_available
+
+    if not tesseract_available():
+        pytest.skip("tesseract is not installed")
+
+    lines, statement = extract_ocr(fixture_pdf)
+    statement.transactions = parse.dedupe(parse.stitch(lines))
+    report = validate.validate(statement)
+
+    assert len(statement.transactions) == 9
+    assert report.balance_chain_ok, validate.summarise(report)
+    assert report.totals_ok, validate.summarise(report)

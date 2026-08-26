@@ -5,3 +5,5 @@ __pycache__/
 samples/*.pdf
 # Converted output
 *.xlsx
+# Vendored library sources fetched by web/fetch-libs.sh
+web/lib/
