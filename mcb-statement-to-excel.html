@@ -425,9 +425,73 @@ function stitch(lines, wrapJoin = "none") {
 
 /* ---------- header / footer blocks ---------- */
 
+/* MCB prints two label/value pairs side by side:
+ *
+ *   Total DR Transactions    125        Available Balance:   3,563,090.00
+ *
+ * Flattened to text, both numbers follow the first label, so a regex grabs
+ * whichever comes first. Instead, match the label in a visual line and take the
+ * first number to its right, stopping at the next label. */
+const FOOTER_FIELDS = [
+  { label: "Total DR Transactions",  field: "totalDrCount",     kind: "count"  },
+  { label: "Total CR Transactions",  field: "totalCrCount",     kind: "count"  },
+  { label: "Sum of DR Transactions", field: "sumDr",            kind: "amount" },
+  { label: "Sum of CR Transactions", field: "sumCr",            kind: "amount" },
+  { label: "Available Balance",      field: "availableBalance", kind: "amount" },
+  { label: "Closing Ledger Balance", field: "closingBalance",   kind: "amount" },
+  { label: "Opening Balance",        field: "openingBalance",   kind: "amount" },
+];
+
+const LABEL_STARTS = FOOTER_FIELDS.map((f) => f.label.split(/\s+/).map(normToken));
+
+function normToken(t) { return t.replace(/[.:]+$/, "").toLowerCase(); }
+
+function labelAt(tokens, i, labelTokens) {
+  if (i + labelTokens.length > tokens.length) return false;
+  for (let j = 0; j < labelTokens.length; j++) {
+    if (normToken(tokens[i + j]) !== labelTokens[j]) return false;
+  }
+  return true;
+}
+
+const startsAnyLabel = (tokens, i) => LABEL_STARTS.some((l) => labelAt(tokens, i, l));
+
+/* A count is a bare integer; an amount carries MCB's two decimal places. That
+ * distinction stops a balance being read as a transaction count. */
+const COUNT_RE  = /^\d[\d,]*$/;
+const AMOUNT_RE = /^\d[\d,]*\.\d{2}$/;
+
+function valueAfterLabel(tokens, start, kind) {
+  const re = kind === "count" ? COUNT_RE : AMOUNT_RE;
+  for (let i = start; i < tokens.length && i < start + 5; i++) {
+    if (startsAnyLabel(tokens, i)) return null;   // next pair begins; ours is blank
+    if (re.test(tokens[i])) return tokens[i];
+  }
+  return null;
+}
+
+/* Scan every visual line for the footer/summary labels. */
+function scanLabelledValues(rows) {
+  const found = {};
+  for (const tokens of rows) {
+    for (const spec of FOOTER_FIELDS) {
+      if (found[spec.field] !== undefined) continue;
+      const labelTokens = spec.label.split(/\s+/).map(normToken);
+      for (let i = 0; i < tokens.length; i++) {
+        if (!labelAt(tokens, i, labelTokens)) continue;
+        const value = valueAfterLabel(tokens, i + labelTokens.length, spec.kind);
+        if (value !== null) found[spec.field] = value;
+        break;
+      }
+    }
+  }
+  return found;
+}
+
 const grab = (re, text) => { const m = re.exec(text); return m ? m[1].trim() : ""; };
 
-function parseMeta(text) {
+function parseMeta(text, rows) {
+  const scanned = scanLabelledValues(rows);
   const title = (() => {
     const lines = text.split("\n").map((l) => l.trim()).filter(Boolean).slice(0, 6);
     const hit = lines.find((l) => /LIMITED/i.test(l) && !/MCB BANK/i.test(l)) || "";
@@ -445,21 +509,24 @@ function parseMeta(text) {
     periodFrom: parseDate(grab(/From Date\s*:?\s*([0-9]{1,2}-[A-Za-z]{3}-[0-9]{2,4})/i, text)),
     periodTo: parseDate(grab(/To Date\s*:?\s*([0-9]{1,2}-[A-Za-z]{3}-[0-9]{2,4})/i, text)),
     statementDateTime: grab(/Statement Date & Time\s*:?\s*(.+)/i, text),
-    openingBalance: parseAmount(
-      grab(/Opening Balance.*?Ledger\s*:?\s*([0-9,]+\.\d{2})/is, text) ||
-      grab(/Opening Balance\D*([0-9,]+\.\d{2})/i, text)),
+    openingBalance: parseAmount(scanned.openingBalance),
   };
 }
 
-function parseTotals(text) {
-  const count = (re) => { const v = grab(re, text).replace(/,/g, ""); return /^\d+$/.test(v) ? parseInt(v, 10) : null; };
+function parseTotals(rows) {
+  const scanned = scanLabelledValues(rows);
+  const count = (v) => {
+    if (v === undefined || v === null) return null;
+    const n = parseInt(String(v).replace(/,/g, ""), 10);
+    return Number.isFinite(n) ? n : null;
+  };
   return {
-    totalDrCount: count(/Total DR Transactions\s*:?\s*([0-9,]+)/i),
-    totalCrCount: count(/Total CR Transactions\s*:?\s*([0-9,]+)/i),
-    sumDr: parseAmount(grab(/Sum of DR Transactions\s*:?\s*([0-9,]+\.\d{2})/i, text)),
-    sumCr: parseAmount(grab(/Sum of CR Transactions\s*:?\s*([0-9,]+\.\d{2})/i, text)),
-    availableBalance: parseAmount(grab(/Available Balance\s*:?\s*([0-9,]+\.\d{2})/i, text)),
-    closingBalance: parseAmount(grab(/Closing Ledger Balance\s*:?\s*([0-9,]+\.\d{2})/i, text)),
+    totalDrCount: count(scanned.totalDrCount),
+    totalCrCount: count(scanned.totalCrCount),
+    sumDr: parseAmount(scanned.sumDr),
+    sumCr: parseAmount(scanned.sumCr),
+    availableBalance: parseAmount(scanned.availableBalance),
+    closingBalance: parseAmount(scanned.closingBalance),
   };
 }
 
@@ -549,6 +616,7 @@ async function convertPdf(arrayBuffer, options = {}) {
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
   const lines = [];
   const texts = [];
+  const rows = [];   // every visual line as tokens, for the labelled-value scan
 
   for (let n = 1; n <= pdf.numPages; n++) {
     const page = await pdf.getPage(n);
@@ -557,6 +625,7 @@ async function convertPdf(arrayBuffer, options = {}) {
     texts.push(content.items.map((i) => i.str).join(" "));
     onProgress(n, pdf.numPages);
     if (!words.length) continue;
+    rows.push(...rowGroups(words).map((r) => r.map((w) => w.text)));
     const bounds = columnBounds(words);
     if (!bounds) continue;
     lines.push(...pageLines(words, bounds, n));
@@ -570,8 +639,8 @@ async function convertPdf(arrayBuffer, options = {}) {
 
   const fullText = texts.join("\n");
   const statement = {
-    meta: parseMeta(fullText),
-    totals: parseTotals(fullText),
+    meta: parseMeta(fullText, rows),
+    totals: parseTotals(rows),
     transactions: stitch(lines, wrapJoin),
   };
   return { statement, report: validate(statement) };

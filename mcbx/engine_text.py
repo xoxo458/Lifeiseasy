@@ -50,6 +50,7 @@ def extract(pdf_path: str) -> tuple[list[RawLine], Statement]:
     lines: list[RawLine] = []
     statement = Statement(source_file=pdf_path, engine="text")
     page_texts: list[str] = []
+    rows: list[list[str]] = []   # every visual line as tokens, for the label scan
 
     with pdfplumber.open(pdf_path) as pdf:
         for page_no, page in enumerate(pdf.pages, start=1):
@@ -57,6 +58,7 @@ def extract(pdf_path: str) -> tuple[list[RawLine], Statement]:
             page_texts.append(page.extract_text() or "")
             if not words:
                 continue
+            rows.extend([w["text"] for w in row] for row in _row_groups(words))
             bounds = _column_bounds(words)
             if not bounds:
                 continue
@@ -66,8 +68,8 @@ def extract(pdf_path: str) -> tuple[list[RawLine], Statement]:
         raise TextLayerError(f"no table rows found in the text layer of {pdf_path}")
 
     full_text = "\n".join(page_texts)
-    statement.meta = parse_meta(full_text)
-    statement.totals = parse_totals(full_text)
+    statement.meta = parse_meta(full_text, rows)
+    statement.totals = parse_totals(rows)
     return lines, statement
 
 
@@ -157,6 +159,75 @@ def _header_bottom(words: list[dict], tolerance: float = _LINE_TOLERANCE) -> flo
     return 0.0
 
 
+# --- labelled values in the header / footer blocks ---------------------------
+
+# MCB prints two label/value pairs side by side:
+#
+#   Total DR Transactions    125        Available Balance:   3,563,090.00
+#
+# Flattened to text, both numbers follow the first label, so a regex grabs
+# whichever comes first. Match the label inside a visual line instead and take
+# the first number to its right, stopping at the next label.
+_LABELLED = [
+    ("Total DR Transactions", "total_dr_count", "count"),
+    ("Total CR Transactions", "total_cr_count", "count"),
+    ("Sum of DR Transactions", "sum_dr", "amount"),
+    ("Sum of CR Transactions", "sum_cr", "amount"),
+    ("Available Balance", "available_balance", "amount"),
+    ("Closing Ledger Balance", "closing_balance", "amount"),
+    ("Opening Balance", "opening_balance", "amount"),
+]
+
+# A count is a bare integer; an amount carries MCB's two decimal places. That
+# distinction stops a balance being read as a transaction count.
+_COUNT_RE = re.compile(r"^\d[\d,]*$")
+_AMOUNT_RE = re.compile(r"^\d[\d,]*\.\d{2}$")
+
+
+def _norm_token(token: str) -> str:
+    return token.rstrip(".:").lower()
+
+
+def _label_at(tokens: list[str], index: int, label_tokens: list[str]) -> bool:
+    if index + len(label_tokens) > len(tokens):
+        return False
+    return all(
+        _norm_token(tokens[index + offset]) == label_tokens[offset]
+        for offset in range(len(label_tokens))
+    )
+
+
+_LABEL_STARTS = [[_norm_token(t) for t in label.split()] for label, _, _ in _LABELLED]
+
+
+def _value_after(tokens: list[str], start: int, kind: str) -> str | None:
+    pattern = _COUNT_RE if kind == "count" else _AMOUNT_RE
+    for index in range(start, min(len(tokens), start + 5)):
+        if any(_label_at(tokens, index, label) for label in _LABEL_STARTS):
+            return None  # the next pair begins; this one's value column is blank
+        if pattern.match(tokens[index]):
+            return tokens[index]
+    return None
+
+
+def scan_labelled_values(rows: list[list[str]]) -> dict[str, str]:
+    """Find each summary label in the printed lines and read the value beside it."""
+    found: dict[str, str] = {}
+    for tokens in rows:
+        for label, field, kind in _LABELLED:
+            if field in found:
+                continue
+            label_tokens = [_norm_token(t) for t in label.split()]
+            for index in range(len(tokens)):
+                if not _label_at(tokens, index, label_tokens):
+                    continue
+                value = _value_after(tokens, index + len(label_tokens), kind)
+                if value is not None:
+                    found[field] = value
+                break
+    return found
+
+
 # --- header / footer blocks -------------------------------------------------
 
 def _search(pattern: str, text: str) -> str:
@@ -178,9 +249,10 @@ def _trim_right_column(line: str) -> str:
     return (line[: m.start()] if m else line).strip()
 
 
-def parse_meta(text: str) -> StatementMeta:
+def parse_meta(text: str, rows: list[list[str]] | None = None) -> StatementMeta:
     """Pull the account block above the table out of the raw page text."""
     meta = StatementMeta()
+    scanned = scan_labelled_values(rows or [])
     meta.account_no = _search(r"Account\s*No\.?\s*:?\s*([0-9]{6,})", text)
     meta.iban = _search(r"IBAN\s*:?\s*([A-Z]{2}[0-9A-Z]{10,32})", text)
 
@@ -193,10 +265,7 @@ def parse_meta(text: str) -> StatementMeta:
     meta.period_to = parse_date(_search(r"To Date\s*:?\s*([0-9]{1,2}-[A-Za-z]{3}-[0-9]{2,4})", text))
     meta.statement_datetime = _search(r"Statement Date & Time\s*:?\s*(.+)", text)
     meta.branch = _search(r"^\s*(\d{3,4}-[A-Z][A-Z ]+)\s*$", text)
-    meta.opening_balance = parse_amount(
-        _search(r"Opening Balance.*?Ledger\s*:?\s*([0-9,]+\.\d{2})", text)
-        or _search(r"Opening Balance\D*([0-9,]+\.\d{2})", text)
-    )
+    meta.opening_balance = parse_amount(scanned.get("opening_balance"))
 
     lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
     title = next(
@@ -207,19 +276,19 @@ def parse_meta(text: str) -> StatementMeta:
     return meta
 
 
-def parse_totals(text: str) -> StatementTotals:
+def parse_totals(rows: list[list[str]]) -> StatementTotals:
     """Pull the summary block printed after the last transaction."""
-    totals = StatementTotals()
-    dr_count = _search(r"Total DR Transactions\s*:?\s*([0-9,]+)", text)
-    cr_count = _search(r"Total CR Transactions\s*:?\s*([0-9,]+)", text)
-    totals.total_dr_count = int(dr_count.replace(",", "")) if dr_count else None
-    totals.total_cr_count = int(cr_count.replace(",", "")) if cr_count else None
-    totals.sum_dr = parse_amount(_search(r"Sum of DR Transactions\s*:?\s*([0-9,]+\.\d{2})", text))
-    totals.sum_cr = parse_amount(_search(r"Sum of CR Transactions\s*:?\s*([0-9,]+\.\d{2})", text))
-    totals.available_balance = parse_amount(
-        _search(r"Available Balance\s*:?\s*([0-9,]+\.\d{2})", text)
+    scanned = scan_labelled_values(rows)
+
+    def count(field: str) -> int | None:
+        value = (scanned.get(field) or "").replace(",", "")
+        return int(value) if value.isdigit() else None
+
+    return StatementTotals(
+        total_dr_count=count("total_dr_count"),
+        total_cr_count=count("total_cr_count"),
+        sum_dr=parse_amount(scanned.get("sum_dr")),
+        sum_cr=parse_amount(scanned.get("sum_cr")),
+        available_balance=parse_amount(scanned.get("available_balance")),
+        closing_balance=parse_amount(scanned.get("closing_balance")),
     )
-    totals.closing_balance = parse_amount(
-        _search(r"Closing Ledger Balance\s*:?\s*([0-9,]+\.\d{2})", text)
-    )
-    return totals

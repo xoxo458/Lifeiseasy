@@ -401,3 +401,41 @@ def test_ocr_engine_reads_a_clean_statement(fixture_pdf):
     assert len(statement.transactions) == 9
     assert report.balance_chain_ok, validate.summarise(report)
     assert report.totals_ok, validate.summarise(report)
+
+
+# --- side-by-side footer labels ---------------------------------------------
+
+def test_footer_reads_the_value_beside_its_own_label():
+    """MCB prints two label/value pairs per line. A regex over flattened text
+    grabbed the neighbouring pair's number - reading 3,563,090 as a count."""
+    from mcbx.engine_text import parse_totals
+
+    rows = [
+        ["Total", "DR", "Transactions", "125", "Available", "Balance:", "3,563,090.00"],
+        ["Total", "CR", "Transactions", "178", "Closing", "Ledger", "Balance", "3,563,090.00"],
+        ["Sum", "of", "DR", "Transactions", "424,800,000.00"],
+        ["Sum", "of", "CR", "Transactions", "428,364,040.00"],
+    ]
+    totals = parse_totals(rows)
+    assert totals.total_dr_count == 125
+    assert totals.total_cr_count == 178
+    assert totals.sum_dr == Decimal("424800000.00")
+    assert totals.sum_cr == Decimal("428364040.00")
+    assert totals.available_balance == Decimal("3563090.00")
+    assert totals.closing_balance == Decimal("3563090.00")
+
+
+def test_blank_value_column_does_not_borrow_the_next_label_s_number():
+    from mcbx.engine_text import parse_totals
+
+    rows = [["Total", "DR", "Transactions", "Available", "Balance:", "3,563,090.00"]]
+    totals = parse_totals(rows)
+    assert totals.total_dr_count is None
+    assert totals.available_balance == Decimal("3563090.00")
+
+
+def test_opening_balance_is_read_beside_its_label():
+    from mcbx.engine_text import parse_meta
+
+    rows = [["Opening", "Balance", "Ledger:", "10,509,605.87"], ["Actual:", "10,509,605.87"]]
+    assert parse_meta("", rows).opening_balance == Decimal("10509605.87")

@@ -19,7 +19,7 @@ from tempfile import NamedTemporaryFile
 
 import pypdfium2 as pdfium
 
-from .engine_text import _column_bounds, _page_lines, parse_meta, parse_totals
+from .engine_text import _column_bounds, _page_lines, _row_groups, parse_meta, parse_totals
 from .models import Statement
 from .parse import RawLine
 
@@ -50,6 +50,7 @@ def extract(
     statement = Statement(source_file=pdf_path, engine="ocr")
     lines: list[RawLine] = []
     page_texts: list[str] = []
+    rows: list[list[str]] = []   # every visual line as tokens, for the label scan
 
     doc = pdfium.PdfDocument(pdf_path)
     try:
@@ -64,6 +65,7 @@ def extract(
                 continue
             # Tolerance scales with render size: a text line is ~10pt tall.
             tolerance = 3.0 * scale
+            rows.extend([w["text"] for w in row] for row in _row_groups(words, tolerance))
             bounds = _column_bounds(words, tolerance)
             if not bounds:
                 continue
@@ -78,8 +80,8 @@ def extract(
         )
 
     full_text = "\n".join(page_texts)
-    statement.meta = parse_meta(full_text)
-    statement.totals = parse_totals(full_text)
+    statement.meta = parse_meta(full_text, rows)
+    statement.totals = parse_totals(rows)
     return lines, statement
 
 
