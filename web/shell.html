@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MCB Statement to Excel</title>
+<style>
+  :root {
+    --bg:#f6f7f9; --panel:#fff; --ink:#14181f; --muted:#5b6472; --line:#e3e6ea;
+    --accent:#1f3864; --ok:#0f7b48; --okbg:#e7f6ee; --bad:#b3261e; --badbg:#fdecea;
+    --warn:#8a6100; --warnbg:#fff5e0; --shadow:0 1px 3px rgba(16,24,40,.08),0 6px 20px rgba(16,24,40,.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:#0f1216; --panel:#171b21; --ink:#e8ecf1; --muted:#9aa4b2; --line:#262c35;
+      --accent:#7ea6e8; --ok:#5fd39b; --okbg:#10291f; --bad:#ff9c93; --badbg:#2c1613;
+      --warn:#e8bf6a; --warnbg:#2a2213; --shadow:none;
+    }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font:15px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  .wrap { max-width:900px; margin:0 auto; padding:40px 20px 80px; }
+  header h1 { margin:0 0 6px; font-size:26px; letter-spacing:-.01em; }
+  header p { margin:0 0 28px; color:var(--muted); }
+  #drop { background:var(--panel); border:2px dashed var(--line); border-radius:14px;
+          padding:44px 24px; text-align:center; cursor:pointer; transition:border-color .15s, background .15s; }
+  #drop:hover, #drop.over { border-color:var(--accent); background:color-mix(in srgb, var(--accent) 5%, var(--panel)); }
+  #drop strong { display:block; font-size:17px; margin-bottom:6px; }
+  #drop span { color:var(--muted); font-size:14px; }
+  .opts { display:flex; gap:18px; flex-wrap:wrap; align-items:center;
+          margin:18px 2px 0; color:var(--muted); font-size:13.5px; }
+  .opts label { display:flex; gap:7px; align-items:center; cursor:pointer; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:12px;
+          padding:18px 20px; margin-top:16px; box-shadow:var(--shadow); }
+  .card h3 { margin:0 0 4px; font-size:15.5px; word-break:break-all; }
+  .sub { color:var(--muted); font-size:13px; margin-bottom:12px; }
+  .pill { display:inline-block; padding:3px 10px; border-radius:999px;
+          font-size:12.5px; font-weight:600; margin:0 6px 6px 0; }
+  .pill.ok { background:var(--okbg); color:var(--ok); }
+  .pill.bad { background:var(--badbg); color:var(--bad); }
+  .pill.warn { background:var(--warnbg); color:var(--warn); }
+  button { font:inherit; font-weight:600; border:0; border-radius:9px; padding:9px 16px;
+           background:var(--accent); color:#fff; cursor:pointer; }
+  button:disabled { opacity:.5; cursor:default; }
+  button.ghost { background:transparent; color:var(--accent); border:1px solid var(--line); }
+  details { margin-top:12px; }
+  summary { cursor:pointer; color:var(--muted); font-size:13.5px; }
+  .issues { margin-top:10px; max-height:280px; overflow:auto; border:1px solid var(--line); border-radius:8px; }
+  table { border-collapse:collapse; width:100%; font-size:13px; }
+  th, td { text-align:left; padding:7px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { background:color-mix(in srgb, var(--ink) 4%, var(--panel)); font-weight:600; position:sticky; top:0; }
+  td.sev-error { color:var(--bad); font-weight:600; }
+  td.sev-warning { color:var(--warn); font-weight:600; }
+  footer { margin-top:36px; color:var(--muted); font-size:13px; }
+  code { background:color-mix(in srgb, var(--ink) 6%, var(--panel)); padding:1px 5px; border-radius:4px; font-size:12.5px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>MCB Statement → Excel</h1>
+    <p>Drop a statement PDF to get a formatted spreadsheet. Everything runs in this
+       page — your statement is never uploaded anywhere.</p>
+  </header>
+
+  <div id="drop">
+    <strong>Drop statement PDFs here</strong>
+    <span>or click to choose files</span>
+    <input type="file" id="file" accept="application/pdf" multiple hidden>
+  </div>
+
+  <div class="opts">
+    <label><input type="checkbox" id="wrapSpace"> Put spaces between wrapped lines</label>
+    <span>·</span>
+    <span>Needs a text-based PDF (from internet banking), not a scan.</span>
+  </div>
+
+  <div id="results"></div>
+
+  <footer>
+    Offline and self-contained: no network requests, no API keys, no cost.
+    Every conversion is checked against the statement's own balance chain and
+    printed totals — see the <code>Validation</code> sheet in each workbook.
+  </footer>
+</div>
+
+<script type="text/plain" id="pdf-worker-src">/*__PDF_WORKER__*/</script>
+<script>/*__EXCELJS__*/</script>
+<script type="module">
+/*__PDFJS__*/
+
+// pdf.js runs its parser on the main thread here ("fake worker"). A real worker
+// would need a module Worker from a blob, which hangs under the file:// opaque
+// origin this page is meant to be opened from. That costs nothing in practice:
+// we only pull the text layer and never rasterise a page, so a statement parses
+// in milliseconds per page.
+pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(
+  new Blob([document.getElementById("pdf-worker-src").textContent], { type: "text/javascript" }));
+window.pdfjsLib = pdfjsLib;
+
+/*__APP__*/
+
+/* ---------- UI ---------- */
+
+const drop = document.getElementById("drop");
+const input = document.getElementById("file");
+const results = document.getElementById("results");
+const wrapSpace = document.getElementById("wrapSpace");
+
+drop.addEventListener("click", () => input.click());
+drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.add("over"); });
+drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+drop.addEventListener("drop", (e) => {
+  e.preventDefault();
+  drop.classList.remove("over");
+  handle([...e.dataTransfer.files].filter((f) => /\.pdf$/i.test(f.name)));
+});
+input.addEventListener("change", () => { handle([...input.files]); input.value = ""; });
+
+async function handle(files) {
+  for (const file of files) await run(file);
+}
+
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+
+async function run(file) {
+  const card = document.createElement("div");
+  card.className = "card";
+  card.innerHTML = `<h3>${esc(file.name)}</h3><div class="sub">Reading…</div>`;
+  results.prepend(card);
+
+  try {
+    const buffer = await file.arrayBuffer();
+    const { statement, report } = await convertPdf(buffer, {
+      wrapJoin: wrapSpace.checked ? "space" : "none",
+      onProgress: (n, total) => {
+        card.querySelector(".sub").textContent = `Reading page ${n} of ${total}…`;
+      },
+    });
+
+    const data = await buildWorkbook(statement, report, file.name);
+    const blob = new Blob([data], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const url = URL.createObjectURL(blob);
+    const outName = file.name.replace(/\.pdf$/i, "") + ".xlsx";
+
+    const pill = (ok, label) => `<span class="pill ${ok ? "ok" : "bad"}">${label}: ${ok ? "OK" : "FAILED"}</span>`;
+    const warnPill = report.warnings.length
+      ? `<span class="pill warn">${report.warnings.length} warning${report.warnings.length > 1 ? "s" : ""}</span>` : "";
+
+    card.innerHTML = `
+      <h3>${esc(file.name)}</h3>
+      <div class="sub">${report.checkedRows} transactions extracted</div>
+      <div>
+        ${pill(report.balanceChainOk, "Balance chain")}
+        ${pill(report.totalsOk, "Footer totals")}
+        ${warnPill}
+      </div>
+      <p style="margin:14px 0 0"><button data-dl>Download ${esc(outName)}</button></p>
+      ${report.issues.length ? `
+        <details${report.errors.length ? " open" : ""}>
+          <summary>${report.errors.length} error${report.errors.length === 1 ? "" : "s"},
+                   ${report.warnings.length} warning${report.warnings.length === 1 ? "" : "s"}</summary>
+          <div class="issues"><table>
+            <thead><tr><th>Severity</th><th>Row</th><th>Check</th><th>Detail</th></tr></thead>
+            <tbody>${report.issues.map((i) => `
+              <tr><td class="sev-${i.severity}">${i.severity}</td>
+                  <td>${i.row ?? ""}</td><td>${esc(i.check)}</td><td>${esc(i.detail)}</td></tr>`).join("")}
+            </tbody>
+          </table></div>
+        </details>` : ""}
+    `;
+    card.querySelector("[data-dl]").addEventListener("click", () => {
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = outName;
+      a.click();
+    });
+  } catch (err) {
+    card.innerHTML = `<h3>${esc(file.name)}</h3>
+      <div><span class="pill bad">Could not convert</span></div>
+      <div class="sub" style="margin-top:8px">${esc(err.message || err)}</div>`;
+  }
+}
+</script>
+</body>
+</html>
