@@ -1,0 +1,2802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Monal x Imarat Restaurant - Executive Financial Performance Dashboard</title>
+  <meta name="description" content="Standalone Executive Financial Performance, Benchmark Analysis, and Profit Distribution Dashboard for Monal Imarat Fine Dining.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Chart.js & SheetJS (XLSX Parser) for Direct Excel & Live Sync -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    /* ==========================================================================
+       MONAL x IMARAT - EXECUTIVE THEME STYLES (STANDALONE)
+       ========================================================================== */
+    :root {
+      --bg-header: linear-gradient(135deg, #092c1d 0%, #114b32 45%, #257d54 100%);
+      --bg-page: #f6f8f3;
+      --bg-card: #ffffff;
+      
+      --forest-dark: #092c1d;
+      --forest-primary: #125438;
+      --forest-light: #1e7e54;
+      --forest-subtle: #e8f3ed;
+
+      --gold-primary: #c98a2c;
+      --gold-light: #e0a343;
+      --ochre-primary: #d97706;
+      --yellow-primary: #ca8a04;
+      --yellow-light: #eab308;
+      --blue-primary: #1e40af;
+      --red-primary: #dc2626;
+
+      --text-primary: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+      --text-dim: #94a3b8;
+
+      --border-subtle: #e5e9df;
+      --border-card: #e5e9df;
+      --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+      --shadow-hover: 0 6px 16px rgba(0, 0, 0, 0.08);
+
+      --font-serif: 'Outfit', 'Playfair Display', Georgia, serif;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-full: 9999px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      font-family: var(--font-body);
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    .app-layout {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Top Header */
+    .top-header {
+      background: var(--bg-header);
+      color: #ffffff;
+      padding: 1.25rem 2rem 1.5rem;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 4px 20px rgba(9, 44, 29, 0.35);
+    }
+
+    .header-container {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
+    }
+
+    .header-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .brand-logos-cluster {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .brand-circle-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 2px solid var(--gold-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .brand-x-separator {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.6);
+      font-weight: 300;
+    }
+
+    .brand-chart-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .brand-title-group h1 {
+      font-family: var(--font-serif);
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #ffffff;
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+    }
+
+    .brand-title-group .title-x {
+      color: var(--gold-light);
+      font-weight: 400;
+      font-size: 1.1rem;
+    }
+
+    .brand-title-group .brand-sub {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.8);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 0.1rem;
+    }
+
+    /* Header Right: Financial Year, Reporting Month & Data Sync Buttons */
+    .header-right-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-pill-container {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: var(--radius-full);
+      padding: 0.35rem 0.85rem;
+      gap: 0.6rem;
+      backdrop-filter: blur(8px);
+    }
+
+    .filter-pill-label {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.85);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .filter-select-input {
+      background: #ffffff;
+      border: none;
+      border-radius: var(--radius-full);
+      padding: 0.3rem 0.8rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--forest-dark);
+      cursor: pointer;
+      outline: none;
+    }
+
+    .sync-badge-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: var(--radius-full);
+      padding: 0.4rem 0.9rem;
+      color: #ffffff;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .sync-badge-btn:hover {
+      background: #ffffff;
+      color: var(--forest-dark);
+      border-color: #ffffff;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 6px #22c55e;
+    }
+
+    /* Month Selector Pills Row */
+    .header-pills-row {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-top: 0.2rem;
+    }
+
+    .header-pills-row::-webkit-scrollbar { display: none; }
+
+    .month-pill-btn {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: var(--radius-full);
+      padding: 0.35rem 1rem;
+      color: #ffffff;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .month-pill-btn:hover {
+      background: rgba(255, 255, 255, 0.22);
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .month-pill-btn.active {
+      background: #ffffff;
+      color: var(--forest-dark);
+      border-color: #ffffff;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    }
+
+    /* Navigation Tabs Bar */
+    .nav-tabs-bar {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-subtle);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    }
+
+    .nav-container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .nav-tabs-left { display: flex; gap: 0.5rem; }
+
+    .nav-tab {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 1.25rem;
+      background: transparent;
+      border: none;
+      border-bottom: 2.5px solid transparent;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .nav-tab:hover { color: var(--forest-primary); }
+
+    .nav-tab.active {
+      color: var(--forest-primary);
+      border-bottom-color: var(--forest-primary);
+      font-weight: 700;
+    }
+
+    .nav-actions-right {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .toggle-group {
+      display: flex;
+      background: #f1f5f9;
+      padding: 2px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .toggle-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.3rem 0.65rem;
+      font-size: 0.76rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .toggle-btn.active {
+      background: var(--forest-primary);
+      color: #ffffff;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      background: #ffffff;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      border-color: var(--forest-primary);
+      color: var(--forest-primary);
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      max-width: 1600px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.75rem 1.5rem 4rem;
+    }
+
+    .tab-pane {
+      display: none;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .tab-pane.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(3px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-bar-header {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .section-bar-header:first-of-type { margin-top: 0; }
+
+    .section-green-line {
+      width: 22px;
+      height: 4px;
+      background: var(--forest-primary);
+      border-radius: 2px;
+    }
+
+    .section-bar-title {
+      font-family: var(--font-serif);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--forest-dark);
+      letter-spacing: -0.01em;
+    }
+
+    /* 4-Column Grid for KPI & Cost Cards */
+    .kpis-four-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    @media (max-width: 1024px) {
+      .kpis-four-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 580px) {
+      .kpis-four-grid { grid-template-columns: 1fr; }
+    }
+
+    .kpi-stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 1.15rem 1.1rem;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+    }
+
+    .kpi-stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+      border-color: rgba(18, 84, 56, 0.3);
+    }
+
+    .kpi-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.6rem;
+    }
+
+    .kpi-icon-pill {
+      width: 34px;
+      height: 34px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .kpi-icon-pill.green { background: #e6f4ea; color: #137333; }
+    .kpi-icon-pill.gold { background: #fef7e0; color: #b06000; }
+    .kpi-icon-pill.blue { background: #eff6ff; color: #1e40af; }
+    .kpi-icon-pill.ochre { background: #fef3c7; color: #d97706; }
+
+    .kpi-stat-title {
+      font-size: 0.74rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .kpi-stat-value {
+      font-family: var(--font-heading);
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+      margin-bottom: 0.45rem;
+    }
+
+    .kpi-card-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+    }
+
+    .kpi-pct-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.15rem 0.5rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .kpi-pct-badge.green { background: #e6f4ea; color: #137333; }
+    .kpi-pct-badge.gold { background: #fef7e0; color: #b06000; }
+    .kpi-pct-badge.blue { background: #eff6ff; color: #1e40af; }
+    .kpi-pct-badge.ochre { background: #fef3c7; color: #d97706; }
+
+    .kpi-mom-text {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #c5221f;
+      display: flex;
+      align-items: center;
+      gap: 0.2rem;
+    }
+
+    .kpi-mom-text.positive { color: #137333; }
+    .kpi-mom-text.neutral { color: var(--text-muted); }
+
+    /* Dual Charts Grid */
+    .charts-dual-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 1024px) {
+      .charts-dual-grid { grid-template-columns: 1fr; }
+    }
+
+    .chart-card-clean {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      box-shadow: var(--shadow-card);
+    }
+
+    .chart-clean-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .chart-clean-header h3 {
+      font-family: var(--font-serif);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .chart-clean-header p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .chart-badge-pill {
+      background: #e6f4ea;
+      color: #137333;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.55rem;
+      border-radius: var(--radius-full);
+    }
+
+    .chart-container-std {
+      position: relative;
+      height: 260px;
+      width: 100%;
+    }
+
+    /* Cost Trend Line Card */
+    .cost-trend-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 1.35rem 1.5rem;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 1.5rem;
+    }
+
+    .cost-trend-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .cost-trend-header h3 {
+      font-family: var(--font-serif);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .cost-trend-header p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .cost-trend-rev-badge {
+      background: #e6f4ea;
+      color: #137333;
+      font-size: 0.8rem;
+      font-weight: 800;
+      padding: 0.25rem 0.65rem;
+      border-radius: var(--radius-full);
+    }
+
+    .cost-trend-container {
+      position: relative;
+      height: 280px;
+      width: 100%;
+    }
+
+    .custom-line-legend {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-top: 0.75rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      flex-wrap: wrap;
+    }
+
+    .custom-legend-item { display: flex; align-items: center; gap: 0.4rem; }
+
+    .legend-circle {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 2px solid #ffffff;
+    }
+
+    .legend-circle.green { background: #115e3b; box-shadow: 0 0 0 1px #115e3b; }
+    .legend-circle.blue { background: #1e40af; box-shadow: 0 0 0 1px #1e40af; }
+    .legend-circle.gold { background: #ca8a04; box-shadow: 0 0 0 1px #ca8a04; }
+    .legend-circle.yellow { background: #eab308; box-shadow: 0 0 0 1px #eab308; }
+
+    /* Simulator Box */
+    .simulator-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 1.5rem;
+    }
+
+    .sim-header { margin-bottom: 1.25rem; }
+
+    .sim-header h3 {
+      font-family: var(--font-serif);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--forest-dark);
+    }
+
+    .sim-header p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .sim-controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .slider-group label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.4rem;
+    }
+
+    .slider-group .slider-val {
+      color: var(--forest-primary);
+      font-family: var(--font-mono);
+      font-weight: 700;
+    }
+
+    .slider-group input[type="range"] {
+      width: 100%;
+      accent-color: var(--forest-primary);
+      cursor: pointer;
+    }
+
+    .sim-results-cards {
+      background: #f8fafc;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .sim-card {
+      padding: 0.85rem;
+      background: #ffffff;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .sim-card-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-weight: 700;
+    }
+
+    .sim-card-val {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--forest-dark);
+      margin-top: 0.2rem;
+    }
+
+    .sim-card-val.green { color: var(--forest-primary); }
+    .sim-card-val.gold { color: var(--gold-primary); }
+
+    /* Financial Table Styling */
+    .table-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 1.5rem;
+    }
+
+    .table-toolbar {
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      border-bottom: 1px solid var(--border-subtle);
+      background: #f8fafc;
+    }
+
+    .table-search { position: relative; min-width: 260px; }
+
+    .table-search input {
+      width: 100%;
+      background: #ffffff;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 0.45rem 0.75rem 0.45rem 2.2rem;
+      font-size: 0.82rem;
+      color: var(--text-primary);
+      outline: none;
+    }
+
+    .table-search input:focus { border-color: var(--forest-primary); }
+
+    .search-icon {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .table-wrapper { overflow-x: auto; }
+
+    .financial-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+      text-align: left;
+    }
+
+    .financial-table th {
+      background: #f8fafc;
+      color: var(--text-muted);
+      font-weight: 700;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-subtle);
+      white-space: nowrap;
+    }
+
+    .financial-table th.num,
+    .financial-table td.num {
+      text-align: right;
+      font-family: var(--font-mono);
+    }
+
+    .financial-table td {
+      padding: 0.7rem 1rem;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+    }
+
+    .financial-table tr:hover td { background: #f8fafc; }
+
+    .financial-table tr.group-header-row td {
+      background: #eef6f1;
+      font-weight: 800;
+      color: var(--forest-dark);
+      text-transform: uppercase;
+      font-size: 0.82rem;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      user-select: none;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .accordion-toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      background: var(--forest-primary);
+      color: #ffffff;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 800;
+      margin-right: 8px;
+    }
+
+    .financial-table tr.sub-item-row td { padding-left: 2rem; }
+
+    .financial-table tr.total-row td {
+      background: #f0fdf4;
+      font-weight: 800;
+      border-top: 1.5px solid #bbf7d0;
+      border-bottom: 2px solid #86efac;
+      color: var(--forest-dark);
+    }
+
+    /* Benchmark Progress Visualizer */
+    .range-bar-container {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      width: 100%;
+      min-width: 140px;
+    }
+
+    .range-track {
+      flex: 1;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: var(--radius-full);
+      position: relative;
+    }
+
+    .benchmark-range-marker {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      background: rgba(18, 84, 56, 0.35);
+      border-radius: var(--radius-full);
+    }
+
+    .actual-value-dot {
+      position: absolute;
+      top: -3px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--forest-primary);
+      border: 2px solid #fff;
+      transform: translateX(-50%);
+      box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .actual-value-dot.risk { background: #dc2626; }
+    .actual-value-dot.warning { background: #d97706; }
+
+    .status-badge {
+      display: inline-flex;
+      padding: 0.15rem 0.5rem;
+      border-radius: var(--radius-full);
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .status-badge.favourable { background: #e6f4ea; color: #137333; }
+    .status-badge.risk { background: #fce8e6; color: #c5221f; }
+    .status-badge.warning { background: #fef7e0; color: #b06000; }
+    .status-badge.neutral { background: #f1f5f9; color: #64748b; }
+
+    /* Modal / Pop-up Dialog for Data Source & Live Sync */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal-box {
+      background: #ffffff;
+      border-radius: var(--radius-lg);
+      max-width: 650px;
+      width: 100%;
+      padding: 1.75rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border-card);
+      animation: modalSlide 0.2s ease;
+    }
+
+    @keyframes modalSlide {
+      from { transform: translateY(10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 0.85rem;
+    }
+
+    .modal-header h3 {
+      font-family: var(--font-serif);
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--forest-dark);
+    }
+
+    .modal-close-btn {
+      background: transparent;
+      border: none;
+      font-size: 1.4rem;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .dropzone-box {
+      border: 2px dashed var(--forest-primary);
+      background: #f6fcf8;
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      margin-bottom: 1.25rem;
+      transition: all 0.2s ease;
+    }
+
+    .dropzone-box:hover {
+      background: #eef8f2;
+      border-color: var(--forest-dark);
+    }
+
+    .form-group { margin-bottom: 1rem; }
+    .form-group label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.35rem;
+    }
+    .form-control {
+      width: 100%;
+      padding: 0.6rem 0.85rem;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      font-size: 0.84rem;
+      color: var(--text-primary);
+      outline: none;
+    }
+    .form-control:focus { border-color: var(--forest-primary); }
+
+    @media print {
+      body { background: #fff !important; }
+      .top-header, .nav-tabs-bar, .header-actions, .table-toolbar, .slider-group input { display: none !important; }
+      .tab-pane { display: block !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-layout">
+  <!-- Top Forest Green Header -->
+  <header class="top-header">
+    <div class="header-container">
+      
+      <!-- Top Row: Brand & Financial Year Filter -->
+      <div class="header-top-row">
+        <div class="brand-section">
+          <div class="brand-logos-cluster">
+            <div class="brand-circle-logo" title="Monal Restaurant">
+              <svg viewBox="0 0 100 100" width="28" height="28">
+                <circle cx="50" cy="50" r="46" fill="none" stroke="#d97706" stroke-width="4"/>
+                <text x="50" y="65" font-family="'Outfit', serif" font-size="44" font-weight="bold" fill="#092c1d" text-anchor="middle">M</text>
+              </svg>
+            </div>
+            <span class="brand-x-separator">✕</span>
+            <div class="brand-chart-icon" title="Imarat Group">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="20" x2="18" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+                <line x1="12" y1="20" x2="12" y2="10"></line>
+              </svg>
+            </div>
+          </div>
+
+          <div class="brand-title-group">
+            <h1>Monal <span class="title-x">✕</span> Imarat Restaurant</h1>
+            <div class="brand-sub">EXECUTIVE FINANCIAL PERFORMANCE DASHBOARD</div>
+          </div>
+        </div>
+
+        <!-- Filter Controls (Right): Financial Year + Reporting Month + Live Sync -->
+        <div class="header-right-controls">
+          <!-- Financial Year Selector -->
+          <div class="filter-pill-container">
+            <span class="filter-pill-label">FINANCIAL YEAR</span>
+            <select id="financialYearSelect" class="filter-select-input">
+              <option value="FY25_26" selected>FY 2025-26 (Jul 25 - Jun 26)</option>
+              <option value="FY26_27">FY 2026-27 (Jul 26 - Jun 27)</option>
+            </select>
+          </div>
+
+          <!-- Reporting Month Selector -->
+          <div class="filter-pill-container">
+            <span class="filter-pill-label">REPORTING MONTH</span>
+            <select id="reportingMonthSelect" class="filter-select-input"></select>
+          </div>
+
+          <!-- Live Sync / Import Excel Button -->
+          <button class="sync-badge-btn" onclick="MonalApp.openSyncModal()" title="Auto-fetch Google Sheet or Upload Excel File">
+            <span class="live-dot" id="liveSyncDot"></span>
+            <span id="liveSyncStatusText">Auto-Sync / Import</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bottom Row: Month Selector Pills -->
+      <div class="header-pills-row" id="monthPillsRow"></div>
+
+    </div>
+  </header>
+
+  <!-- Navigation Tabs Bar -->
+  <nav class="nav-tabs-bar">
+    <div class="nav-container">
+      <div class="nav-tabs-left">
+        <button class="nav-tab active" data-tab="overview">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          Executive Overview
+        </button>
+        <button class="nav-tab" data-tab="pnl">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+          Actual P&L Statement
+        </button>
+        <button class="nav-tab" data-tab="benchmarks">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+          Benchmark Comparison
+        </button>
+      </div>
+
+      <div class="nav-actions-right">
+        <!-- Display Mode Toggle -->
+        <div class="toggle-group">
+          <button class="toggle-btn active" data-mode="millions">M PKR</button>
+          <button class="toggle-btn" data-mode="raw">Raw PKR</button>
+          <button class="toggle-btn" data-mode="pct">% Rev</button>
+        </div>
+
+        <button class="btn" onclick="MonalApp.exportToCsv()" title="Export CSV">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          CSV
+        </button>
+        <button class="btn" onclick="window.print()" title="Print PDF">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+          PDF
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Canvas -->
+  <main class="main-content">
+
+    <!-- TAB 1: EXECUTIVE OVERVIEW -->
+    <section class="tab-pane active" id="tab-overview">
+      
+      <!-- 1. Key Performance Indicators Section (Row 1: 4 Cards) -->
+      <div class="section-bar-header">
+        <div class="section-green-line"></div>
+        <h2 class="section-bar-title">Key Performance Indicators</h2>
+      </div>
+      <!-- 4 Primary KPI Cards (Revenue, Gross Profit, Net Profit, Imarat 50% Share) -->
+      <div class="kpis-four-grid" id="kpisRowOne"></div>
+
+      <!-- 2. Operational Cost Structure Section (Row 2: 4 Cards) -->
+      <div class="section-bar-header" style="margin-top: 1.25rem;">
+        <div class="section-green-line" style="background:var(--ochre-primary);"></div>
+        <h2 class="section-bar-title">Operational Cost Structure & Tax Breakdown</h2>
+      </div>
+      <!-- 4 Cost Cards (COGS, Selling Expense, Admin Expense [Excl. Tax], Tax Expense [Standalone]) -->
+      <div class="kpis-four-grid" id="kpisRowTwo"></div>
+
+      <!-- 3. Revenue & Profitability Trends Section -->
+      <div class="section-bar-header">
+        <div class="section-green-line"></div>
+        <h2 class="section-bar-title">Revenue & Profitability Trends</h2>
+      </div>
+
+      <!-- Dual Charts: Revenue, Gross Profit & Net Profit Trends + Expense Breakdown Donut -->
+      <div class="charts-dual-grid">
+        <div class="chart-card-clean">
+          <div class="chart-clean-header">
+            <div>
+              <h3>Revenue, Gross Profit & Net Profit Trends</h3>
+              <p>Monthly Revenue, Gross Profit & Net Profit (EBITDA Proxy)</p>
+            </div>
+            <div style="display:flex; gap:0.35rem; flex-wrap:wrap;">
+              <span class="chart-badge-pill" id="badgeRev">Rev: -</span>
+              <span class="chart-badge-pill" id="badgeGP" style="background:#e8f3ed; color:#0f462e;">GP: -</span>
+              <span class="chart-badge-pill" id="badgeNP" style="background:#fef7e0; color:#b06000;">NP: -</span>
+            </div>
+          </div>
+          <div class="chart-container-std">
+            <canvas id="chartRevenueTrend"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card-clean">
+          <div class="chart-clean-header">
+            <div>
+              <h3>Expense Breakdown</h3>
+              <p id="expenseBreakdownSub">COGS · Selling · Admin · Tax — selected period</p>
+            </div>
+          </div>
+          <div class="chart-container-std">
+            <canvas id="chartExpenseBreakdown"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Cost Trend Analysis Section -->
+      <div class="section-bar-header">
+        <div class="section-green-line"></div>
+        <h2 class="section-bar-title">Cost Trend Analysis</h2>
+      </div>
+
+      <div class="cost-trend-card">
+        <div class="cost-trend-header">
+          <div>
+            <h3>Cost Trend Analysis</h3>
+            <p>COGS, Selling, Admin (Excl. Tax) & Tax Expenses as % of Revenue</p>
+          </div>
+          <span class="cost-trend-rev-badge" id="costTrendTotalBadge">-- % of Rev</span>
+        </div>
+
+        <div class="cost-trend-container">
+          <canvas id="chartCostTrendAnalysis"></canvas>
+        </div>
+
+        <div class="custom-line-legend">
+          <div class="custom-legend-item">
+            <span class="legend-circle green"></span>
+            <span>Cost of Goods Sold (COGS)</span>
+          </div>
+          <div class="custom-legend-item">
+            <span class="legend-circle yellow"></span>
+            <span>Selling Expenses</span>
+          </div>
+          <div class="custom-legend-item">
+            <span class="legend-circle gold"></span>
+            <span>Admin Expenses (Excl. Tax)</span>
+          </div>
+          <div class="custom-legend-item">
+            <span class="legend-circle blue"></span>
+            <span>Tax Expense (Standalone)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Interactive Forecast & Profit Simulator -->
+      <div class="section-bar-header">
+        <div class="section-green-line"></div>
+        <h2 class="section-bar-title">Interactive Forecast & Profit Simulator</h2>
+      </div>
+
+      <div class="simulator-box">
+        <div class="sim-header">
+          <h3 id="simTitleHeader">Interactive Profit & Expense Simulator</h3>
+          <p id="simSubHeader">Simulate financial projections and bottom-line distribution based on baseline operational actuals.</p>
+        </div>
+
+        <div class="sim-controls-grid">
+          <div class="slider-group">
+            <label>
+              <span>Revenue Growth</span>
+              <span class="slider-val" id="simRevVal">0%</span>
+            </label>
+            <input type="range" id="simRevenueSlider" min="-30" max="50" step="5" value="0">
+          </div>
+
+          <div class="slider-group">
+            <label>
+              <span>COGS Efficiency Savings</span>
+              <span class="slider-val" id="simCogsVal">0%</span>
+            </label>
+            <input type="range" id="simCogsSlider" min="-10" max="15" step="1" value="0">
+          </div>
+
+          <div class="slider-group">
+            <label>
+              <span>Selling Expense Optimization</span>
+              <span class="slider-val" id="simSellingVal">0%</span>
+            </label>
+            <input type="range" id="simSellingSlider" min="-10" max="25" step="1" value="0">
+          </div>
+
+          <div class="slider-group">
+            <label>
+              <span>Admin Expense Optimization</span>
+              <span class="slider-val" id="simAdminVal">0%</span>
+            </label>
+            <input type="range" id="simAdminSlider" min="-10" max="25" step="1" value="0">
+          </div>
+        </div>
+
+        <div class="sim-results-cards">
+          <div class="sim-card">
+            <div class="sim-card-label" id="simLabelRev">Forecast Revenue</div>
+            <div class="sim-card-val green" id="simProjRevenue">-</div>
+          </div>
+          <div class="sim-card">
+            <div class="sim-card-label" id="simLabelEbitda">Forecast EBITDA</div>
+            <div class="sim-card-val green" id="simProjNetProfit">-</div>
+          </div>
+          <div class="sim-card">
+            <div class="sim-card-label">Projected Net Margin</div>
+            <div class="sim-card-val" id="simProjMargin">-</div>
+          </div>
+          <div class="sim-card">
+            <div class="sim-card-label" id="simLabelImarat">Imarat 50% Share</div>
+            <div class="sim-card-val gold" id="simProjImarat">-</div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- TAB 2: ACTUAL P&L STATEMENT -->
+    <section class="tab-pane" id="tab-pnl">
+      <div class="section-bar-header">
+        <div class="section-green-line"></div>
+        <h2 class="section-bar-title" id="pnlSectionTitle">Statement of Profit & Loss (FY 2025-26 Detail)</h2>
+      </div>
+
+      <div class="table-card">
+        <div class="table-toolbar">
+          <div class="table-search">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="pnlSearchInput" placeholder="Filter line items (e.g. Labour, Utilities, Tax)...">
+          </div>
+          <div style="font-size:0.78rem; color:var(--forest-primary); font-weight:700;">
+            Tip: Click the '+' / '-' buttons on any primary category to expand or collapse sub-items.
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="financial-table">
+            <thead id="pnlTableHead"></thead>
+            <tbody id="pnlTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: BENCHMARK COMPARISON -->
+    <section class="tab-pane" id="tab-benchmarks">
+      <div class="section-bar-header">
+        <div class="section-green-line"></div>
+        <h2 class="section-bar-title">Industry Benchmark Comparison & Variances</h2>
+      </div>
+
+      <div class="chart-card-clean" style="margin-bottom: 1.5rem;">
+        <div class="chart-clean-header">
+          <h3>Actual % vs Pakistan Benchmark Target Ranges</h3>
+        </div>
+        <div class="chart-container-std" style="height: 280px;">
+          <canvas id="chartBenchmarkVariance"></canvas>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-wrapper">
+          <table class="financial-table">
+            <thead>
+              <tr>
+                <th>Cost Component</th>
+                <th class="num">Actual Avg %</th>
+                <th>Pakistan Benchmark</th>
+                <th>International Norm</th>
+                <th style="min-width: 160px;">Benchmark Range Visualizer</th>
+                <th class="num">Variance vs Pak</th>
+                <th>Performance Status</th>
+              </tr>
+            </thead>
+            <tbody id="benchmarkTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ==========================================================================
+     MODAL: AUTO-SYNC GOOGLE SHEET / UPLOAD EXCEL FILE
+     ========================================================================== -->
+<div class="modal-overlay" id="syncModalOverlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Data Source & Live Auto-Sync</h3>
+      <button class="modal-close-btn" onclick="MonalApp.closeSyncModal()">&times;</button>
+    </div>
+
+    <!-- Option 1: Drag & Drop / Upload Excel (.xlsx) -->
+    <div class="dropzone-box" onclick="document.getElementById('excelFileInput').click()">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#125438" stroke-width="2" style="margin-bottom:0.5rem;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+      <div style="font-weight:700; font-size:0.92rem; color:var(--forest-dark);">Click to Select or Drop Updated Excel (.xlsx) File</div>
+      <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">Supports Fine Dine Imarat Benchmark Analysis.xlsx or exported CSVs.</div>
+      <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="display:none;" onchange="MonalApp.handleExcelUpload(event)">
+    </div>
+
+    <!-- Option 2: Live Google Sheet Auto-Fetch -->
+    <div style="border-top:1px solid var(--border-subtle); padding-top:1rem;">
+      <div class="form-group">
+        <label for="modalGsheetUrl">Google Sheet Share Link or CSV Export URL</label>
+        <input type="text" id="modalGsheetUrl" class="form-control" placeholder="https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit...">
+        <div style="font-size:0.72rem; color:var(--text-muted); margin-top:3px;">
+          Set sharing to "Anyone with link can view" to allow real-time automated data retrieval.
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="modalAutoSync">Auto-Fetch Interval</label>
+        <select id="modalAutoSync" class="form-control">
+          <option value="0">Manual / On Demand</option>
+          <option value="60">Every 1 Minute</option>
+          <option value="300">Every 5 Minutes</option>
+        </select>
+      </div>
+
+      <div id="syncFeedbackMsg" style="font-size:0.8rem; font-weight:700; margin-bottom:0.75rem; color:var(--forest-primary);"></div>
+
+      <div style="display:flex; justify-content:flex-end; gap:0.75rem;">
+        <button class="btn" onclick="MonalApp.closeSyncModal()">Cancel</button>
+        <button class="btn" style="background:var(--forest-primary); color:#fff; border:none;" onclick="MonalApp.saveAndSyncGoogleSheet()">Save & Sync Now</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================================================
+     STANDALONE EMBEDDED DATASET & APPLICATION ENGINE
+     ========================================================================== -->
+<script>
+/**
+ * Monal x Imarat Complete Standalone Application
+ * Multi-Financial Year Architecture (FY 2025-26 & Empty FY 2026-27 with Auto-Fetch)
+ */
+
+const MONAL_FINANCIAL_DATABASE = {
+  // FINANCIAL YEAR 2025-26 (Actuals: Mar 26 - Jun 26)
+  FY25_26: {
+    name: "FY 2025-26 (Jul 25 - Jun 26)",
+    defaultMonth: "jun",
+    months: [
+      { key: "all", label: "Overall (FY 25-26)", isTotal: true },
+      { key: "mar", label: "Mar 26" },
+      { key: "apr", label: "Apr 26" },
+      { key: "may", label: "May 26" },
+      { key: "jun", label: "Jun 26" }
+    ],
+    pnlColumns: [
+      { key: "mar", label: "Mar-26 (PKR)" },
+      { key: "apr", label: "Apr-26 (PKR)" },
+      { key: "may", label: "May-26 (PKR)" },
+      { key: "jun", label: "Jun-26 (PKR)" },
+      { key: "total", label: "Total FY 25-26 (PKR)" }
+    ],
+    monthlySummary: {
+      mar: { revenue: 68255409, cogs: 32559632, grossProfit: 35695777, selling: 7121064, adminTotal: 13436330, tax: 4552807, adminExclTax: 8883523, netProfit: 15138383, imaratShare: 7569191.50, gpPct: 0.5230, netMargin: 0.2218, momRev: "Baseline reporting", momGp: "52.3% Margin", momNet: "22.2% Margin", momImarat: "50% Net Share" },
+      apr: { revenue: 125314935, cogs: 55239294, grossProfit: 70075641, selling: 11322768, adminTotal: 23013427, tax: 8447562, adminExclTax: 14565865, netProfit: 35739446, imaratShare: 17869723, gpPct: 0.5592, netMargin: 0.2852, momRev: "+83.6% MoM vs Mar 26", momGp: "+96.3% MoM vs Mar 26", momNet: "+136.1% MoM vs Mar 26", momImarat: "+136.1% MoM vs Mar 26" },
+      may: { revenue: 126010089, cogs: 60566731, grossProfit: 65443358, selling: 11758098, adminTotal: 25405095, tax: 8122899, adminExclTax: 17282196, netProfit: 28280165, imaratShare: 14140082.50, gpPct: 0.5193, netMargin: 0.2244, momRev: "+0.6% MoM vs Apr 26", momGp: "-6.6% MoM vs Apr 26", momNet: "-20.9% MoM vs Apr 26", momImarat: "-20.9% MoM vs Apr 26" },
+      jun: { revenue: 118887526.32, cogs: 56333018.85, grossProfit: 62554507.47, selling: 11201638.13, adminTotal: 24014420.53, tax: 7865180.33, adminExclTax: 16149240.20, netProfit: 27338448.81, imaratShare: 13669224.41, gpPct: 0.5262, netMargin: 0.2300, momRev: "-5.7% MoM vs May 26", momGp: "-4.4% MoM vs May 26", momNet: "-3.3% MoM vs May 26", momImarat: "-3.3% MoM vs May 26" },
+      all: { revenue: 438467959.32, cogs: 204698675.85, grossProfit: 233769283.47, selling: 41403568.13, adminTotal: 85869272.53, tax: 28988448.33, adminExclTax: 56880824.20, netProfit: 106496442.81, imaratShare: 53248221.41, gpPct: 0.5331, netMargin: 0.2429, momRev: "Full FY 25-26 Total", momGp: "53.3% 4M Average", momNet: "24.3% 4M Average", momImarat: "50% Net Share" }
+    },
+    pnl: [
+      {
+        id: "revenue",
+        category: "REVENUE",
+        items: [
+          { ref: "1.1", name: "Food Revenues", mar: 69608773, apr: 123684060, may: 125217735, jun: 117460114.85, total: 435970682.85, avgPct: 0.9971 },
+          { ref: "1.2", name: "Non Food Revenues", mar: 0, apr: 0, may: 113050, jun: 436800, total: 549850, avgPct: 0.0011 },
+          { ref: "1.3", name: "Other Income", mar: 366756, apr: 3072281, may: 2292219, jun: 2469201.47, total: 8200457.47, avgPct: 0.0172 },
+          { ref: "1.4", name: "Sale Discount & Protocol", mar: -1720120, apr: -1441406, may: -1612915, jun: -1478590, total: -6253031, avgPct: -0.0155 }
+        ],
+        total: { ref: "1", name: "Total Revenue", mar: 68255409, apr: 125314935, may: 126010089, jun: 118887526.32, total: 438467959.32, avgPct: 1.0 }
+      },
+      {
+        id: "cogs",
+        category: "COST OF GOODS SOLD (COGS)",
+        items: [
+          { ref: "2.1", name: "Material Consumption Food Sale", mar: 26246685, apr: 39419166, may: 42336991, jun: 37539885.21, total: 145542727.21, avgPct: 0.3377 },
+          { ref: "2.2", name: "Store Consumed", mar: 516806, apr: 1164520, may: 837648, jun: 1023844.41, total: 3542818.41, avgPct: 0.0080 },
+          { ref: "2.3", name: "Fuel, Power & Utilities", mar: 1510779, apr: 7157878, may: 8228301, jun: 9017765.05, total: 25914723.05, avgPct: 0.0551 },
+          { ref: "2.4", name: "Direct Labour Cost", mar: 3930710, apr: 6733908, may: 8103440, jun: 7737856.47, total: 26505914.47, avgPct: 0.0602 },
+          { ref: "2.5", name: "Repair & Maintenance", mar: 139598, apr: 305311, may: 220024, jun: 178935.92, total: 843868.92, avgPct: 0.0019 },
+          { ref: "2.6", name: "Rent Rates", mar: 0, apr: 107500, may: 347500, jun: 360000, total: 815000, avgPct: 0.0017 },
+          { ref: "2.7", name: "Printing And Stationery", mar: 50934, apr: 15791, may: 41831, jun: 48499.93, total: 157055.93, avgPct: 0.0004 },
+          { ref: "2.8", name: "Travelling and Conveyance", mar: 30291, apr: 22014, may: 10210, jun: 5051, total: 67566, avgPct: 0.0002 },
+          { ref: "2.9", name: "General Expense", mar: 133829, apr: 313206, may: 440786, jun: 421180.86, total: 1309001.86, avgPct: 0.0029 }
+        ],
+        total: { ref: "2", name: "Total COGS", mar: 32559632, apr: 55239294, may: 60566731, jun: 56333018.85, total: 204698675.85, avgPct: 0.4681 }
+      },
+      {
+        id: "grossprofit",
+        category: "GROSS PROFIT",
+        items: [],
+        total: { ref: "", name: "GROSS PROFIT", mar: 35695777, apr: 70075641, may: 65443358, jun: 62554507.47, total: 233769283.47, avgPct: 0.5319 }
+      },
+      {
+        id: "selling",
+        category: "SELLING EXPENSES",
+        items: [
+          { ref: "3.1", name: "Non Consumable Service Cost", mar: 957184, apr: 1349218, may: 1548331, jun: 1732999.83, total: 5587732.83, avgPct: 0.0129 },
+          { ref: "3.2", name: "Salaries, Wages & Benefits", mar: 5254026, apr: 8577035, may: 9300656, jun: 8468584.48, total: 31600301.48, avgPct: 0.0726 },
+          { ref: "3.3", name: "Utilities Expense", mar: 1241, apr: 891, may: 893, jun: 892, total: 3917, avgPct: 0.0000 },
+          { ref: "3.4", name: "Advertising Expenses", mar: 34197, apr: 131347, may: 23909, jun: 232725.15, total: 422178.15, avgPct: 0.0009 },
+          { ref: "3.5", name: "Travelling & Conveyance", mar: 49545, apr: 47790, may: 23970, jun: 7395, total: 128700, avgPct: 0.0003 },
+          { ref: "3.6", name: "Vehicle Running Expenses", mar: 0, apr: 0, may: 225000, jun: 75000, total: 300000, avgPct: 0.0006 },
+          { ref: "3.7", name: "Printing & Stationary", mar: 667206, apr: 274080, may: 152153, jun: 392902.99, total: 1486341.99, avgPct: 0.0041 },
+          { ref: "3.8", name: "General Expenses", mar: 157665, apr: 942407, may: 483186, jun: 290638.68, total: 1873896.68, avgPct: 0.0040 }
+        ],
+        total: { ref: "3", name: "Total Selling Expenses", mar: 7121064, apr: 11322768, may: 11758098, jun: 11201638.13, total: 41403568.13, avgPct: 0.0956 }
+      },
+      {
+        id: "admin_excl_tax",
+        category: "ADMINISTRATIVE EXPENSES (EXCL. TAX)",
+        items: [
+          { ref: "4.1", name: "Salaries Wages & Other Benefits", mar: 4564648, apr: 7688609, may: 9126515, jun: 8941961.90, total: 30321733.90, avgPct: 0.0690 },
+          { ref: "4.11", name: "Repair & Maintenance", mar: 129285, apr: 373488, may: 777642, jun: 614311.39, total: 1894726.39, avgPct: 0.0041 },
+          { ref: "4.12", name: "Fee And Subscription", mar: 183333, apr: 212217, may: 478669, jun: 175988, total: 1050207, avgPct: 0.0024 },
+          { ref: "4.13", name: "Charity and Donation", mar: 159138, apr: 284608, may: 287837, jun: 337801, total: 1069384, avgPct: 0.0024 },
+          { ref: "4.14", name: "Rent Rates", mar: 721339, apr: 1245555, may: 1233105, jun: 1233105, total: 4433104, avgPct: 0.0102 },
+          { ref: "4.15", name: "Entertainment", mar: 50621, apr: 300, may: 23235, jun: 69454.74, total: 143610.74, avgPct: 0.0004 },
+          { ref: "4.16", name: "Utilities", mar: 61040, apr: 372842, may: 593488, jun: 694532, total: 1721902, avgPct: 0.0036 },
+          { ref: "4.17", name: "Printing & Stationary", mar: 37241, apr: 68416, may: 47714, jun: 19645.81, total: 173016.81, avgPct: 0.0004 },
+          { ref: "4.18", name: "Vehicle Running Expense", mar: 80553, apr: 23667, may: 9533, jun: 10510.84, total: 124263.84, avgPct: 0.0004 },
+          { ref: "4.19", name: "Misc Admin Expenses", mar: 2699243, apr: 3979019, may: 4619372, jun: 3975433.84, total: 15273067.84, avgPct: 0.0353 },
+          { ref: "4.20", name: "Traveling Expense", mar: 25650, apr: 8841, may: 21521, jun: 35182, total: 91194, avgPct: 0.0002 },
+          { ref: "4.22", name: "Financial Costs", mar: 171432, apr: 308303, may: 63565, jun: 41313.68, total: 584613.68, avgPct: 0.0015 }
+        ],
+        total: { ref: "4A", name: "Total Admin Expenses (Excl. Tax)", mar: 8883523, apr: 14565865, may: 17282196, jun: 16149240.20, total: 56880824.20, avgPct: 0.1297 }
+      },
+      {
+        id: "tax_expense",
+        category: "TAX EXPENSE (STANDALONE)",
+        items: [
+          { ref: "4.21", name: "PRA Provincial Sales & Indirect Tax", mar: 4552807, apr: 8447562, may: 8122899, jun: 7865180.33, total: 28988448.33, avgPct: 0.0662 }
+        ],
+        total: { ref: "4B", name: "Total Tax Expense", mar: 4552807, apr: 8447562, may: 8122899, jun: 7865180.33, total: 28988448.33, avgPct: 0.0662 }
+      },
+      {
+        id: "netprofit",
+        category: "NET PROFIT (EBITDA)",
+        items: [],
+        total: { ref: "5", name: "NET PROFIT (EBITDA PROXY)", mar: 15138383, apr: 35739446, may: 28280165, jun: 27338448.81, total: 106496442.81, avgPct: 0.2429 }
+      },
+      {
+        id: "imaratshare",
+        category: "IMARAT 50% PROFIT SHARE",
+        items: [],
+        total: { ref: "6", name: "IMARAT 50% SHARE DISTRIBUTION", mar: 7569191.50, apr: 17869723, may: 14140082.50, jun: 13669224.41, total: 53248221.41, avgPct: 0.1214 }
+      }
+    ]
+  },
+
+  // FINANCIAL YEAR 2026-27 (EMPTY INITIAL STATE - Auto-Populated via Google Sheet / Excel)
+  FY26_27: {
+    name: "FY 2026-27 (Jul 26 - Jun 27)",
+    defaultMonth: "jul",
+    months: [
+      { key: "all", label: "Overall (FY 26-27)", isTotal: true },
+      { key: "jul", label: "Jul 26" },
+      { key: "aug", label: "Aug 26" },
+      { key: "sep", label: "Sep 26" },
+      { key: "oct", label: "Oct 26" },
+      { key: "nov", label: "Nov 26" },
+      { key: "dec", label: "Dec 26" },
+      { key: "jan", label: "Jan 27" },
+      { key: "feb", label: "Feb 27" },
+      { key: "mar", label: "Mar 27" },
+      { key: "apr", label: "Apr 27" },
+      { key: "may", label: "May 27" },
+      { key: "jun", label: "Jun 27" }
+    ],
+    pnlColumns: [
+      { key: "jul", label: "Jul-26 (PKR)" },
+      { key: "aug", label: "Aug-26 (PKR)" },
+      { key: "sep", label: "Sep-26 (PKR)" },
+      { key: "oct", label: "Oct-26 (PKR)" },
+      { key: "nov", label: "Nov-26 (PKR)" },
+      { key: "dec", label: "Dec-26 (PKR)" },
+      { key: "jan", label: "Jan-27 (PKR)" },
+      { key: "feb", label: "Feb-27 (PKR)" },
+      { key: "mar", label: "Mar-27 (PKR)" },
+      { key: "apr", label: "Apr-27 (PKR)" },
+      { key: "may", label: "May-27 (PKR)" },
+      { key: "jun", label: "Jun-27 (PKR)" },
+      { key: "total", label: "Total FY 26-27 (PKR)" }
+    ],
+    monthlySummary: {
+      jul: null, aug: null, sep: null, oct: null, nov: null, dec: null,
+      jan: null, feb: null, mar: null, apr: null, may: null, jun: null,
+      all: null
+    },
+    pnl: [
+      {
+        id: "revenue",
+        category: "REVENUE",
+        items: [
+          { ref: "1.1", name: "Food Revenues", jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, jan: 0, feb: 0, mar: 0, apr: 0, may: 0, jun: 0, total: 0, avgPct: 0 },
+          { ref: "1.2", name: "Other Income & Ancillary", jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, jan: 0, feb: 0, mar: 0, apr: 0, may: 0, jun: 0, total: 0, avgPct: 0 }
+        ],
+        total: { ref: "1", name: "Total Revenue", jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, jan: 0, feb: 0, mar: 0, apr: 0, may: 0, jun: 0, total: 0, avgPct: 0 }
+      },
+      {
+        id: "cogs",
+        category: "COST OF GOODS SOLD (COGS)",
+        items: [
+          { ref: "2.1", name: "Food Material Consumption", jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, jan: 0, feb: 0, mar: 0, apr: 0, may: 0, jun: 0, total: 0, avgPct: 0 },
+          { ref: "2.3", name: "Direct Labour & Power Utilities", jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, jan: 0, feb: 0, mar: 0, apr: 0, may: 0, jun: 0, total: 0, avgPct: 0 }
+        ],
+        total: { ref: "2", name: "Total COGS", jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, jan: 0, feb: 0, mar: 0, apr: 0, may: 0, jun: 0, total: 0, avgPct: 0 }
+      },
+      {
+        id: "grossprofit",
+        category: "GROSS PROFIT",
+        items: [],
+        total: { ref: "", name: "GROSS PROFIT", jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, jan: 0, feb: 0, mar: 0, apr: 0, may: 0, jun: 0, total: 0, avgPct: 0 }
+      },
+      {
+        id: "selling",
+        category: "SELLING EXPENSES",
+        items: [
+          { ref: "3.2", name: "Service, FOH & Marketing", jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, jan: 0, feb: 0, mar: 0, apr: 0, may: 0, jun: 0, total: 0, avgPct: 0 }
+        ],
+        total: { ref: "3", name: "Total Selling Expenses", jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, jan: 0, feb: 0, mar: 0, apr: 0, may: 0, jun: 0, total: 0, avgPct: 0 }
+      },
+      {
+        id: "admin_excl_tax",
+        category: "ADMINISTRATIVE EXPENSES (EXCL. TAX)",
+        items: [
+          { ref: "4.1", name: "Management, Rent, Utilities & R&M", jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, jan: 0, feb: 0, mar: 0, apr: 0, may: 0, jun: 0, total: 0, avgPct: 0 }
+        ],
+        total: { ref: "4A", name: "Total Admin Expenses (Excl. Tax)", jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, jan: 0, feb: 0, mar: 0, apr: 0, may: 0, jun: 0, total: 0, avgPct: 0 }
+      },
+      {
+        id: "tax_expense",
+        category: "TAX EXPENSE (STANDALONE)",
+        items: [
+          { ref: "4.21", name: "PRA Provincial Sales & Indirect Tax", jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, jan: 0, feb: 0, mar: 0, apr: 0, may: 0, jun: 0, total: 0, avgPct: 0 }
+        ],
+        total: { ref: "4B", name: "Total Tax Expense", jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, jan: 0, feb: 0, mar: 0, apr: 0, may: 0, jun: 0, total: 0, avgPct: 0 }
+      },
+      {
+        id: "netprofit",
+        category: "NET PROFIT (EBITDA)",
+        items: [],
+        total: { ref: "5", name: "NET PROFIT (EBITDA PROXY)", jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, jan: 0, feb: 0, mar: 0, apr: 0, may: 0, jun: 0, total: 0, avgPct: 0 }
+      },
+      {
+        id: "imaratshare",
+        category: "IMARAT 50% PROFIT SHARE",
+        items: [],
+        total: { ref: "6", name: "IMARAT 50% SHARE DISTRIBUTION", jul: 0, aug: 0, sep: 0, oct: 0, nov: 0, dec: 0, jan: 0, feb: 0, mar: 0, apr: 0, may: 0, jun: 0, total: 0, avgPct: 0 }
+      }
+    ]
+  },
+
+  // BENCHMARKS DATA
+  benchmarks: [
+    {
+      category: "PROFITABILITY & PRIME COSTS",
+      items: [
+        { ref: "B1", name: "Gross Profit Margin", actualAvgPct: 0.5319, pakBenchmark: "55.0% - 60.0%", intBenchmark: "65.0% - 70.0%", pakMin: 0.55, pakMax: 0.60, status: "warning", variance: -0.0181 },
+        { ref: "B2", name: "Cost of Goods Sold (COGS)", actualAvgPct: 0.4681, pakBenchmark: "40.0% - 45.0%", intBenchmark: "30.0% - 35.0%", pakMin: 0.40, pakMax: 0.45, status: "risk", variance: 0.0181 },
+        { ref: "B3", name: "Total Prime Cost (COGS + Kitchen Labour)", actualAvgPct: 0.5283, pakBenchmark: "52.0% - 60.0%", intBenchmark: "55.0% - 65.0%", pakMin: 0.52, pakMax: 0.60, status: "favourable", variance: 0.0083 },
+        { ref: "B4", name: "Net Profit / EBITDA Margin", actualAvgPct: 0.2429, pakBenchmark: "12.0% - 18.0%", intBenchmark: "15.0% - 20.0%", pakMin: 0.12, pakMax: 0.18, status: "favourable", variance: 0.0629 }
+      ]
+    },
+    {
+      category: "OPERATIONAL & LABOUR RATIOS",
+      items: [
+        { ref: "B5", name: "Total Labour Cost (All Departments)", actualAvgPct: 0.2017, pakBenchmark: "18.0% - 24.0%", intBenchmark: "30.0% - 35.0%", pakMin: 0.18, pakMax: 0.24, status: "favourable", variance: -0.0183 },
+        { ref: "B6", name: "Utilities & Power Expense", actualAvgPct: 0.0630, pakBenchmark: "8.0% - 12.0%", intBenchmark: "4.0% - 6.0%", pakMin: 0.08, pakMax: 0.12, status: "favourable", variance: -0.0170 },
+        { ref: "B7", name: "Selling & Marketing Costs", actualAvgPct: 0.0944, pakBenchmark: "8.0% - 12.0%", intBenchmark: "6.0% - 10.0%", pakMin: 0.08, pakMax: 0.12, status: "favourable", variance: 0.0044 },
+        { ref: "B8", name: "Admin (Excl. Tax) Ratios", actualAvgPct: 0.1297, pakBenchmark: "10.0% - 15.0%", intBenchmark: "8.0% - 12.0%", pakMin: 0.10, pakMax: 0.15, status: "favourable", variance: 0.0097 },
+        { ref: "B9", name: "PRA & Statutory Tax Burden", actualAvgPct: 0.0662, pakBenchmark: "5.0% - 8.0%", intBenchmark: "5.0% - 10.0%", pakMin: 0.05, pakMax: 0.08, status: "favourable", variance: 0.0062 }
+      ]
+    }
+  ]
+};
+
+/**
+ * Main Application Controller
+ */
+window.MonalApp = {
+  db: MONAL_FINANCIAL_DATABASE,
+  state: {
+    activeTab: 'overview',
+    selectedFY: 'FY25_26',
+    selectedMonth: 'jun',
+    displayMode: 'millions',
+    searchQuery: '',
+    collapsedGroups: {},
+    simRevenueGrowth: 0,
+    simCogsImprovement: 0,
+    simSellingOptimization: 0,
+    simAdminOptimization: 0
+  },
+
+  charts: {},
+
+  init: function() {
+    this.loadPersistedData();
+    this.setupEventListeners();
+    this.populateMonthSelectors();
+    this.renderAll();
+    this.initSimulator();
+    this.initAutoSyncTimer();
+  },
+
+  // === PRE-CONFIGURED LIVE GOOGLE SHEET ===
+  LIVE_SHEET_ID: '11gstsCMbdeFIIJm8OWxNeSDoJfXcOz1qgsq0aaNTCIU',
+  LIVE_SHEET_GID: '1734939192',
+  AUTO_REFRESH_SEC: 300,
+  // Rows above the first data row in the sheet. The P&L headers sit on row 3,
+  // so gviz is asked to fold rows 1-3 into column labels and return row 4+ as data.
+  SHEET_HEADER_ROWS: 3,
+
+  // Whole-word month matchers: abbreviation or full name, never a substring.
+  MONTH_PATTERNS: {
+    jan: /(^|[^a-z])(january|jan)([^a-z]|$)/,
+    feb: /(^|[^a-z])(february|feb)([^a-z]|$)/,
+    mar: /(^|[^a-z])(march|mar)([^a-z]|$)/,
+    apr: /(^|[^a-z])(april|apr)([^a-z]|$)/,
+    may: /(^|[^a-z])(may)([^a-z]|$)/,
+    jun: /(^|[^a-z])(june|jun)([^a-z]|$)/,
+    jul: /(^|[^a-z])(july|jul)([^a-z]|$)/,
+    aug: /(^|[^a-z])(august|aug)([^a-z]|$)/,
+    sep: /(^|[^a-z])(september|sept|sep)([^a-z]|$)/,
+    oct: /(^|[^a-z])(october|oct)([^a-z]|$)/,
+    nov: /(^|[^a-z])(november|nov)([^a-z]|$)/,
+    dec: /(^|[^a-z])(december|dec)([^a-z]|$)/
+  },
+
+  /**
+   * Sheet cells arrive as numbers, or as text once a column is mixed-type.
+   * parseFloat("1,234,567") returns 1, so strip separators and currency first,
+   * and read the accounting convention (1,234) as negative.
+   */
+  parseNum: function(v) {
+    if (v === null || v === undefined) return NaN;
+    if (typeof v === 'number') return isNaN(v) ? NaN : v;
+    let str = v.toString().trim();
+    if (!str) return NaN;
+    const negated = /^\(.*\)$/.test(str);            // (1,234) is -1234 in a P&L
+    str = str.replace(/[()]/g, '')
+             .replace(/\b(pkr|rs|rp)\b/gi, '')        // currency words
+             .replace(/[\u20A8$\u20AC\u00A3%,\s]/g, '')   // symbols, separators, spaces
+             .trim();
+    // Anything left over that is not purely numeric is text, not a figure:
+    // a stripped-down "Mar-26" must not read as -26.
+    if (!/^-?(\d+\.?\d*|\.\d+)$/.test(str)) return NaN;
+    const n = parseFloat(str);
+    if (isNaN(n)) return NaN;
+    return negated ? -Math.abs(n) : n;
+  },
+
+
+  loadPersistedData: function() {
+    try {
+      const savedFY26 = localStorage.getItem('MONAL_FY26_27_DATA');
+      if (savedFY26) {
+        this.db.FY26_27 = JSON.parse(savedFY26);
+      }
+      // Auto-sync from pre-configured Google Sheet on every page load
+      if (this.LIVE_SHEET_ID) {
+        const url = 'https://docs.google.com/spreadsheets/d/' + this.LIVE_SHEET_ID + '/edit?gid=' + this.LIVE_SHEET_GID;
+        const input = document.getElementById('modalGsheetUrl');
+        if (input) input.value = url;
+        this.autoFetchGoogleSheet(url, false);
+      } else {
+        const savedGSheet = localStorage.getItem('MONAL_GSHEET_CONFIG');
+        if (savedGSheet) {
+          const config = JSON.parse(savedGSheet);
+          if (config.url) {
+            const input = document.getElementById('modalGsheetUrl');
+            if (input) input.value = config.url;
+            this.autoFetchGoogleSheet(config.url, false);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Storage load error", e);
+    }
+  },
+
+  setupEventListeners: function() {
+    const fySelect = document.getElementById('financialYearSelect');
+    if (fySelect) {
+      fySelect.addEventListener('change', (e) => {
+        this.state.selectedFY = e.target.value;
+        this.state.selectedMonth = this.db[this.state.selectedFY].defaultMonth;
+        this.populateMonthSelectors();
+        this.renderAll();
+        this.updateSimulator();
+      });
+    }
+
+    const reportingSelect = document.getElementById('reportingMonthSelect');
+    if (reportingSelect) {
+      reportingSelect.addEventListener('change', (e) => {
+        this.selectMonth(e.target.value);
+      });
+    }
+
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        this.switchTab(tab.dataset.tab);
+      });
+    });
+
+    document.querySelectorAll('.toggle-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.state.displayMode = btn.dataset.mode;
+        this.renderAll();
+      });
+    });
+
+    const searchInput = document.getElementById('pnlSearchInput');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        this.state.searchQuery = e.target.value.toLowerCase().trim();
+        this.renderPnLTable();
+      });
+    }
+  },
+
+  populateMonthSelectors: function() {
+    const fyData = this.db[this.state.selectedFY];
+    const pillsRow = document.getElementById('monthPillsRow');
+    const reportingSelect = document.getElementById('reportingMonthSelect');
+
+    reportingSelect.innerHTML = fyData.months.map(m => `
+      <option value="${m.key}" ${m.key === this.state.selectedMonth ? 'selected' : ''}>${m.label}</option>
+    `).join('');
+
+    pillsRow.innerHTML = fyData.months.map(m => {
+      const isSel = m.key === this.state.selectedMonth;
+      return `
+        <button class="month-pill-btn ${isSel ? 'active' : ''}" data-month="${m.key}">
+          ${isSel && !m.isTotal ? `${m.label} · selected` : m.label}
+        </button>
+      `;
+    }).join('');
+
+    pillsRow.querySelectorAll('.month-pill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.selectMonth(btn.dataset.month);
+      });
+    });
+  },
+
+  selectMonth: function(monthKey) {
+    this.state.selectedMonth = monthKey;
+    const fyData = this.db[this.state.selectedFY];
+
+    const reportingSelect = document.getElementById('reportingMonthSelect');
+    if (reportingSelect) reportingSelect.value = monthKey;
+
+    document.querySelectorAll('#monthPillsRow .month-pill-btn').forEach(btn => {
+      const isSel = btn.dataset.month === monthKey;
+      const monthObj = fyData.months.find(m => m.key === btn.dataset.month);
+      btn.classList.toggle('active', isSel);
+      if (monthObj) {
+        btn.innerText = isSel && !monthObj.isTotal ? `${monthObj.label} · selected` : monthObj.label;
+      }
+    });
+
+    this.renderAll();
+    this.updateSimulator();
+  },
+
+  switchTab: function(tabId) {
+    this.state.activeTab = tabId;
+
+    document.querySelectorAll('.nav-tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.tab === tabId);
+    });
+
+    document.querySelectorAll('.tab-pane').forEach(p => {
+      p.classList.toggle('active', p.id === 'tab-' + tabId);
+    });
+
+    if (tabId === 'overview' || tabId === 'benchmarks') {
+      setTimeout(() => { this.renderCharts(); }, 50);
+    }
+  },
+
+  getCurrentFYData: function() {
+    return this.db[this.state.selectedFY];
+  },
+
+  getActiveSummary: function() {
+    const fyData = this.getCurrentFYData();
+    const s = fyData.monthlySummary[this.state.selectedMonth];
+    if (!s) {
+      return { revenue: 0, cogs: 0, grossProfit: 0, selling: 0, adminTotal: 0, tax: 0, adminExclTax: 0, netProfit: 0, imaratShare: 0, gpPct: 0, netMargin: 0, momRev: "Awaiting update", momGp: "Awaiting update", momNet: "Awaiting update", momImarat: "Awaiting update", isEmpty: true };
+    }
+    return s;
+  },
+
+  formatCurrency: function(val, isPercentage = false) {
+    if (val === null || val === undefined || isNaN(val) || val === 0) return '-';
+    if (isPercentage) return (val * 100).toFixed(1) + '%';
+
+    const currentRev = this.getActiveSummary().revenue;
+
+    if (this.state.displayMode === 'pct') {
+      if (!currentRev || currentRev === 0) return '-';
+      return ((val / currentRev) * 100).toFixed(2) + '%';
+    }
+
+    if (this.state.displayMode === 'millions') {
+      const inM = val / 1000000;
+      return (val < 0 ? '-' : '') + 'Rs ' + Math.abs(inM).toFixed(2) + 'M';
+    }
+
+    return (val < 0 ? '-' : '') + 'Rs ' + Math.abs(Math.round(val)).toLocaleString();
+  },
+
+  renderAll: function() {
+    this.renderRowOneKPIs();
+    this.renderRowTwoCosts();
+    this.renderPnLTable();
+    this.renderBenchmarkTable();
+    this.renderCharts();
+  },
+
+  // ROW 1: 4 Primary KPI Cards
+  renderRowOneKPIs: function() {
+    const s = this.getActiveSummary();
+    const container = document.getElementById('kpisRowOne');
+    if (!container) return;
+
+    const cards = [
+      {
+        title: 'REVENUE',
+        val: s.isEmpty ? '-' : this.formatCurrency(s.revenue),
+        icon: '$',
+        iconClass: 'green',
+        badgeHtml: '',
+        momText: s.momRev || 'Awaiting update',
+        isPositive: (s.momRev || '').startsWith('+')
+      },
+      {
+        title: 'GROSS PROFIT',
+        val: s.isEmpty ? '-' : this.formatCurrency(s.grossProfit),
+        icon: '↗',
+        iconClass: 'green',
+        badgeHtml: s.isEmpty ? '' : `<span class="kpi-pct-badge green">${(s.gpPct * 100).toFixed(1)}% of Revenue</span>`,
+        momText: s.momGp || 'Awaiting update',
+        isPositive: (s.momGp || '').startsWith('+')
+      },
+      {
+        title: 'NET PROFIT (EBITDA)',
+        val: s.isEmpty ? '-' : this.formatCurrency(s.netProfit),
+        icon: '🪙',
+        iconClass: 'green',
+        badgeHtml: s.isEmpty ? '' : `<span class="kpi-pct-badge green">${(s.netMargin * 100).toFixed(1)}% Net Margin</span>`,
+        momText: s.momNet || 'Awaiting update',
+        isPositive: (s.momNet || '').startsWith('+')
+      },
+      {
+        title: 'IMARAT 50% SHARE',
+        val: s.isEmpty ? '-' : this.formatCurrency(s.imaratShare),
+        icon: '♡',
+        iconClass: 'gold',
+        badgeHtml: s.isEmpty ? '' : `<span class="kpi-pct-badge gold">50% Partner Share</span>`,
+        momText: s.momImarat || 'Awaiting update',
+        isPositive: (s.momImarat || '').startsWith('+')
+      }
+    ];
+
+    container.innerHTML = cards.map(c => `
+      <div class="kpi-stat-card">
+        <div>
+          <div class="kpi-card-top">
+            <div class="kpi-icon-pill ${c.iconClass}">${c.icon}</div>
+          </div>
+          <div class="kpi-stat-title">${c.title}</div>
+          <div class="kpi-stat-value">${c.val}</div>
+        </div>
+        <div class="kpi-card-bottom">
+          ${c.badgeHtml}
+          <div class="kpi-mom-text ${s.isEmpty ? 'neutral' : (c.isPositive ? 'positive' : '')}">
+            ${s.isEmpty ? '○ Awaiting Data' : (c.isPositive ? '↗ ' + c.momText : '↘ ' + c.momText)}
+          </div>
+        </div>
+      </div>
+    `).join('');
+  },
+
+  // ROW 2: 4 Major Costs (COGS, Selling, Admin Excl Tax, Tax Standalone)
+  renderRowTwoCosts: function() {
+    const s = this.getActiveSummary();
+    const rev = s.revenue || 0;
+    const container = document.getElementById('kpisRowTwo');
+    if (!container) return;
+
+    const cards = [
+      {
+        title: 'COST OF GOODS SOLD (COGS)',
+        val: s.isEmpty ? '-' : this.formatCurrency(s.cogs),
+        icon: '🥩',
+        iconClass: 'blue',
+        pctText: s.isEmpty || rev === 0 ? 'Awaiting Data' : `${((s.cogs / rev) * 100).toFixed(1)}% of Revenue`,
+        badgeClass: 'blue',
+        subnote: 'Kitchen & Materials'
+      },
+      {
+        title: 'SELLING EXPENSES',
+        val: s.isEmpty ? '-' : this.formatCurrency(s.selling),
+        icon: '👜',
+        iconClass: 'gold',
+        pctText: s.isEmpty || rev === 0 ? 'Awaiting Data' : `${((s.selling / rev) * 100).toFixed(1)}% of Revenue`,
+        badgeClass: 'gold',
+        subnote: 'FOH & Marketing'
+      },
+      {
+        title: 'ADMIN EXPENSES (EXCL. TAX)',
+        val: s.isEmpty ? '-' : this.formatCurrency(s.adminExclTax),
+        icon: '🏠',
+        iconClass: 'ochre',
+        pctText: s.isEmpty || rev === 0 ? 'Awaiting Data' : `${((s.adminExclTax / rev) * 100).toFixed(1)}% of Revenue`,
+        badgeClass: 'ochre',
+        subnote: 'Management & Ops'
+      },
+      {
+        title: 'TAX EXPENSE (STANDALONE)',
+        val: s.isEmpty ? '-' : this.formatCurrency(s.tax),
+        icon: '🏛️',
+        iconClass: 'blue',
+        pctText: s.isEmpty || rev === 0 ? 'Awaiting Data' : `${((s.tax / rev) * 100).toFixed(1)}% of Revenue`,
+        badgeClass: 'blue',
+        subnote: 'PRA Sales & Levies'
+      }
+    ];
+
+    container.innerHTML = cards.map(c => `
+      <div class="kpi-stat-card">
+        <div>
+          <div class="kpi-card-top">
+            <div class="kpi-icon-pill ${c.iconClass}">${c.icon}</div>
+            <span class="status-badge neutral" style="font-size:0.68rem; font-weight:700;">${c.subnote}</span>
+          </div>
+          <div class="kpi-stat-title">${c.title}</div>
+          <div class="kpi-stat-value" style="color:var(--forest-dark); font-size:1.45rem;">${c.val}</div>
+        </div>
+        <div class="kpi-card-bottom">
+          <span class="kpi-pct-badge ${c.badgeClass}">${c.pctText}</span>
+          <div style="font-size:0.7rem; color:var(--text-muted); font-weight:600;">
+            Operating Pillar
+          </div>
+        </div>
+      </div>
+    `).join('');
+  },
+
+  toggleGroupCollapse: function(groupId) {
+    this.state.collapsedGroups[groupId] = !this.state.collapsedGroups[groupId];
+    this.renderPnLTable();
+  },
+
+  // P&L Statement Table
+  renderPnLTable: function() {
+    const fyData = this.getCurrentFYData();
+    const thead = document.getElementById('pnlTableHead');
+    const tbody = document.getElementById('pnlTableBody');
+    const secTitle = document.getElementById('pnlSectionTitle');
+
+    if (secTitle) secTitle.innerText = `Statement of Profit & Loss (${fyData.name} Detail)`;
+
+    thead.innerHTML = `
+      <tr>
+        <th style="min-width: 280px;">Line Item & Reference</th>
+        ${fyData.pnlColumns.map(c => `<th class="num">${c.label}</th>`).join('')}
+        <th class="num">Avg % of Rev</th>
+      </tr>
+    `;
+
+    let rowsHtml = '';
+    const q = this.state.searchQuery;
+
+    fyData.pnl.forEach(section => {
+      const isCollapsed = !!this.state.collapsedGroups[section.id];
+      const hasItems = section.items && section.items.length > 0;
+
+      rowsHtml += `
+        <tr class="group-header-row" onclick="MonalApp.toggleGroupCollapse('${section.id}')">
+          <td colspan="${fyData.pnlColumns.length + 2}">
+            ${hasItems ? `<span class="accordion-toggle-btn">${isCollapsed ? '+' : '-'}</span>` : ''}
+            <strong>${section.category}</strong>
+            <span style="font-size:0.72rem; opacity:0.8; font-weight:normal; margin-left:8px;">${hasItems ? (isCollapsed ? '(Click + to expand)' : '(Click - to collapse)') : ''}</span>
+          </td>
+        </tr>
+      `;
+
+      if (hasItems && !isCollapsed) {
+        section.items.forEach(item => {
+          if (q && !item.name.toLowerCase().includes(q) && !(item.ref && item.ref.toLowerCase().includes(q))) return;
+
+          rowsHtml += `
+            <tr class="sub-item-row">
+              <td><span style="color:var(--text-muted); font-size:0.75rem; margin-right:6px;">${item.ref || ''}</span> ${item.name}</td>
+              ${fyData.pnlColumns.map(c => `<td class="num">${this.formatCurrency(item[c.key])}</td>`).join('')}
+              <td class="num" style="color:var(--text-muted); font-weight:600;">${item.avgPct ? (item.avgPct * 100).toFixed(1) + '%' : '-'}</td>
+            </tr>
+          `;
+        });
+      }
+
+      if (section.total) {
+        rowsHtml += `
+          <tr class="total-row">
+            <td><strong>TOTAL ${section.total.name}</strong></td>
+            ${fyData.pnlColumns.map(c => `<td class="num"><strong>${this.formatCurrency(section.total[c.key])}</strong></td>`).join('')}
+            <td class="num"><strong>${section.total.avgPct ? (section.total.avgPct * 100).toFixed(1) + '%' : '-'}</strong></td>
+          </tr>
+        `;
+      }
+    });
+
+    tbody.innerHTML = rowsHtml;
+  },
+
+  // Benchmark Comparison Table
+  renderBenchmarkTable: function() {
+    const tbody = document.getElementById('benchmarkTableBody');
+    if (!tbody) return;
+
+    let rowsHtml = '';
+
+    this.db.benchmarks.forEach(section => {
+      rowsHtml += `
+        <tr class="group-header-row">
+          <td colspan="7"><strong>${section.category}</strong></td>
+        </tr>
+      `;
+
+      section.items.forEach(item => {
+        let badgeClass = 'status-badge neutral';
+        let statusText = 'In Range';
+        if (item.status === 'favourable') {
+          badgeClass = 'status-badge favourable';
+          statusText = '✓ Favourable';
+        } else if (item.status === 'risk') {
+          badgeClass = 'status-badge risk';
+          statusText = '▲ Escalating Cost';
+        } else if (item.status === 'warning') {
+          badgeClass = 'status-badge warning';
+          statusText = '⚠ Outside Range';
+        }
+
+        const actualPct = (item.actualAvgPct * 100).toFixed(1) + '%';
+        const varianceVal = item.variance !== undefined ? (item.variance > 0 ? '+' : '') + (item.variance * 100).toFixed(1) + '%' : '-';
+
+        const dotLeftPct = Math.min(Math.max(item.actualAvgPct * 100, 2), 98);
+        const rangeMinPct = (item.pakMin || 0) * 100;
+        const rangeWidthPct = Math.max(((item.pakMax || 1) - (item.pakMin || 0)) * 100, 4);
+
+        rowsHtml += `
+          <tr>
+            <td><span style="color:var(--text-muted); font-size:0.75rem;">${item.ref || ''}</span> <strong>${item.name}</strong></td>
+            <td class="num" style="font-weight:700; color:var(--forest-primary); font-size:0.92rem;">${actualPct}</td>
+            <td style="color:var(--text-secondary); font-weight:500;">${item.pakBenchmark}</td>
+            <td style="color:var(--text-muted); font-size:0.78rem;">${item.intBenchmark}</td>
+            <td>
+              <div class="range-bar-container">
+                <div class="range-track">
+                  <div class="benchmark-range-marker" style="left:${rangeMinPct}%; width:${rangeWidthPct}%;"></div>
+                  <div class="actual-value-dot ${item.status}" style="left:${dotLeftPct}%;" title="Actual: ${actualPct}"></div>
+                </div>
+              </div>
+            </td>
+            <td class="num" style="font-weight:700;">${varianceVal}</td>
+            <td><span class="${badgeClass}">${statusText}</span></td>
+          </tr>
+        `;
+      });
+    });
+
+    tbody.innerHTML = rowsHtml;
+  },
+
+  // Chart Rendering
+  renderCharts: function() {
+    if (typeof Chart === 'undefined') return;
+
+    const fyData = this.getCurrentFYData();
+    const selMonth = this.state.selectedMonth;
+    const summary = this.getActiveSummary();
+
+    // 1. Revenue & Profitability Trends
+    const ctxTrend = document.getElementById('chartRevenueTrend');
+    if (ctxTrend) {
+      if (this.charts.revenueTrend) this.charts.revenueTrend.destroy();
+
+      const activeMonths = fyData.months.filter(m => !m.isTotal);
+      const labels = activeMonths.map(m => m.label);
+      const revs = activeMonths.map(m => (fyData.monthlySummary[m.key]?.revenue || 0) / 1000000);
+      const gps = activeMonths.map(m => (fyData.monthlySummary[m.key]?.grossProfit || 0) / 1000000);
+      const nps = activeMonths.map(m => (fyData.monthlySummary[m.key]?.netProfit || 0) / 1000000);
+
+      const revColors = activeMonths.map(m => (selMonth === 'all' || selMonth === m.key) ? '#125438' : 'rgba(18, 84, 56, 0.4)');
+      const gpColors = activeMonths.map(m => (selMonth === 'all' || selMonth === m.key) ? '#059669' : 'rgba(5, 150, 105, 0.4)');
+      const npColors = activeMonths.map(m => (selMonth === 'all' || selMonth === m.key) ? '#ca8a04' : 'rgba(202, 138, 4, 0.4)');
+
+      document.getElementById('badgeRev').innerText = summary.isEmpty ? 'Rev: -' : `Rev: Rs ${(summary.revenue / 1000000).toFixed(2)}M`;
+      document.getElementById('badgeGP').innerText = summary.isEmpty ? 'GP: -' : `GP: Rs ${(summary.grossProfit / 1000000).toFixed(2)}M`;
+      document.getElementById('badgeNP').innerText = summary.isEmpty ? 'NP: -' : `NP: Rs ${(summary.netProfit / 1000000).toFixed(2)}M`;
+
+      this.charts.revenueTrend = new Chart(ctxTrend, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'Revenue (M PKR)', data: revs, backgroundColor: revColors, borderRadius: 4 },
+            { label: 'Gross Profit (M PKR)', data: gps, backgroundColor: gpColors, borderRadius: 4 },
+            { label: 'Net Profit (M PKR)', data: nps, backgroundColor: npColors, borderRadius: 4 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top', labels: { boxWidth: 12, color: '#334155', font: { family: 'Inter', size: 10.5, weight: '600' } } }
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#64748b', font: { weight: '600' } } },
+            y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#64748b', callback: v => `Rs ${v}M` } }
+          }
+        }
+      });
+    }
+
+    // 2. Expense Breakdown Donut
+    const ctxExp = document.getElementById('chartExpenseBreakdown');
+    if (ctxExp) {
+      if (this.charts.expenseBreakdown) this.charts.expenseBreakdown.destroy();
+
+      const cogsM = summary.isEmpty ? 0 : summary.cogs / 1000000;
+      const sellingM = summary.isEmpty ? 0 : summary.selling / 1000000;
+      const adminM = summary.isEmpty ? 0 : summary.adminExclTax / 1000000;
+      const taxM = summary.isEmpty ? 0 : summary.tax / 1000000;
+
+      const subHeader = document.getElementById('expenseBreakdownSub');
+      if (subHeader) subHeader.innerText = summary.isEmpty ? `COGS · Selling · Admin · Tax — Awaiting Data` : `COGS · Selling · Admin · Tax — ${selMonth.toUpperCase()}`;
+
+      const totalM = cogsM + sellingM + adminM + taxM;
+
+      this.charts.expenseBreakdown = new Chart(ctxExp, {
+        type: 'doughnut',
+        data: {
+          labels: totalM === 0 ? ['Awaiting Data'] : ['COGS', 'Selling Expenses', 'Admin (Excl. Tax)', 'Tax (Standalone)'],
+          datasets: [{
+            data: totalM === 0 ? [1] : [
+              parseFloat(cogsM.toFixed(2)),
+              parseFloat(sellingM.toFixed(2)),
+              parseFloat(adminM.toFixed(2)),
+              parseFloat(taxM.toFixed(2))
+            ],
+            backgroundColor: totalM === 0 ? ['#e2e8f0'] : [
+              '#125438', '#eab308', '#ca8a04', '#1e40af'
+            ],
+            borderColor: '#ffffff',
+            borderWidth: 3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'right', labels: { boxWidth: 12, color: '#334155', font: { size: 10.5, weight: '600' } } },
+            tooltip: {
+              callbacks: {
+                label: function(ctx) {
+                  if (totalM === 0) return 'No data available';
+                  const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                  const val = ctx.parsed;
+                  const pct = ((val / total) * 100).toFixed(1);
+                  return `${ctx.label}: Rs ${val.toFixed(2)}M (${pct}%)`;
+                }
+              }
+            }
+          },
+          cutout: '62%'
+        }
+      });
+    }
+
+    // 3. Cost Trend Analysis Line Chart
+    const ctxCostTrend = document.getElementById('chartCostTrendAnalysis');
+    if (ctxCostTrend) {
+      if (this.charts.costTrend) this.charts.costTrend.destroy();
+
+      const activeMonths = fyData.months.filter(m => !m.isTotal);
+      const labels = activeMonths.map(m => m.label);
+
+      const cogsPcts = activeMonths.map(m => {
+        const s = fyData.monthlySummary[m.key];
+        if (!s || !s.revenue) return 0;
+        return parseFloat(((s.cogs / s.revenue) * 100).toFixed(1));
+      });
+      const sellPcts = activeMonths.map(m => {
+        const s = fyData.monthlySummary[m.key];
+        if (!s || !s.revenue) return 0;
+        return parseFloat(((s.selling / s.revenue) * 100).toFixed(1));
+      });
+      const adminPcts = activeMonths.map(m => {
+        const s = fyData.monthlySummary[m.key];
+        if (!s || !s.revenue) return 0;
+        return parseFloat(((s.adminExclTax / s.revenue) * 100).toFixed(1));
+      });
+      const taxPcts = activeMonths.map(m => {
+        const s = fyData.monthlySummary[m.key];
+        if (!s || !s.revenue) return 0;
+        return parseFloat(((s.tax / s.revenue) * 100).toFixed(1));
+      });
+
+      const totalCostPct = summary.isEmpty || !summary.revenue ? '--' : ((summary.cogs + summary.selling + summary.adminTotal) / summary.revenue * 100).toFixed(1);
+      const badge = document.getElementById('costTrendTotalBadge');
+      if (badge) badge.innerText = `${totalCostPct}% of Rev`;
+
+      let activeIdx = activeMonths.findIndex(m => m.key === selMonth);
+      if (activeIdx === -1) activeIdx = activeMonths.length - 1;
+
+      this.charts.costTrend = new Chart(ctxCostTrend, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'COGS', data: cogsPcts, borderColor: '#115e3b', backgroundColor: 'rgba(17, 94, 59, 0.08)', borderWidth: 2.5, fill: true, tension: 0.3, pointBackgroundColor: activeMonths.map((m, i) => i === activeIdx ? '#115e3b' : '#ffffff'), pointBorderColor: '#115e3b', pointRadius: activeMonths.map((m, i) => i === activeIdx ? 7 : 4.5) },
+            { label: 'Admin (Excl. Tax)', data: adminPcts, borderColor: '#ca8a04', backgroundColor: 'rgba(202, 138, 4, 0.06)', borderWidth: 2.5, fill: true, tension: 0.3, pointBackgroundColor: activeMonths.map((m, i) => i === activeIdx ? '#ca8a04' : '#ffffff'), pointBorderColor: '#ca8a04', pointRadius: activeMonths.map((m, i) => i === activeIdx ? 7 : 4.5) },
+            { label: 'Selling Expenses', data: sellPcts, borderColor: '#eab308', backgroundColor: 'rgba(234, 179, 8, 0.05)', borderWidth: 2.5, fill: true, tension: 0.3, pointBackgroundColor: activeMonths.map((m, i) => i === activeIdx ? '#eab308' : '#ffffff'), pointBorderColor: '#eab308', pointRadius: activeMonths.map((m, i) => i === activeIdx ? 7 : 4.5) },
+            { label: 'Tax (Standalone)', data: taxPcts, borderColor: '#1e40af', backgroundColor: 'rgba(30, 64, 175, 0.05)', borderWidth: 2.5, fill: true, tension: 0.3, pointBackgroundColor: activeMonths.map((m, i) => i === activeIdx ? '#1e40af' : '#ffffff'), pointBorderColor: '#1e40af', pointRadius: activeMonths.map((m, i) => i === activeIdx ? 7 : 4.5) }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#64748b', font: { weight: '600' } } },
+            y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#64748b', callback: v => `${v}%` } }
+          }
+        }
+      });
+    }
+
+    // 4. Benchmark Variance
+    const ctxBench = document.getElementById('chartBenchmarkVariance');
+    if (ctxBench) {
+      if (this.charts.benchmarkVariance) this.charts.benchmarkVariance.destroy();
+
+      const categories = ['Gross Profit', 'COGS %', 'Labour (All)', 'Utilities %', 'Net Profit %'];
+      const actuals = [53.2, 46.8, 20.2, 5.9, 24.0];
+      const pakMin = [55.0, 44.0, 18.0, 8.0, 12.0];
+      const pakMax = [60.0, 48.0, 24.0, 12.0, 18.0];
+
+      this.charts.benchmarkVariance = new Chart(ctxBench, {
+        type: 'bar',
+        data: {
+          labels: categories,
+          datasets: [
+            { label: 'Monal Actual Avg %', data: actuals, backgroundColor: '#125438', borderRadius: 4 },
+            { label: 'Pakistan Benchmark Min %', data: pakMin, backgroundColor: 'rgba(202, 138, 4, 0.45)', borderRadius: 4 },
+            { label: 'Pakistan Benchmark Max %', data: pakMax, backgroundColor: '#ca8a04', borderRadius: 4 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'top', labels: { boxWidth: 12, color: '#334155', font: { size: 11, weight: '600' } } } },
+          scales: {
+            x: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#334155', font: { weight: '600' } } },
+            y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#334155', callback: v => `${v}%` } }
+          }
+        }
+      });
+    }
+  },
+
+  // Interactive Forecast Simulator
+  initSimulator: function() {
+    const revSlider = document.getElementById('simRevenueSlider');
+    const cogsSlider = document.getElementById('simCogsSlider');
+    const sellingSlider = document.getElementById('simSellingSlider');
+    const adminSlider = document.getElementById('simAdminSlider');
+
+    if (revSlider && cogsSlider && sellingSlider && adminSlider) {
+      revSlider.addEventListener('input', () => this.updateSimulator());
+      cogsSlider.addEventListener('input', () => this.updateSimulator());
+      sellingSlider.addEventListener('input', () => this.updateSimulator());
+      adminSlider.addEventListener('input', () => this.updateSimulator());
+      this.updateSimulator();
+    }
+  },
+
+  updateSimulator: function() {
+    const revSlider = document.getElementById('simRevenueSlider');
+    const cogsSlider = document.getElementById('simCogsSlider');
+    const sellingSlider = document.getElementById('simSellingSlider');
+    const adminSlider = document.getElementById('simAdminSlider');
+    if (!revSlider || !cogsSlider || !sellingSlider || !adminSlider) return;
+
+    this.state.simRevenueGrowth = parseFloat(revSlider.value);
+    this.state.simCogsImprovement = parseFloat(cogsSlider.value);
+    this.state.simSellingOptimization = parseFloat(sellingSlider.value);
+    this.state.simAdminOptimization = parseFloat(adminSlider.value);
+
+    document.getElementById('simRevVal').innerText = (this.state.simRevenueGrowth >= 0 ? '+' : '') + this.state.simRevenueGrowth + '%';
+    document.getElementById('simCogsVal').innerText = (this.state.simCogsImprovement >= 0 ? '-' : '+') + Math.abs(this.state.simCogsImprovement) + '%';
+    document.getElementById('simSellingVal').innerText = (this.state.simSellingOptimization >= 0 ? '-' : '+') + Math.abs(this.state.simSellingOptimization) + '%';
+    document.getElementById('simAdminVal').innerText = (this.state.simAdminOptimization >= 0 ? '-' : '+') + Math.abs(this.state.simAdminOptimization) + '%';
+
+    // Baseline calculation
+    let summary = this.getActiveSummary();
+    if (summary.isEmpty) {
+      // Fallback to June 2026 actuals as benchmark baseline if FY 2026-27 is still empty
+      summary = this.db.FY25_26.monthlySummary.jun;
+    }
+
+    const baseRev = summary.revenue;
+    const baseCogs = summary.cogs;
+    const baseSelling = summary.selling;
+    const baseAdmin = summary.adminExclTax;
+    const baseTax = summary.tax;
+
+    const projRev = baseRev * (1 + this.state.simRevenueGrowth / 100);
+    const projCogs = (baseCogs * (1 + this.state.simRevenueGrowth / 100)) * (1 - this.state.simCogsImprovement / 100);
+    const projSelling = (baseSelling * (1 + (this.state.simRevenueGrowth * 0.4) / 100)) * (1 - this.state.simSellingOptimization / 100);
+    const projAdmin = (baseAdmin * (1 + (this.state.simRevenueGrowth * 0.2) / 100)) * (1 - this.state.simAdminOptimization / 100);
+    const projTax = baseTax * (projRev / baseRev);
+
+    const projNetProfit = projRev - projCogs - projSelling - projAdmin - projTax;
+    const projImaratShare = projNetProfit * 0.50;
+    const projMargin = (projNetProfit / projRev) * 100;
+
+    document.getElementById('simProjRevenue').innerText = 'Rs ' + (projRev / 1000000).toFixed(2) + 'M';
+    document.getElementById('simProjNetProfit').innerText = 'Rs ' + (projNetProfit / 1000000).toFixed(2) + 'M';
+    document.getElementById('simProjMargin').innerText = projMargin.toFixed(1) + '%';
+    document.getElementById('simProjImarat').innerText = 'Rs ' + (projImaratShare / 1000000).toFixed(2) + 'M';
+  },
+
+  // Modal Dialog Controls
+  openSyncModal: function() {
+    const modal = document.getElementById('syncModalOverlay');
+    if (modal) modal.classList.add('active');
+  },
+
+  closeSyncModal: function() {
+    const modal = document.getElementById('syncModalOverlay');
+    if (modal) modal.classList.remove('active');
+  },
+
+  // Handle Direct Excel Upload via SheetJS
+  handleExcelUpload: function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const report = this.parseUploadedWorkbook(workbook) || { months: [], refs: 0 };
+        alert(report.refs === 0
+          ? `Read ${file.name}, but matched 0 line items — check that the month headers and the Ref column are present. The dashboard is still showing its built-in figures.`
+          : `Imported ${file.name}: ${report.refs} line items across ${report.months.length} months.`);
+        this.closeSyncModal();
+      } catch (err) {
+        console.error(err);
+        alert("Error parsing Excel file. Please ensure it is a valid .xlsx file.");
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  },
+
+  // Whole-word month matchers: abbreviation or full name, not a substring.
+  // Built once so the header scan does not recompile 12 regexes per cell.
+  parseUploadedWorkbook: function(workbook) {
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+    // STEP 1: Find month columns and ref column from header rows
+    const allMonthKeys = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+    const MONTH_PATTERNS = this.MONTH_PATTERNS;
+    const parseNum = (v) => this.parseNum(v);
+    const monthColMap = {};
+    let refCol = -1, totalCol = -1;
+
+    for (let r = 0; r < Math.min(json.length, 8); r++) {
+      const row = json[r];
+      if (!Array.isArray(row)) continue;
+      row.forEach((cell, cIdx) => {
+        if (cell === null || cell === undefined) return;
+        const s = cell.toString().toLowerCase().trim();
+        if (s.includes('%')) return;
+        if (s === 'ref' || s === 'ref.') refCol = cIdx;
+        // Any month count, not just 4M/5M - the sheet's Expand Month action
+        // rewrites this header as "Total (6M)", "Total (7M)" and so on.
+        if (/(^|[^a-z])total\b/.test(s) && (/\(?\s*\d+\s*m\b/.test(s) || s.includes('fy'))) totalCol = cIdx;
+        // Whole-word month match. A plain includes() let "Description" claim
+        // December and "Marketing" claim March, and because the first match wins
+        // the real month column was then ignored for good.
+        allMonthKeys.forEach(m => {
+          if (monthColMap[m] === undefined && MONTH_PATTERNS[m].test(s)) monthColMap[m] = cIdx;
+        });
+      });
+    }
+    if (refCol < 0) refCol = 1;
+    console.log('[Parser] Months:', Object.keys(monthColMap), 'RefCol:', refCol, 'TotalCol:', totalCol);
+
+    // STEP 2: Build ref → values map from all rows
+    const refDataMap = {};
+    json.forEach(row => {
+      if (!Array.isArray(row)) return;
+      let ref = '';
+      if (refCol >= 0 && row[refCol] !== undefined && row[refCol] !== null && row[refCol] !== '') {
+        ref = row[refCol].toString().trim();
+      }
+      if (!ref) {
+        for (let ci = 0; ci <= 3 && ci < row.length; ci++) {
+          if (row[ci] !== null && row[ci] !== undefined) {
+            const cs = row[ci].toString().trim();
+            if (/^(\d+(\.\d+)?[A-Za-z]?|[1-6][A-Za-z])$/.test(cs) && cs.length <= 4) { ref = cs; break; }
+          }
+        }
+      }
+      if (!ref) return;
+
+      const entry = {};
+      let hasData = false;
+      Object.keys(monthColMap).forEach(m => {
+        const v = parseNum(row[monthColMap[m]]);
+        if (!isNaN(v)) { entry[m] = v; hasData = true; }
+      });
+      if (totalCol >= 0) {
+        const tv = parseNum(row[totalCol]);
+        if (!isNaN(tv)) entry['total'] = tv;
+      }
+      if (hasData) refDataMap[ref] = entry;
+    });
+    console.log('[Parser] Refs found:', Object.keys(refDataMap).join(', '));
+
+    // STEP 3: Update FY25-26 P&L line items by matching Ref
+    const fy25Months = ['mar','apr','may','jun'];
+    const fy25pnl = this.db.FY25_26.pnl;
+
+    fy25pnl.forEach(section => {
+      if (section.items) {
+        section.items.forEach(item => {
+          const data = refDataMap[item.ref];
+          if (!data) return;
+          fy25Months.forEach(m => { if (data[m] !== undefined) item[m] = data[m]; });
+          if (data.total !== undefined) item.total = data.total;
+        });
+      }
+      if (section.total && section.total.ref) {
+        const data = refDataMap[section.total.ref];
+        if (data) {
+          fy25Months.forEach(m => { if (data[m] !== undefined) section.total[m] = data[m]; });
+          if (data.total !== undefined) section.total.total = data.total;
+        }
+      }
+    });
+
+    // STEP 4: Recalculate FY25-26 monthlySummary from updated total rows
+    const getT = (ref) => { for (let s of fy25pnl) { if (s.total && s.total.ref === ref) return s.total; } return null; };
+    const revRow = getT('1'), cogsRow = getT('2'), sellRow = getT('3'), adminRow = getT('4A'), taxRow = getT('4B');
+
+    const summ = this.db.FY25_26.monthlySummary;
+    fy25Months.forEach(m => {
+      const rev = revRow ? (revRow[m] || 0) : 0;
+      const cogs = cogsRow ? (cogsRow[m] || 0) : 0;
+      const gp = rev - cogs;
+      const sell = sellRow ? (sellRow[m] || 0) : 0;
+      const adm = adminRow ? (adminRow[m] || 0) : 0;
+      const tax = taxRow ? (taxRow[m] || 0) : 0;
+      const np = gp - sell - adm - tax;
+
+      // Update derived P&L rows
+      const gpSec = fy25pnl.find(s => s.id === 'grossprofit');
+      if (gpSec && gpSec.total) gpSec.total[m] = gp;
+      const npSec = fy25pnl.find(s => s.id === 'netprofit');
+      if (npSec && npSec.total) npSec.total[m] = np;
+      const imSec = fy25pnl.find(s => s.id === 'imaratshare');
+      if (imSec && imSec.total) imSec.total[m] = np * 0.50;
+
+      if (summ[m]) {
+        summ[m].revenue = rev; summ[m].cogs = cogs; summ[m].grossProfit = gp;
+        summ[m].selling = sell; summ[m].adminExclTax = adm; summ[m].tax = tax;
+        summ[m].adminTotal = adm + tax; summ[m].netProfit = np;
+        summ[m].imaratShare = np * 0.50;
+        summ[m].gpPct = rev > 0 ? gp / rev : 0;
+        summ[m].netMargin = rev > 0 ? np / rev : 0;
+      }
+    });
+
+    // Recalculate "all" total
+    if (summ.all) {
+      ['revenue','cogs','grossProfit','selling','adminExclTax','tax','adminTotal','netProfit','imaratShare'].forEach(k => {
+        summ.all[k] = fy25Months.reduce((a, m) => a + ((summ[m] && summ[m][k]) || 0), 0);
+      });
+      summ.all.gpPct = summ.all.revenue > 0 ? summ.all.grossProfit / summ.all.revenue : 0;
+      summ.all.netMargin = summ.all.revenue > 0 ? summ.all.netProfit / summ.all.revenue : 0;
+    }
+
+    // Recalc total & avgPct for all P&L line items
+    fy25pnl.forEach(sec => {
+      const totalRev = summ.all ? summ.all.revenue : 1;
+      if (sec.items) {
+        sec.items.forEach(it => {
+          if (!refDataMap[it.ref] || refDataMap[it.ref].total === undefined) {
+            it.total = fy25Months.reduce((a, m) => a + (it[m] || 0), 0);
+          }
+          it.avgPct = totalRev > 0 ? it.total / totalRev : 0;
+        });
+      }
+      if (sec.total) {
+        if (sec.total.ref && (!refDataMap[sec.total.ref] || refDataMap[sec.total.ref].total === undefined)) {
+          sec.total.total = fy25Months.reduce((a, m) => a + (sec.total[m] || 0), 0);
+        }
+        sec.total.avgPct = totalRev > 0 ? sec.total.total / totalRev : 0;
+      }
+    });
+
+    // STEP 5: Update FY26-27 for jul+ months
+    const fy26Months = ['jul','aug','sep','oct','nov','dec','jan','feb'];
+    const fy26summ = this.db.FY26_27.monthlySummary;
+    json.forEach(row => {
+      if (!Array.isArray(row)) return;
+      const label = (row[0] || row[1] || '').toString().toLowerCase();
+      fy26Months.forEach(m => {
+        const cIdx = monthColMap[m];
+        if (cIdx === undefined || row[cIdx] === undefined) return;
+        const val = parseNum(row[cIdx]);
+        if (isNaN(val) || val === 0) return;
+        if (!fy26summ[m]) fy26summ[m] = {revenue:0,cogs:0,grossProfit:0,selling:0,adminTotal:0,tax:0,adminExclTax:0,netProfit:0,imaratShare:0,gpPct:0,netMargin:0};
+        if (label.includes('total revenue')) fy26summ[m].revenue = val;
+        else if (label.includes('total cogs')) fy26summ[m].cogs = val;
+        else if (label.includes('total selling')) fy26summ[m].selling = val;
+        else if (label.includes('total admin')) fy26summ[m].adminExclTax = val;
+        else if (label.includes('total tax')) fy26summ[m].tax = val;
+      });
+    });
+    fy26Months.forEach(m => {
+      const s = fy26summ[m];
+      if (s && s.revenue > 0) {
+        s.grossProfit = s.revenue - s.cogs;
+        s.adminTotal = s.adminExclTax + s.tax;
+        s.netProfit = s.grossProfit - s.selling - s.adminExclTax - s.tax;
+        s.imaratShare = s.netProfit * 0.50;
+        s.gpPct = s.grossProfit / s.revenue;
+        s.netMargin = s.netProfit / s.revenue;
+      }
+    });
+
+    localStorage.setItem('MONAL_FY26_27_DATA', JSON.stringify(this.db.FY26_27));
+    console.log('[Parser] ✓ FY25-26 + FY26-27 updated, re-rendering');
+    this.renderAll();
+
+    // Handed back to the caller so a fetch that connects but matches nothing is
+    // reported as a problem rather than shown as a successful sync.
+    return {
+      months: Object.keys(monthColMap),
+      refs: Object.keys(refDataMap).length,
+      totalCol: totalCol
+    };
+  },
+
+  // Save Google Sheet URL & Auto-Sync
+  saveAndSyncGoogleSheet: function() {
+    const url = document.getElementById('modalGsheetUrl').value.trim();
+    const interval = parseInt(document.getElementById('modalAutoSync').value, 10) || 0;
+    localStorage.setItem('MONAL_GSHEET_CONFIG', JSON.stringify({ url: url, interval: interval }));
+    if (url) { this.autoFetchGoogleSheet(url, true); } else { this.closeSyncModal(); }
+  },
+
+  // JSONP-based Google Sheet fetch — bypasses CORS, works from file://
+  autoFetchGoogleSheet: function(url, showFeedback) {
+    const msgEl = document.getElementById('syncFeedbackMsg');
+    const dot = document.getElementById('liveSyncDot');
+    const statusText = document.getElementById('liveSyncStatusText');
+    if (showFeedback && msgEl) msgEl.innerText = "Connecting via JSONP…";
+    if (dot) { dot.style.background = '#eab308'; dot.style.boxShadow = '0 0 6px #eab308'; }
+    if (statusText) statusText.innerText = "Syncing…";
+
+    // Extract Sheet ID and GID
+    let sheetId = this.LIVE_SHEET_ID || '';
+    let gid = this.LIVE_SHEET_GID || '0';
+    const idMatch = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+    if (idMatch) sheetId = idMatch[1];
+    const gidMatch = url.match(/gid=(\d+)/);
+    if (gidMatch) gid = gidMatch[1];
+
+    if (!sheetId) {
+      if (showFeedback && msgEl) msgEl.innerText = "No valid Sheet ID found.";
+      return;
+    }
+
+    const cbName = '_monalCB_' + Date.now();
+    const vizUrl = 'https://docs.google.com/spreadsheets/d/' + sheetId
+      + '/gviz/tq?tqx=responseHandler:' + cbName
+      + '&headers=' + (this.SHEET_HEADER_ROWS || 1)
+      + '&tq=' + encodeURIComponent('SELECT *')
+      + '&gid=' + gid;
+
+    const timeout = setTimeout(() => {
+      delete window[cbName];
+      if (dot) { dot.style.background = '#ef4444'; dot.style.boxShadow = '0 0 6px #ef4444'; }
+      if (statusText) statusText.innerText = "Timeout";
+      if (showFeedback && msgEl) msgEl.innerText = "Timeout — ensure sheet is shared as 'Anyone with link can view'.";
+    }, 15000);
+
+    const self = this;
+    window[cbName] = function(response) {
+      clearTimeout(timeout);
+      delete window[cbName];
+      try {
+        if (response && response.status === 'ok' && response.table) {
+          const rows = [];
+          // gviz infers one type per column. In a month column of numbers the text
+          // header on row 3 does not match that type and comes back as a null cell,
+          // which used to leave the parser with zero month columns. Asking for
+          // headers=N moves those labels into cols[].label, so rebuild the header
+          // row from there and append the data rows underneath.
+          rows.push((response.table.cols || []).map(c => (c && c.label) ? c.label : ''));
+          response.table.rows.forEach(r => {
+            rows.push((r.c || []).map(c => {
+              if (!c) return null;
+              if (c.v !== null && c.v !== undefined) return c.v;
+              return (c.f !== null && c.f !== undefined) ? c.f : null;   // formatted fallback
+            }));
+          });
+
+          // Convert to SheetJS workbook and parse
+          const ws = XLSX.utils.aoa_to_sheet(rows);
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+          const report = self.parseUploadedWorkbook(wb) || { months: [], refs: 0 };
+          const time = new Date().toLocaleTimeString();
+
+          if (report.refs === 0) {
+            // Reaching the sheet is not the same as reading it. A green light here
+            // with no matched rows means the dashboard is still on its embedded
+            // numbers, which is the one failure worth being loud about.
+            if (dot) { dot.style.background = '#eab308'; dot.style.boxShadow = '0 0 6px #eab308'; }
+            if (statusText) statusText.innerText = "Connected · no rows matched";
+            if (showFeedback && msgEl) msgEl.innerText =
+              "Reached the sheet (" + rows.length + " rows) but matched 0 line items, so the "
+              + "figures below are still the built-in ones. Check that gid=" + gid + " is the "
+              + "Actual P&L tab, that row " + (self.SHEET_HEADER_ROWS || 3) + " holds the month "
+              + "headers, and that column B holds the Ref values.";
+            console.warn('[Sync] Connected but matched 0 refs. Months seen:', report.months);
+            return;
+          }
+
+          if (dot) { dot.style.background = '#22c55e'; dot.style.boxShadow = '0 0 6px #22c55e'; }
+          if (statusText) statusText.innerText = "Live Synced · " + time;
+          if (showFeedback && msgEl) msgEl.innerText =
+            "✓ Synced " + report.refs + " line items across " + report.months.length + " months.";
+          if (showFeedback) setTimeout(() => self.closeSyncModal(), 1200);
+          console.log('[Sync] ✓ ' + rows.length + ' rows, ' + report.refs + ' refs, months: '
+            + report.months.join(', ') + ' at ' + time);
+        } else {
+          const err = (response && response.errors && response.errors[0]) ? response.errors[0].detailed_message : 'Unknown error';
+          if (dot) { dot.style.background = '#ef4444'; }
+          if (statusText) statusText.innerText = "Error";
+          if (showFeedback && msgEl) msgEl.innerText = "Error: " + err + "\n\nSet sharing to 'Anyone with link can view'.";
+          console.warn('[Sync] Error:', err);
+        }
+      } catch(e) {
+        console.error('[Sync] Parse error:', e);
+        if (dot) dot.style.background = '#ef4444';
+        if (showFeedback && msgEl) msgEl.innerText = "Parse error: " + e.message;
+      }
+    };
+
+    const script = document.createElement('script');
+    script.src = vizUrl;
+    script.onerror = () => {
+      clearTimeout(timeout); delete window[cbName];
+      if (dot) { dot.style.background = '#ef4444'; dot.style.boxShadow = '0 0 6px #ef4444'; }
+      if (statusText) statusText.innerText = "Failed";
+      if (showFeedback && msgEl) msgEl.innerText = "Could not reach Google Sheets. Check sharing & internet.";
+    };
+    script.onload = () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    document.head.appendChild(script);
+  },
+
+  initAutoSyncTimer: function() {
+    const self = this;
+    let syncUrl = '', syncInterval = this.AUTO_REFRESH_SEC || 0;
+    if (this.LIVE_SHEET_ID) {
+      syncUrl = 'https://docs.google.com/spreadsheets/d/' + this.LIVE_SHEET_ID + '/edit?gid=' + this.LIVE_SHEET_GID;
+    } else {
+      try {
+        const saved = JSON.parse(localStorage.getItem('MONAL_GSHEET_CONFIG') || '{}');
+        syncUrl = saved.url || '';
+        syncInterval = saved.interval || 0;
+      } catch(e) {}
+    }
+    if (syncUrl && syncInterval > 0) {
+      console.log('[Sync] Auto-refresh every ' + syncInterval + 's');
+      setInterval(() => self.autoFetchGoogleSheet(syncUrl, false), syncInterval * 1000);
+    }
+  },
+
+  // Export CSV
+  exportToCsv: function() {
+    const fyData = this.getCurrentFYData();
+    let csv = `Monal Imarat Fine Dining - Statement of Profit & Loss (${fyData.name})\n`;
+    csv += `Ref,Line Item,${fyData.pnlColumns.map(c => c.label).join(',')},Avg %\n`;
+
+    fyData.pnl.forEach(sec => {
+      csv += `,"--- ${sec.category} ---",,,,,\n`;
+      if (sec.items) {
+        sec.items.forEach(it => {
+          csv += `"${it.ref || ''}","${it.name}",${fyData.pnlColumns.map(c => it[c.key] || 0).join(',')},${it.avgPct || 0}\n`;
+        });
+      }
+      if (sec.total) {
+        csv += `"${sec.total.ref || ''}","TOTAL ${sec.total.name}",${fyData.pnlColumns.map(c => sec.total[c.key] || 0).join(',')},${sec.total.avgPct || 0}\n`;
+      }
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Monal_Imarat_PnL_${this.state.selectedFY}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  window.MonalApp.init();
+});
+</script>
+
+</body>
+</html>
