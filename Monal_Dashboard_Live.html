@@ -2392,6 +2392,26 @@ window.MonalApp = {
   },
 
   FY_MONTH_ORDER: ['jul','aug','sep','oct','nov','dec','jan','feb','mar','apr','may','jun'],
+  CALENDAR_ORDER: ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'],
+
+  /**
+   * A month header typed into Sheets as "July-26" is stored as a date, so it can
+   * reach us as a date string rather than the text shown on screen. Consulted
+   * only when the cell did not already match a month name, so it cannot disturb
+   * a sheet that already reads correctly.
+   */
+  monthFromDateHeader: function(s) {
+    let m = s.match(/^date\((\d{4}),\s*(\d{1,2})\s*,/);        // gviz: Date(2026,6,26), month 0-based
+    if (m) return { key: this.CALENDAR_ORDER[parseInt(m[2], 10)], year: parseInt(m[1], 10) % 100 };
+    m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);                // ISO: 2026-07-26
+    if (m) return { key: this.CALENDAR_ORDER[parseInt(m[2], 10) - 1], year: parseInt(m[1], 10) % 100 };
+    m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);             // 7/26/2026 - only when unambiguous
+    if (m) {
+      const a = parseInt(m[1], 10), b = parseInt(m[2], 10);
+      if (a >= 1 && a <= 12 && b > 12) return { key: this.CALENDAR_ORDER[a - 1], year: parseInt(m[3], 10) % 100 };
+    }
+    return null;
+  },
 
   // "Jun-26" -> 26, "June 2026" -> 26, "Jun" -> null.
   yearFromHeader: function(s) {
@@ -2554,12 +2574,21 @@ window.MonalApp = {
         // Any month count, not only 4M/5M - Expand Month rewrites this header.
         if (/(^|[^a-z])total\b/.test(s) && (/\(?\s*\d+\s*m\b/.test(s) || s.includes('fy'))) totalCol = cIdx;
         if (claimedCol[cIdx]) return;
+        // A real month header is short. The sheet's title row ("...Monthly |
+        // Mar-Jun 2026") would otherwise claim March for the line-item column.
+        if (s.length > 30) return;
+        const take = (key, year) => {
+          claimedCol[cIdx] = true;
+          monthCols.push({ key: key, year: year, col: cIdx, qualified: key + (year === null ? '' : '-' + year) });
+        };
         for (const m of this.FY_MONTH_ORDER) {
           if (!MONTH_PATTERNS[m].test(s)) continue;
-          const year = this.yearFromHeader(s);
-          claimedCol[cIdx] = true;
-          monthCols.push({ key: m, year: year, col: cIdx, qualified: m + (year === null ? '' : '-' + year) });
+          take(m, this.yearFromHeader(s));
           break;
+        }
+        if (!claimedCol[cIdx]) {
+          const dated = this.monthFromDateHeader(s);
+          if (dated && dated.key) take(dated.key, dated.year);
         }
       });
     }
