@@ -1743,6 +1743,7 @@ window.MonalApp = {
     const fyData = this.db[this.state.selectedFY];
     const pillsRow = document.getElementById('monthPillsRow');
     const reportingSelect = document.getElementById('reportingMonthSelect');
+    if (!pillsRow || !reportingSelect) return;   // called after a sync too, not only at boot
 
     reportingSelect.innerHTML = fyData.months.map(m => `
       <option value="${m.key}" ${m.key === this.state.selectedMonth ? 'selected' : ''}>${m.label}</option>
@@ -2390,18 +2391,156 @@ window.MonalApp = {
     reader.readAsArrayBuffer(file);
   },
 
-  // Whole-word month matchers: abbreviation or full name, not a substring.
-  // Built once so the header scan does not recompile 12 regexes per cell.
+  FY_MONTH_ORDER: ['jul','aug','sep','oct','nov','dec','jan','feb','mar','apr','may','jun'],
+
+  // "Jun-26" -> 26, "June 2026" -> 26, "Jun" -> null.
+  yearFromHeader: function(s) {
+    const four = s.match(/(20\d{2})/);
+    if (four) return parseInt(four[1], 10) % 100;
+    const two = s.match(/(?:^|[^0-9])(\d{2})(?:[^0-9]|$)/);
+    return two ? parseInt(two[1], 10) : null;
+  },
+
+  /**
+   * The financial year runs Jul-Jun, so Jul-Dec open the year and Jan-Jun close
+   * it: Mar-26 belongs to FY25_26, Jul-26 to FY26_27. A header carrying no year
+   * falls back to the legacy split - Jul-Dec to the later year in the database,
+   * Jan-Jun to the earlier one - and is reported so the header can be fixed.
+   */
+  fyKeyForMonth: function(monthKey, year) {
+    const idx = this.FY_MONTH_ORDER.indexOf(monthKey);
+    if (idx < 0) return null;
+    const opensYear = idx < 6;
+    if (year === null || year === undefined) {
+      const keys = Object.keys(this.db).filter(k => /^FY\d{2}_\d{2}$/.test(k)).sort();
+      if (!keys.length) return null;
+      return opensYear ? keys[keys.length - 1] : keys[0];
+    }
+    const pad = (n) => String(((n % 100) + 100) % 100).padStart(2, '0');
+    const start = opensYear ? year : year - 1;
+    return 'FY' + pad(start) + '_' + pad(start + 1);
+  },
+
+  // A month with data needs a pill and a P&L column, in calendar order.
+  ensureMonthColumns: function(fy, monthMap) {
+    const order = this.FY_MONTH_ORDER;
+    const title = (m) => m.charAt(0).toUpperCase() + m.slice(1);
+    Object.keys(monthMap).forEach(m => {
+      const yr = monthMap[m].year;
+      if (!fy.months.some(x => x.key === m)) {
+        fy.months.push({ key: m, label: title(m) + (yr === null ? '' : ' ' + yr) });
+      }
+      if (!fy.pnlColumns.some(x => x.key === m)) {
+        fy.pnlColumns.push({ key: m, label: title(m) + (yr === null ? '' : '-' + yr) + ' (PKR)' });
+      }
+    });
+    const rank = (k) => k === 'total' ? 99 : order.indexOf(k);
+    fy.months.sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));   // "all" is -1, so first
+    fy.pnlColumns.sort((a, b) => rank(a.key) - rank(b.key));                  // "total" stays last
+  },
+
+  /**
+   * Writes one financial year's line items, section totals, derived rows and
+   * monthly summary from the ref map. Returns false if nothing matched.
+   */
+  applyRefsToFY: function(fyKey, monthMap, refDataMap) {
+    const fy = this.db[fyKey];
+    if (!fy || !fy.pnl) return false;
+    const monthKeys = Object.keys(monthMap);
+    const pnl = fy.pnl;
+    let touched = false;
+
+    const write = (target, ref) => {
+      const data = refDataMap[ref];
+      if (!data) return;
+      monthKeys.forEach(m => {
+        const v = data[monthMap[m].qualified];
+        if (v !== undefined) { target[m] = v; touched = true; }
+      });
+    };
+
+    pnl.forEach(section => {
+      (section.items || []).forEach(item => { if (item.ref) write(item, item.ref); });
+      if (section.total && section.total.ref) write(section.total, section.total.ref);
+    });
+    if (!touched) return false;
+
+    this.ensureMonthColumns(fy, monthMap);
+
+    const getT = (ref) => { for (const sec of pnl) { if (sec.total && sec.total.ref === ref) return sec.total; } return null; };
+    const revRow = getT('1'), cogsRow = getT('2'), sellRow = getT('3'),
+          adminRow = getT('4A'), taxRow = getT('4B');
+    const gpSec = pnl.find(sec => sec.id === 'grossprofit');
+    const npSec = pnl.find(sec => sec.id === 'netprofit');
+    const imSec = pnl.find(sec => sec.id === 'imaratshare');
+    if (!fy.monthlySummary) fy.monthlySummary = {};
+    const summ = fy.monthlySummary;
+
+    monthKeys.forEach(m => {
+      const rev  = revRow   ? (revRow[m]   || 0) : 0;
+      const cogs = cogsRow  ? (cogsRow[m]  || 0) : 0;
+      const sell = sellRow  ? (sellRow[m]  || 0) : 0;
+      const adm  = adminRow ? (adminRow[m] || 0) : 0;
+      const tax  = taxRow   ? (taxRow[m]   || 0) : 0;
+      const gp = rev - cogs;
+      const np = gp - sell - adm - tax;
+
+      if (gpSec && gpSec.total) gpSec.total[m] = gp;
+      if (npSec && npSec.total) npSec.total[m] = np;
+      if (imSec && imSec.total) imSec.total[m] = np * 0.50;
+
+      if (!summ[m]) summ[m] = {};
+      summ[m].revenue = rev; summ[m].cogs = cogs; summ[m].grossProfit = gp;
+      summ[m].selling = sell; summ[m].adminExclTax = adm; summ[m].tax = tax;
+      summ[m].adminTotal = adm + tax; summ[m].netProfit = np;
+      summ[m].imaratShare = np * 0.50;
+      summ[m].gpPct = rev > 0 ? gp / rev : 0;
+      summ[m].netMargin = rev > 0 ? np / rev : 0;
+    });
+
+    // Sum over this year's own months. The sheet's Total column spans every
+    // month it shows, which stops being one financial year the moment the
+    // sheet carries both.
+    const fyMonths = fy.pnlColumns.filter(c => c.key !== 'total').map(c => c.key);
+    if (!summ.all) summ.all = {};
+    ['revenue','cogs','grossProfit','selling','adminExclTax','tax','adminTotal','netProfit','imaratShare']
+      .forEach(k => { summ.all[k] = fyMonths.reduce((a, m) => a + ((summ[m] && summ[m][k]) || 0), 0); });
+    summ.all.gpPct = summ.all.revenue > 0 ? summ.all.grossProfit / summ.all.revenue : 0;
+    summ.all.netMargin = summ.all.revenue > 0 ? summ.all.netProfit / summ.all.revenue : 0;
+
+    const totalRev = summ.all.revenue || 0;
+    pnl.forEach(sec => {
+      (sec.items || []).forEach(it => {
+        it.total = fyMonths.reduce((a, m) => a + (it[m] || 0), 0);
+        it.avgPct = totalRev > 0 ? it.total / totalRev : 0;
+      });
+      if (sec.total) {
+        sec.total.total = fyMonths.reduce((a, m) => a + (sec.total[m] || 0), 0);
+        sec.total.avgPct = totalRev > 0 ? sec.total.total / totalRev : 0;
+      }
+    });
+    return true;
+  },
+
+  /**
+   * Reads a workbook - the live sheet or an uploaded .xlsx - and updates every
+   * financial year it carries data for.
+   *
+   * Rows are matched by Ref (column B) for every year, so renaming a line item
+   * cannot silently stop a month from populating. Month columns are read from
+   * the header together with their year and routed to the financial year that
+   * owns them, so adding a month to the sheet is all that adding a month takes.
+   */
   parseUploadedWorkbook: function(workbook) {
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
     const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-    // STEP 1: Find month columns and ref column from header rows
-    const allMonthKeys = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
     const MONTH_PATTERNS = this.MONTH_PATTERNS;
     const parseNum = (v) => this.parseNum(v);
-    const monthColMap = {};
+
+    // STEP 1: month columns with their year, plus the ref and total columns
+    const monthCols = [];
+    const claimedCol = {};
     let refCol = -1, totalCol = -1;
 
     for (let r = 0; r < Math.min(json.length, 8); r++) {
@@ -2410,23 +2549,24 @@ window.MonalApp = {
       row.forEach((cell, cIdx) => {
         if (cell === null || cell === undefined) return;
         const s = cell.toString().toLowerCase().trim();
-        if (s.includes('%')) return;
+        if (!s || s.includes('%')) return;
         if (s === 'ref' || s === 'ref.') refCol = cIdx;
-        // Any month count, not just 4M/5M - the sheet's Expand Month action
-        // rewrites this header as "Total (6M)", "Total (7M)" and so on.
+        // Any month count, not only 4M/5M - Expand Month rewrites this header.
         if (/(^|[^a-z])total\b/.test(s) && (/\(?\s*\d+\s*m\b/.test(s) || s.includes('fy'))) totalCol = cIdx;
-        // Whole-word month match. A plain includes() let "Description" claim
-        // December and "Marketing" claim March, and because the first match wins
-        // the real month column was then ignored for good.
-        allMonthKeys.forEach(m => {
-          if (monthColMap[m] === undefined && MONTH_PATTERNS[m].test(s)) monthColMap[m] = cIdx;
-        });
+        if (claimedCol[cIdx]) return;
+        for (const m of this.FY_MONTH_ORDER) {
+          if (!MONTH_PATTERNS[m].test(s)) continue;
+          const year = this.yearFromHeader(s);
+          claimedCol[cIdx] = true;
+          monthCols.push({ key: m, year: year, col: cIdx, qualified: m + (year === null ? '' : '-' + year) });
+          break;
+        }
       });
     }
     if (refCol < 0) refCol = 1;
-    console.log('[Parser] Months:', Object.keys(monthColMap), 'RefCol:', refCol, 'TotalCol:', totalCol);
+    console.log('[Parser] Months:', monthCols.map(mc => mc.qualified), 'RefCol:', refCol, 'TotalCol:', totalCol);
 
-    // STEP 2: Build ref → values map from all rows
+    // STEP 2: ref -> values, keyed by month-and-year
     const refDataMap = {};
     json.forEach(row => {
       if (!Array.isArray(row)) return;
@@ -2436,150 +2576,59 @@ window.MonalApp = {
       }
       if (!ref) {
         for (let ci = 0; ci <= 3 && ci < row.length; ci++) {
-          if (row[ci] !== null && row[ci] !== undefined) {
-            const cs = row[ci].toString().trim();
-            if (/^(\d+(\.\d+)?[A-Za-z]?|[1-6][A-Za-z])$/.test(cs) && cs.length <= 4) { ref = cs; break; }
-          }
+          if (row[ci] === null || row[ci] === undefined) continue;
+          const cs = row[ci].toString().trim();
+          if (/^(\d+(\.\d+)?[A-Za-z]?|[1-6][A-Za-z])$/.test(cs) && cs.length <= 4) { ref = cs; break; }
         }
       }
       if (!ref) return;
 
       const entry = {};
       let hasData = false;
-      Object.keys(monthColMap).forEach(m => {
-        const v = parseNum(row[monthColMap[m]]);
-        if (!isNaN(v)) { entry[m] = v; hasData = true; }
+      monthCols.forEach(mc => {
+        const v = parseNum(row[mc.col]);
+        if (!isNaN(v)) { entry[mc.qualified] = v; hasData = true; }
       });
       if (totalCol >= 0) {
         const tv = parseNum(row[totalCol]);
-        if (!isNaN(tv)) entry['total'] = tv;
+        if (!isNaN(tv)) entry.total = tv;
       }
       if (hasData) refDataMap[ref] = entry;
     });
     console.log('[Parser] Refs found:', Object.keys(refDataMap).join(', '));
 
-    // STEP 3: Update FY25-26 P&L line items by matching Ref
-    const fy25Months = ['mar','apr','may','jun'];
-    const fy25pnl = this.db.FY25_26.pnl;
-
-    fy25pnl.forEach(section => {
-      if (section.items) {
-        section.items.forEach(item => {
-          const data = refDataMap[item.ref];
-          if (!data) return;
-          fy25Months.forEach(m => { if (data[m] !== undefined) item[m] = data[m]; });
-          if (data.total !== undefined) item.total = data.total;
-        });
-      }
-      if (section.total && section.total.ref) {
-        const data = refDataMap[section.total.ref];
-        if (data) {
-          fy25Months.forEach(m => { if (data[m] !== undefined) section.total[m] = data[m]; });
-          if (data.total !== undefined) section.total.total = data.total;
-        }
-      }
+    // STEP 3: route each month to its financial year and apply
+    const byFY = {};
+    monthCols.forEach(mc => {
+      const fyKey = this.fyKeyForMonth(mc.key, mc.year);
+      if (!fyKey || !this.db[fyKey]) return;
+      if (!byFY[fyKey]) byFY[fyKey] = {};
+      byFY[fyKey][mc.key] = mc;
     });
 
-    // STEP 4: Recalculate FY25-26 monthlySummary from updated total rows
-    const getT = (ref) => { for (let s of fy25pnl) { if (s.total && s.total.ref === ref) return s.total; } return null; };
-    const revRow = getT('1'), cogsRow = getT('2'), sellRow = getT('3'), adminRow = getT('4A'), taxRow = getT('4B');
-
-    const summ = this.db.FY25_26.monthlySummary;
-    fy25Months.forEach(m => {
-      const rev = revRow ? (revRow[m] || 0) : 0;
-      const cogs = cogsRow ? (cogsRow[m] || 0) : 0;
-      const gp = rev - cogs;
-      const sell = sellRow ? (sellRow[m] || 0) : 0;
-      const adm = adminRow ? (adminRow[m] || 0) : 0;
-      const tax = taxRow ? (taxRow[m] || 0) : 0;
-      const np = gp - sell - adm - tax;
-
-      // Update derived P&L rows
-      const gpSec = fy25pnl.find(s => s.id === 'grossprofit');
-      if (gpSec && gpSec.total) gpSec.total[m] = gp;
-      const npSec = fy25pnl.find(s => s.id === 'netprofit');
-      if (npSec && npSec.total) npSec.total[m] = np;
-      const imSec = fy25pnl.find(s => s.id === 'imaratshare');
-      if (imSec && imSec.total) imSec.total[m] = np * 0.50;
-
-      if (summ[m]) {
-        summ[m].revenue = rev; summ[m].cogs = cogs; summ[m].grossProfit = gp;
-        summ[m].selling = sell; summ[m].adminExclTax = adm; summ[m].tax = tax;
-        summ[m].adminTotal = adm + tax; summ[m].netProfit = np;
-        summ[m].imaratShare = np * 0.50;
-        summ[m].gpPct = rev > 0 ? gp / rev : 0;
-        summ[m].netMargin = rev > 0 ? np / rev : 0;
-      }
+    const yearsUpdated = [];
+    Object.keys(byFY).forEach(fyKey => {
+      if (this.applyRefsToFY(fyKey, byFY[fyKey], refDataMap)) yearsUpdated.push(fyKey);
     });
 
-    // Recalculate "all" total
-    if (summ.all) {
-      ['revenue','cogs','grossProfit','selling','adminExclTax','tax','adminTotal','netProfit','imaratShare'].forEach(k => {
-        summ.all[k] = fy25Months.reduce((a, m) => a + ((summ[m] && summ[m][k]) || 0), 0);
-      });
-      summ.all.gpPct = summ.all.revenue > 0 ? summ.all.grossProfit / summ.all.revenue : 0;
-      summ.all.netMargin = summ.all.revenue > 0 ? summ.all.netProfit / summ.all.revenue : 0;
+    try {
+      localStorage.setItem('MONAL_FY26_27_DATA', JSON.stringify(this.db.FY26_27));
+    } catch (e) { console.warn('[Parser] Could not persist FY26-27', e); }
+
+    const undated = monthCols.filter(mc => mc.year === null).map(mc => mc.key);
+    if (undated.length) {
+      console.warn('[Parser] Month headers with no year: ' + undated.join(', ')
+        + '. Add the year (e.g. "Jul-26") so the month lands in the right financial year.');
     }
-
-    // Recalc total & avgPct for all P&L line items
-    fy25pnl.forEach(sec => {
-      const totalRev = summ.all ? summ.all.revenue : 1;
-      if (sec.items) {
-        sec.items.forEach(it => {
-          if (!refDataMap[it.ref] || refDataMap[it.ref].total === undefined) {
-            it.total = fy25Months.reduce((a, m) => a + (it[m] || 0), 0);
-          }
-          it.avgPct = totalRev > 0 ? it.total / totalRev : 0;
-        });
-      }
-      if (sec.total) {
-        if (sec.total.ref && (!refDataMap[sec.total.ref] || refDataMap[sec.total.ref].total === undefined)) {
-          sec.total.total = fy25Months.reduce((a, m) => a + (sec.total[m] || 0), 0);
-        }
-        sec.total.avgPct = totalRev > 0 ? sec.total.total / totalRev : 0;
-      }
-    });
-
-    // STEP 5: Update FY26-27 for jul+ months
-    const fy26Months = ['jul','aug','sep','oct','nov','dec','jan','feb'];
-    const fy26summ = this.db.FY26_27.monthlySummary;
-    json.forEach(row => {
-      if (!Array.isArray(row)) return;
-      const label = (row[0] || row[1] || '').toString().toLowerCase();
-      fy26Months.forEach(m => {
-        const cIdx = monthColMap[m];
-        if (cIdx === undefined || row[cIdx] === undefined) return;
-        const val = parseNum(row[cIdx]);
-        if (isNaN(val) || val === 0) return;
-        if (!fy26summ[m]) fy26summ[m] = {revenue:0,cogs:0,grossProfit:0,selling:0,adminTotal:0,tax:0,adminExclTax:0,netProfit:0,imaratShare:0,gpPct:0,netMargin:0};
-        if (label.includes('total revenue')) fy26summ[m].revenue = val;
-        else if (label.includes('total cogs')) fy26summ[m].cogs = val;
-        else if (label.includes('total selling')) fy26summ[m].selling = val;
-        else if (label.includes('total admin')) fy26summ[m].adminExclTax = val;
-        else if (label.includes('total tax')) fy26summ[m].tax = val;
-      });
-    });
-    fy26Months.forEach(m => {
-      const s = fy26summ[m];
-      if (s && s.revenue > 0) {
-        s.grossProfit = s.revenue - s.cogs;
-        s.adminTotal = s.adminExclTax + s.tax;
-        s.netProfit = s.grossProfit - s.selling - s.adminExclTax - s.tax;
-        s.imaratShare = s.netProfit * 0.50;
-        s.gpPct = s.grossProfit / s.revenue;
-        s.netMargin = s.netProfit / s.revenue;
-      }
-    });
-
-    localStorage.setItem('MONAL_FY26_27_DATA', JSON.stringify(this.db.FY26_27));
-    console.log('[Parser] ✓ FY25-26 + FY26-27 updated, re-rendering');
+    console.log('[Parser] ✓ Updated ' + (yearsUpdated.join(', ') || 'nothing') + ', re-rendering');
+    this.populateMonthSelectors();
     this.renderAll();
 
-    // Handed back to the caller so a fetch that connects but matches nothing is
-    // reported as a problem rather than shown as a successful sync.
     return {
-      months: Object.keys(monthColMap),
+      months: monthCols.map(mc => mc.qualified),
       refs: Object.keys(refDataMap).length,
+      years: yearsUpdated,
+      undated: undated,
       totalCol: totalCol
     };
   },
