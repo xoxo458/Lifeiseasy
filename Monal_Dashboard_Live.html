@@ -2460,15 +2460,68 @@ window.MonalApp = {
   },
 
   /**
+   * Makes a year's P&L structure match the sheet: renames line items to the
+   * sheet's wording and adds any row the sheet has that the year is missing.
+   *
+   * Sections are worked out from the sheet's own layout rather than from the
+   * ref number, because the numbering does not encode them - 4.21 is a tax row
+   * while 4.20 and 4.22 are admin. Rows accumulate until a section's total row
+   * closes them, which is exactly how the statement is laid out.
+   */
+  syncStructureFromSheet: function(fy, sheetRefs) {
+    if (!sheetRefs || !sheetRefs.length) return 0;
+    const sections = fy.pnl.filter(sec => Array.isArray(sec.items) && sec.total && sec.total.ref);
+    if (!sections.length) return 0;
+    const closers = {};
+    sections.forEach(sec => { closers[String(sec.total.ref)] = sec; });
+
+    const order = {};
+    sheetRefs.forEach((r, i) => { if (order[r.ref] === undefined) order[r.ref] = i; });
+
+    let added = 0;
+    let buffer = [];
+    sheetRefs.forEach(r => {
+      const sec = closers[r.ref];
+      if (!sec) { buffer.push(r); return; }
+      buffer.forEach(entry => {
+        let item = sec.items.find(it => String(it.ref) === entry.ref);
+        if (!item) {
+          item = { ref: entry.ref, name: entry.label || ('Ref ' + entry.ref), total: 0, avgPct: 0 };
+          sec.items.push(item);
+          added++;
+        }
+        if (entry.label) item.name = entry.label;
+      });
+      if (r.label) sec.total.name = r.label;
+      buffer = [];
+    });
+
+    // Keep the sheet's row order; anything the sheet does not carry sits after.
+    sections.forEach(sec => {
+      sec.items.sort((a, b) => {
+        const ia = order[String(a.ref)], ib = order[String(b.ref)];
+        if (ia === undefined && ib === undefined) return 0;
+        if (ia === undefined) return 1;
+        if (ib === undefined) return -1;
+        return ia - ib;
+      });
+    });
+    return added;
+  },
+
+  /**
    * Writes one financial year's line items, section totals, derived rows and
    * monthly summary from the ref map. Returns false if nothing matched.
    */
-  applyRefsToFY: function(fyKey, monthMap, refDataMap) {
+  applyRefsToFY: function(fyKey, monthMap, refDataMap, sheetRefs) {
     const fy = this.db[fyKey];
     if (!fy || !fy.pnl) return false;
     const monthKeys = Object.keys(monthMap);
     const pnl = fy.pnl;
     let touched = false;
+
+    const added = this.syncStructureFromSheet(fy, sheetRefs);
+    if (added) console.log('[Parser] ' + fyKey + ': added ' + added + ' line item(s) from the sheet');
 
     const write = (target, ref) => {
       const data = refDataMap[ref];
@@ -2484,6 +2537,28 @@ window.MonalApp = {
       if (section.total && section.total.ref) write(section.total, section.total.ref);
     });
     if (!touched) return false;
+
+    // A month whose total row was never filled in - the vertical SUM was not
+    // carried into the new column - still has line items. Add them up rather
+    // than reporting the month as empty.
+    pnl.forEach(section => {
+      if (!Array.isArray(section.items) || !section.total || !section.total.ref) return;
+      const fromSheet = refDataMap[section.total.ref] || {};
+      monthKeys.forEach(m => {
+        const q = monthMap[m].qualified;
+        if (fromSheet[q] !== undefined) return;        // the sheet gave us a total
+        let sum = 0, any = false;
+        section.items.forEach(it => {
+          const d = refDataMap[it.ref];
+          if (d && d[q] !== undefined) { sum += d[q]; any = true; }
+        });
+        if (any) {
+          section.total[m] = sum;
+          console.log('[Parser] ' + fyKey + ' ' + q + ': "' + section.total.name
+            + '" was blank in the sheet, summed from its line items = ' + sum);
+        }
+      });
+    });
 
     this.ensureMonthColumns(fy, monthMap);
 
@@ -2595,8 +2670,11 @@ window.MonalApp = {
     if (refCol < 0) refCol = 1;
     console.log('[Parser] Months:', monthCols.map(mc => mc.qualified), 'RefCol:', refCol, 'TotalCol:', totalCol);
 
-    // STEP 2: ref -> values, keyed by month-and-year
+    // STEP 2: ref -> values, keyed by month-and-year, plus the sheet's own row
+    // order and wording so the dashboard can follow the statement's structure.
     const refDataMap = {};
+    const sheetRefs = [];
+    const seenRef = {};
     json.forEach(row => {
       if (!Array.isArray(row)) return;
       let ref = '';
@@ -2610,7 +2688,23 @@ window.MonalApp = {
           if (/^(\d+(\.\d+)?[A-Za-z]?|[1-6][A-Za-z])$/.test(cs) && cs.length <= 4) { ref = cs; break; }
         }
       }
-      if (!ref) return;
+      // A ref is a number, optionally dotted, optionally with a letter: 1, 1.1,
+      // 4A, 4.21. Anything else is a label - the header row's own "Ref" cell
+      // used to be read as one and became a phantom line item.
+      if (!ref || !/^\d+(\.\d+)?[A-Za-z]?$/.test(ref)) return;
+
+      // Every ref row marks the layout, values or not: a total row with an empty
+      // month still closes its section.
+      if (!seenRef[ref]) {
+        seenRef[ref] = true;
+        let label = '';
+        for (let ci = 0; ci < Math.max(refCol, 1); ci++) {
+          if (row[ci] === null || row[ci] === undefined) continue;
+          const cs = row[ci].toString().trim();
+          if (cs && isNaN(parseNum(cs))) { label = cs; break; }
+        }
+        sheetRefs.push({ ref: ref, label: label });
+      }
 
       const entry = {};
       let hasData = false;
@@ -2637,7 +2731,7 @@ window.MonalApp = {
 
     const yearsUpdated = [];
     Object.keys(byFY).forEach(fyKey => {
-      if (this.applyRefsToFY(fyKey, byFY[fyKey], refDataMap)) yearsUpdated.push(fyKey);
+      if (this.applyRefsToFY(fyKey, byFY[fyKey], refDataMap, sheetRefs)) yearsUpdated.push(fyKey);
     });
 
     try {
