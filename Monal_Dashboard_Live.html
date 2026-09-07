@@ -220,11 +220,6 @@
       transition: all 0.2s ease;
     }
 
-    .sync-status, .sync-status:hover {
-      cursor: default;
-      pointer-events: none;
-    }
-
     .sync-badge-btn:hover {
       background: #ffffff;
       color: var(--forest-dark);
@@ -1053,11 +1048,14 @@
             <select id="reportingMonthSelect" class="filter-select-input"></select>
           </div>
 
-          <!-- Live sync status. Read-only: the sheet is fetched automatically. -->
-          <div class="sync-badge-btn sync-status" title="Figures are read automatically from the linked Google Sheet">
+          <!-- Sync status, and a manual refresh. The sheet is read automatically
+               on load and every few minutes; this fetches it again on demand. -->
+          <button class="sync-badge-btn" onclick="MonalApp.refreshNow()"
+                  title="Read the linked Google Sheet again now">
             <span class="live-dot" id="liveSyncDot"></span>
             <span id="liveSyncStatusText">Connecting…</span>
-          </div>
+            <span aria-hidden="true" style="margin-left:2px; font-weight:700;">↻</span>
+          </button>
         </div>
       </div>
 
@@ -1603,6 +1601,7 @@ window.MonalApp = {
     displayMode: 'millions',
     searchQuery: '',
     collapsedGroups: {},
+    monthPickedByUser: false,
     simRevenueGrowth: 0,
     simCogsImprovement: 0,
     simSellingOptimization: 0,
@@ -1700,6 +1699,7 @@ window.MonalApp = {
     const fySelect = document.getElementById('financialYearSelect');
     if (fySelect) {
       fySelect.addEventListener('change', (e) => {
+        this.state.monthPickedByUser = true;
         this.state.selectedFY = e.target.value;
         this.state.selectedMonth = this.db[this.state.selectedFY].defaultMonth;
         this.populateMonthSelectors();
@@ -1767,6 +1767,7 @@ window.MonalApp = {
 
   selectMonth: function(monthKey) {
     this.state.selectedMonth = monthKey;
+    this.state.monthPickedByUser = true;
     const fyData = this.db[this.state.selectedFY];
 
     const reportingSelect = document.getElementById('reportingMonthSelect');
@@ -2623,6 +2624,36 @@ window.MonalApp = {
     });
   },
 
+  /**
+   * The newest month across every year that carries figures. Years sort
+   * chronologically by key, and FY_MONTH_ORDER runs Jul to Jun, so the last
+   * match in this walk is the most recent month.
+   */
+  latestMonthWithData: function() {
+    const years = Object.keys(this.db).filter(k => /^FY\d{2}_\d{2}$/.test(k)).sort();
+    let found = null;
+    years.forEach(fyKey => {
+      const summ = (this.db[fyKey] || {}).monthlySummary || {};
+      this.FY_MONTH_ORDER.forEach(m => {
+        if (summ[m] && summ[m].revenue) found = { fyKey: fyKey, monthKey: m };
+      });
+    });
+    return found;
+  },
+
+  // Open on that month, unless the reader has already chosen one.
+  selectLatestMonth: function() {
+    const latest = this.latestMonthWithData();
+    if (!latest) return false;
+    this.state.selectedFY = latest.fyKey;
+    this.state.selectedMonth = latest.monthKey;
+    const fySelect = document.getElementById('financialYearSelect');
+    if (fySelect) fySelect.value = latest.fyKey;
+    console.log('[Sync] opening on ' + this.monthLabel(latest.fyKey, latest.monthKey)
+      + ' (' + latest.fyKey.replace('_','-') + ')');
+    return true;
+  },
+
   // How many months of this year actually carry figures.
   monthsWithData: function(fyData) {
     const summ = fyData.monthlySummary || {};
@@ -3058,6 +3089,11 @@ window.MonalApp = {
         + '. Add the year (e.g. "Jul-26") so the month lands in the right financial year.');
     }
     console.log('[Parser] ✓ Updated ' + (yearsUpdated.join(', ') || 'nothing') + ', re-rendering');
+
+    // Land on the newest month the sheet carries. A month the reader picked
+    // themselves is never overridden by a later background refresh.
+    if (!this.state.monthPickedByUser) this.selectLatestMonth();
+
     this.populateMonthSelectors();
     this.renderAll();
 
