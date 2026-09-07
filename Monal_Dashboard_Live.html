@@ -2547,6 +2547,40 @@ window.MonalApp = {
     });
     if (!touched) return false;
 
+    // The sheet is the source of truth: a month it no longer carries is cleared.
+    // Without this a deleted column keeps showing whatever it last held, because
+    // the year is cached in localStorage and reloaded before the next sync.
+    const present = {};
+    monthKeys.forEach(m => { present[m] = true; });
+    const stale = this.FY_MONTH_ORDER.filter(m => !present[m]);
+    const dropped = [];
+    stale.forEach(m => {
+      let had = false;
+      pnl.forEach(section => {
+        (section.items || []).forEach(item => {
+          if (item[m]) had = true;
+          if (item[m] !== undefined) item[m] = 0;
+        });
+        if (section.total && section.total[m] !== undefined) {
+          if (section.total[m]) had = true;
+          section.total[m] = 0;
+        }
+      });
+      if (fy.monthlySummary && fy.monthlySummary[m]) {
+        const sm = fy.monthlySummary[m];
+        ['revenue','cogs','grossProfit','selling','adminExclTax','tax','adminTotal',
+         'netProfit','imaratShare','gpPct','netMargin'].forEach(k => {
+          if (sm[k]) had = true;
+          sm[k] = 0;
+        });
+      }
+      if (had) dropped.push(m);
+    });
+    if (dropped.length) {
+      console.log('[Parser] ' + fyKey + ': cleared ' + dropped.join(', ')
+        + ' - no longer in the sheet');
+    }
+
     // A month whose total row was never filled in - the vertical SUM was not
     // carried into the new column - still has line items. Add them up rather
     // than reporting the month as empty.
