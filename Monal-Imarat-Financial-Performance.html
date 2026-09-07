@@ -1337,7 +1337,7 @@
     <section class="tab-pane" id="tab-benchmarks">
       <div class="section-bar-header">
         <div class="section-green-line"></div>
-        <h2 class="section-bar-title">Industry Benchmark Comparison & Variances</h2>
+        <h2 class="section-bar-title" id="benchmarkSectionTitle">Industry Benchmark Comparison &amp; Variances</h2>
       </div>
 
       <div class="chart-card-clean" style="margin-bottom: 1.5rem;">
@@ -2145,10 +2145,75 @@ window.MonalApp = {
   },
 
 
+  // Only these two read better when they are higher; the rest are costs.
+  HIGHER_IS_BETTER: { B1: true, B4: true },
+
+  /**
+   * The benchmark ratios for whatever is on screen - the selected month, or the
+   * year when Overall is chosen. These were fixed numbers written into the file,
+   * so the tab showed the same figures whichever month was picked.
+   */
+  benchmarkActuals: function() {
+    const fy = this.getCurrentFYData();
+    const s = this.getActiveSummary();
+    const rev = s.revenue || 0;
+    const key = (!this.state.selectedMonth || this.state.selectedMonth === 'all')
+      ? 'total' : this.state.selectedMonth;
+
+    const line = (ref) => {
+      const want = this.normRef(ref);
+      for (const sec of (fy.pnl || [])) {
+        const it = (sec.items || []).find(x => this.normRef(x.ref) === want);
+        if (it) { const v = it[key]; return typeof v === 'number' ? v : 0; }
+      }
+      return 0;
+    };
+    const ratio = (v) => rev ? v / rev : 0;
+
+    const kitchenLabour = line('2.4');                            // Direct Labour Cost
+    const labourAll = kitchenLabour + line('3.2') + line('4.1');  // + selling and admin salaries
+    const utilities = line('2.3') + line('3.3') + line('4.16');   // power and utilities, all three books
+
+    return {
+      hasData: rev > 0,
+      B1: ratio(s.grossProfit),
+      B2: ratio(s.cogs),
+      B3: ratio((s.cogs || 0) + kitchenLabour),
+      B4: ratio(s.netProfit),
+      B5: ratio(labourAll),
+      B6: ratio(utilities),
+      B7: ratio(s.selling),
+      B8: ratio(s.adminExclTax),
+      B9: ratio(s.tax)
+    };
+  },
+
+  // Distance outside the Pakistan band, and whether that reads well or badly.
+  benchmarkVerdict: function(ref, value, min, max) {
+    const higher = !!this.HIGHER_IS_BETTER[ref];
+    let variance = 0;
+    if (value < min) variance = value - min;
+    else if (value > max) variance = value - max;
+    return {
+      variance: variance,
+      inRange: variance === 0,
+      status: (higher ? value >= min : value <= max) ? 'favourable' : (higher ? 'warning' : 'risk')
+    };
+  },
+
   // Benchmark Comparison Table
   renderBenchmarkTable: function() {
     const tbody = document.getElementById('benchmarkTableBody');
     if (!tbody) return;
+
+    const actuals = this.benchmarkActuals();
+    const isYear = !this.state.selectedMonth || this.state.selectedMonth === 'all';
+    const scope = isYear ? this.getCurrentFYData().name
+      : ((this.getCurrentFYData().months || []).find(m => m.key === this.state.selectedMonth) || {}).label
+        || this.state.selectedMonth;
+
+    const title = document.getElementById('benchmarkSectionTitle');
+    if (title) title.innerText = 'Industry Benchmark Comparison & Variances — ' + scope;
 
     let rowsHtml = '';
 
@@ -2160,23 +2225,29 @@ window.MonalApp = {
       `;
 
       section.items.forEach(item => {
+        const value = actuals[item.ref];
+        const known = actuals.hasData && typeof value === 'number';
+        const v = this.benchmarkVerdict(item.ref, value || 0, item.pakMin || 0, item.pakMax || 1);
+
         let badgeClass = 'status-badge neutral';
-        let statusText = 'In Range';
-        if (item.status === 'favourable') {
+        let statusText = 'Awaiting data';
+        if (known && v.status === 'favourable') {
           badgeClass = 'status-badge favourable';
-          statusText = '✓ Favourable';
-        } else if (item.status === 'risk') {
+          statusText = v.inRange ? '✓ In Range' : '✓ Favourable';
+        } else if (known && v.status === 'risk') {
           badgeClass = 'status-badge risk';
           statusText = '▲ Escalating Cost';
-        } else if (item.status === 'warning') {
+        } else if (known && v.status === 'warning') {
           badgeClass = 'status-badge warning';
-          statusText = '⚠ Outside Range';
+          statusText = '⚠ Below Benchmark';
         }
 
-        const actualPct = (item.actualAvgPct * 100).toFixed(1) + '%';
-        const varianceVal = item.variance !== undefined ? (item.variance > 0 ? '+' : '') + (item.variance * 100).toFixed(1) + '%' : '-';
+        const actualPct = known ? (value * 100).toFixed(1) + '%' : '-';
+        const varianceVal = !known ? '-'
+          : v.inRange ? 'In range'
+          : (v.variance > 0 ? '+' : '') + (v.variance * 100).toFixed(1) + '%';
 
-        const dotLeftPct = Math.min(Math.max(item.actualAvgPct * 100, 2), 98);
+        const dotLeftPct = Math.min(Math.max((known ? value : 0) * 100, 2), 98);
         const rangeMinPct = (item.pakMin || 0) * 100;
         const rangeWidthPct = Math.max(((item.pakMax || 1) - (item.pakMin || 0)) * 100, 4);
 
@@ -2190,7 +2261,7 @@ window.MonalApp = {
               <div class="range-bar-container">
                 <div class="range-track">
                   <div class="benchmark-range-marker" style="left:${rangeMinPct}%; width:${rangeWidthPct}%;"></div>
-                  <div class="actual-value-dot ${item.status}" style="left:${dotLeftPct}%;" title="Actual: ${actualPct}"></div>
+                  <div class="actual-value-dot ${known ? v.status : 'neutral'}" style="left:${dotLeftPct}%;" title="Actual: ${actualPct}"></div>
                 </div>
               </div>
             </td>
@@ -2374,10 +2445,24 @@ window.MonalApp = {
     if (ctxBench) {
       if (this.charts.benchmarkVariance) this.charts.benchmarkVariance.destroy();
 
-      const categories = ['Gross Profit', 'COGS %', 'Labour (All)', 'Utilities %', 'Net Profit %'];
-      const actuals = [53.2, 46.8, 20.2, 5.9, 24.0];
-      const pakMin = [55.0, 44.0, 18.0, 8.0, 12.0];
-      const pakMax = [60.0, 48.0, 24.0, 12.0, 18.0];
+      // Same source as the table below it: live ratios, and the bands as the
+      // table states them. Both the figures and the ranges used to be typed in
+      // here separately, and the COGS band disagreed with the table's.
+      const live = this.benchmarkActuals();
+      const byRef = {};
+      this.db.benchmarks.forEach(sec => sec.items.forEach(it => { byRef[it.ref] = it; }));
+      const plot = [
+        { ref: 'B1', label: 'Gross Profit' },
+        { ref: 'B2', label: 'COGS %' },
+        { ref: 'B5', label: 'Labour (All)' },
+        { ref: 'B6', label: 'Utilities %' },
+        { ref: 'B4', label: 'Net Profit %' }
+      ].filter(x => byRef[x.ref]);
+
+      const categories = plot.map(x => x.label);
+      const actuals = plot.map(x => +((live[x.ref] || 0) * 100).toFixed(1));
+      const pakMin = plot.map(x => +((byRef[x.ref].pakMin || 0) * 100).toFixed(1));
+      const pakMax = plot.map(x => +((byRef[x.ref].pakMax || 0) * 100).toFixed(1));
 
       this.charts.benchmarkVariance = new Chart(ctxBench, {
         type: 'bar',
