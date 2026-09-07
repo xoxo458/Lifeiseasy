@@ -2510,6 +2510,47 @@ window.MonalApp = {
     return 'FY' + pad(start) + '_' + pad(start + 1);
   },
 
+  /**
+   * Which sheet refs close each section. The statement has been written two
+   * ways: with admin split into 4A (excluding tax) and 4B (tax), and with a
+   * single ref 4 for Total Administrative Expense that has tax inside it. Both
+   * are accepted, first match wins.
+   */
+  SECTION_TOTAL_REFS: {
+    revenue:        ['1'],
+    cogs:           ['2'],
+    selling:        ['3'],
+    admin_excl_tax: ['4A', '4'],
+    tax_expense:    ['4B', '4.21'],
+    netprofit:      ['5'],
+    imaratshare:    ['6']
+  },
+
+  // Refs that carry tax inside the administrative total, so it has to come back
+  // out for the dashboard's standalone tax card to be right.
+  ADMIN_REFS_INCLUDING_TAX: ['4'],
+
+  // Rows the sheet files under admin that this dashboard reports on their own.
+  ITEM_SECTION_OVERRIDES: { '4.21': 'tax_expense' },
+
+  // Every ref that can close a section, so none of them is taken for a line item.
+  totalRefSet: function(fy) {
+    const set = {};
+    Object.keys(this.SECTION_TOTAL_REFS).forEach(id => {
+      this.SECTION_TOTAL_REFS[id].forEach(r => { set[r] = id; });
+    });
+    (fy.pnl || []).forEach(sec => { if (sec.total && sec.total.ref) set[String(sec.total.ref)] = sec.id; });
+    return set;
+  },
+
+  // The ref this section's total is actually written under in this sheet.
+  resolveTotalRef: function(section, refDataMap) {
+    const candidates = this.SECTION_TOTAL_REFS[section.id]
+      || (section.total && section.total.ref ? [String(section.total.ref)] : []);
+    for (const r of candidates) { if (refDataMap[r]) return r; }
+    return null;
+  },
+
   monthLabel: function(fyKey, monthKey) {
     const fy = this.db[fyKey];
     const m = fy && (fy.months || []).find(x => x.key === monthKey);
@@ -2601,28 +2642,52 @@ window.MonalApp = {
    */
   syncStructureFromSheet: function(fy, sheetRefs) {
     if (!sheetRefs || !sheetRefs.length) return 0;
-    const sections = fy.pnl.filter(sec => Array.isArray(sec.items) && sec.total && sec.total.ref);
+    const sections = fy.pnl.filter(sec => Array.isArray(sec.items) && sec.total);
     if (!sections.length) return 0;
+
+    const byId = {};
+    fy.pnl.forEach(sec => { byId[sec.id] = sec; });
+    const totalRefs = this.totalRefSet(fy);
+
+    // Only a whole-number ref closes a section. A dotted one such as 4.21 is a
+    // line of the statement that this dashboard also reads a total from, and
+    // treating it as a closer would sweep every admin row into Tax.
     const closers = {};
-    sections.forEach(sec => { closers[String(sec.total.ref)] = sec; });
+    Object.keys(totalRefs).forEach(r => {
+      if (r.indexOf('.') !== -1) return;
+      const sec = byId[totalRefs[r]];
+      if (sec && Array.isArray(sec.items)) closers[r] = sec;
+    });
+
+    // A section total is never a line item. One absorbed under an older ref
+    // scheme - "4 Total Administrative Expense" sitting among the 4.x rows - is
+    // dropped here.
+    sections.forEach(sec => {
+      sec.items = sec.items.filter(it => !closers[String(it.ref)]);
+    });
 
     const order = {};
     sheetRefs.forEach((r, i) => { if (order[r.ref] === undefined) order[r.ref] = i; });
 
     let added = 0;
     let buffer = [];
+    const place = (entry, fallbackSec) => {
+      const overrideId = this.ITEM_SECTION_OVERRIDES[entry.ref];
+      const sec = (overrideId && byId[overrideId]) || fallbackSec;
+      if (!sec || !Array.isArray(sec.items)) return;
+      let item = sec.items.find(it => String(it.ref) === entry.ref);
+      if (!item) {
+        item = { ref: entry.ref, name: entry.label || ('Ref ' + entry.ref), total: 0, avgPct: 0 };
+        sec.items.push(item);
+        added++;
+      }
+      if (entry.label) item.name = entry.label;
+    };
+
     sheetRefs.forEach(r => {
       const sec = closers[r.ref];
       if (!sec) { buffer.push(r); return; }
-      buffer.forEach(entry => {
-        let item = sec.items.find(it => String(it.ref) === entry.ref);
-        if (!item) {
-          item = { ref: entry.ref, name: entry.label || ('Ref ' + entry.ref), total: 0, avgPct: 0 };
-          sec.items.push(item);
-          added++;
-        }
-        if (entry.label) item.name = entry.label;
-      });
+      buffer.forEach(entry => place(entry, sec));
       if (r.label) sec.total.name = r.label;
       buffer = [];
     });
@@ -2663,9 +2728,14 @@ window.MonalApp = {
       });
     };
 
+    const resolvedRef = {};
     pnl.forEach(section => {
       (section.items || []).forEach(item => { if (item.ref) write(item, item.ref); });
-      if (section.total && section.total.ref) write(section.total, section.total.ref);
+      if (!section.total) return;
+      const ref = this.resolveTotalRef(section, refDataMap)
+        || (section.total.ref ? String(section.total.ref) : null);
+      resolvedRef[section.id] = ref;
+      if (ref) write(section.total, ref);
     });
     if (!touched) return false;
 
@@ -2708,7 +2778,7 @@ window.MonalApp = {
     // than reporting the month as empty.
     pnl.forEach(section => {
       if (!Array.isArray(section.items) || !section.total || !section.total.ref) return;
-      const fromSheet = refDataMap[section.total.ref] || {};
+      const fromSheet = refDataMap[resolvedRef[section.id]] || {};
       monthKeys.forEach(m => {
         const q = monthMap[m].qualified;
         if (fromSheet[q] !== undefined) return;        // the sheet gave us a total
@@ -2725,11 +2795,34 @@ window.MonalApp = {
       });
     });
 
+    // Where the sheet writes one administrative total with tax inside it, take
+    // the tax back out - this dashboard reports it on its own card, and net
+    // profit subtracts admin and tax separately.
+    const secTotal = (id) => { const x = pnl.find(y => y.id === id); return x && x.total ? x.total : null; };
+    const adminTotal = secTotal('admin_excl_tax');
+    const taxTotal = secTotal('tax_expense');
+    const adminRefUsed = resolvedRef.admin_excl_tax;
+    if (adminTotal && taxTotal && this.ADMIN_REFS_INCLUDING_TAX.indexOf(adminRefUsed) !== -1) {
+      const inclusive = refDataMap[adminRefUsed] || {};
+      let adjusted = 0;
+      monthKeys.forEach(m => {
+        const q = monthMap[m].qualified;
+        if (inclusive[q] === undefined) return;          // only what the sheet supplied
+        const tax = taxTotal[m] || 0;
+        if (!tax) return;
+        adminTotal[m] = inclusive[q] - tax;
+        adjusted++;
+      });
+      if (adjusted) {
+        console.log('[Parser] ' + fyKey + ': ref ' + adminRefUsed + ' includes tax; '
+          + 'removed it from the administrative total for ' + adjusted + ' month(s)');
+      }
+    }
+
     this.ensureMonthColumns(fy, monthMap);
 
-    const getT = (ref) => { for (const sec of pnl) { if (sec.total && sec.total.ref === ref) return sec.total; } return null; };
-    const revRow = getT('1'), cogsRow = getT('2'), sellRow = getT('3'),
-          adminRow = getT('4A'), taxRow = getT('4B');
+    const revRow = secTotal('revenue'), cogsRow = secTotal('cogs'), sellRow = secTotal('selling'),
+          adminRow = adminTotal, taxRow = taxTotal;
     const gpSec = pnl.find(sec => sec.id === 'grossprofit');
     const npSec = pnl.find(sec => sec.id === 'netprofit');
     const imSec = pnl.find(sec => sec.id === 'imaratshare');
