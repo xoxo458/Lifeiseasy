@@ -1977,19 +1977,54 @@ window.MonalApp = {
   },
 
   // P&L Statement Table
+  /**
+   * The statement shows one scope at a time: the selected month, or the year
+   * total when "Overall" is chosen. Rendering all twelve columns pushed the
+   * % of revenue column off screen and filled the table with empty months.
+   */
+  visiblePnlColumns: function(fyData) {
+    const m = this.state.selectedMonth;
+    if (!m || m === 'all') {
+      const totalCol = (fyData.pnlColumns || []).find(c => c.key === 'total');
+      return [totalCol || { key: 'total', label: 'Total (PKR)' }];
+    }
+    const col = (fyData.pnlColumns || []).find(c => c.key === m);
+    if (col) return [col];
+    const meta = (fyData.months || []).find(x => x.key === m);
+    return [{ key: m, label: (meta ? meta.label : m) + ' (PKR)' }];
+  },
+
   renderPnLTable: function() {
     const fyData = this.getCurrentFYData();
     const thead = document.getElementById('pnlTableHead');
     const tbody = document.getElementById('pnlTableBody');
     const secTitle = document.getElementById('pnlSectionTitle');
+    if (!thead || !tbody) return;
 
-    if (secTitle) secTitle.innerText = `Statement of Profit & Loss (${fyData.name} Detail)`;
+    const cols = this.visiblePnlColumns(fyData);
+    const isYear = !this.state.selectedMonth || this.state.selectedMonth === 'all';
+    const scopeLabel = isYear
+      ? 'Full Year'
+      : ((fyData.months || []).find(x => x.key === this.state.selectedMonth) || {}).label || this.state.selectedMonth;
+
+    if (secTitle) {
+      secTitle.innerText = `Statement of Profit & Loss (${fyData.name} — ${scopeLabel})`;
+    }
+
+    // Percentages are always against the revenue of the scope on screen, so a
+    // month's rows read as that month's share, not the year's.
+    const scopeRevenue = this.getActiveSummary().revenue || 0;
+    const pctCell = (row) => {
+      const v = row[cols[0].key];
+      if (v === null || v === undefined || !scopeRevenue) return '-';
+      return (v / scopeRevenue * 100).toFixed(1) + '%';
+    };
 
     thead.innerHTML = `
       <tr>
-        <th style="min-width: 280px;">Line Item & Reference</th>
-        ${fyData.pnlColumns.map(c => `<th class="num">${c.label}</th>`).join('')}
-        <th class="num">Avg % of Rev</th>
+        <th style="min-width: 280px;">Line Item &amp; Reference</th>
+        ${cols.map(c => `<th class="num">${c.label}</th>`).join('')}
+        <th class="num">${isYear ? 'Avg % of Rev' : '% of Rev'}</th>
       </tr>
     `;
 
@@ -2002,7 +2037,7 @@ window.MonalApp = {
 
       rowsHtml += `
         <tr class="group-header-row" onclick="MonalApp.toggleGroupCollapse('${section.id}')">
-          <td colspan="${fyData.pnlColumns.length + 2}">
+          <td colspan="${cols.length + 2}">
             ${hasItems ? `<span class="accordion-toggle-btn">${isCollapsed ? '+' : '-'}</span>` : ''}
             <strong>${section.category}</strong>
             <span style="font-size:0.72rem; opacity:0.8; font-weight:normal; margin-left:8px;">${hasItems ? (isCollapsed ? '(Click + to expand)' : '(Click - to collapse)') : ''}</span>
@@ -2017,8 +2052,8 @@ window.MonalApp = {
           rowsHtml += `
             <tr class="sub-item-row">
               <td><span style="color:var(--text-muted); font-size:0.75rem; margin-right:6px;">${item.ref || ''}</span> ${item.name}</td>
-              ${fyData.pnlColumns.map(c => `<td class="num">${this.formatCurrency(item[c.key])}</td>`).join('')}
-              <td class="num" style="color:var(--text-muted); font-weight:600;">${item.avgPct ? (item.avgPct * 100).toFixed(1) + '%' : '-'}</td>
+              ${cols.map(c => `<td class="num">${this.formatCurrency(item[c.key])}</td>`).join('')}
+              <td class="num" style="color:var(--text-muted); font-weight:600;">${pctCell(item)}</td>
             </tr>
           `;
         });
@@ -2028,8 +2063,8 @@ window.MonalApp = {
         rowsHtml += `
           <tr class="total-row">
             <td><strong>TOTAL ${section.total.name}</strong></td>
-            ${fyData.pnlColumns.map(c => `<td class="num"><strong>${this.formatCurrency(section.total[c.key])}</strong></td>`).join('')}
-            <td class="num"><strong>${section.total.avgPct ? (section.total.avgPct * 100).toFixed(1) + '%' : '-'}</strong></td>
+            ${cols.map(c => `<td class="num"><strong>${this.formatCurrency(section.total[c.key])}</strong></td>`).join('')}
+            <td class="num"><strong>${pctCell(section.total)}</strong></td>
           </tr>
         `;
       }
@@ -2037,6 +2072,7 @@ window.MonalApp = {
 
     tbody.innerHTML = rowsHtml;
   },
+
 
   // Benchmark Comparison Table
   renderBenchmarkTable: function() {
