@@ -2533,21 +2533,37 @@ window.MonalApp = {
   // Rows the sheet files under admin that this dashboard reports on their own.
   ITEM_SECTION_OVERRIDES: { '4.21': 'tax_expense' },
 
+  /**
+   * Refs are compared through this. A sheet stores 4.21 as 4.21000000000001 and
+   * 4.20 as 4.20000000000001, so raw string comparison misses the row entirely
+   * and tax quietly stops being found. Two decimals is the real precision.
+   */
+  normRef: function(ref) {
+    const t = String(ref === null || ref === undefined ? '' : ref).trim();
+    if (!/^\d+(\.\d+)?$/.test(t)) return t.toUpperCase();     // 4A, 4B
+    return String(parseFloat(Number(t).toFixed(2)));
+  },
+
   // Every ref that can close a section, so none of them is taken for a line item.
   totalRefSet: function(fy) {
     const set = {};
     Object.keys(this.SECTION_TOTAL_REFS).forEach(id => {
-      this.SECTION_TOTAL_REFS[id].forEach(r => { set[r] = id; });
+      this.SECTION_TOTAL_REFS[id].forEach(r => { set[this.normRef(r)] = id; });
     });
-    (fy.pnl || []).forEach(sec => { if (sec.total && sec.total.ref) set[String(sec.total.ref)] = sec.id; });
+    (fy.pnl || []).forEach(sec => {
+      if (sec.total && sec.total.ref) set[this.normRef(sec.total.ref)] = sec.id;
+    });
     return set;
   },
 
   // The ref this section's total is actually written under in this sheet.
   resolveTotalRef: function(section, refDataMap) {
     const candidates = this.SECTION_TOTAL_REFS[section.id]
-      || (section.total && section.total.ref ? [String(section.total.ref)] : []);
-    for (const r of candidates) { if (refDataMap[r]) return r; }
+      || (section.total && section.total.ref ? [section.total.ref] : []);
+    for (const r of candidates) {
+      const key = this.normRef(r);
+      if (refDataMap[key]) return key;
+    }
     return null;
   },
 
@@ -2663,7 +2679,7 @@ window.MonalApp = {
     // scheme - "4 Total Administrative Expense" sitting among the 4.x rows - is
     // dropped here.
     sections.forEach(sec => {
-      sec.items = sec.items.filter(it => !closers[String(it.ref)]);
+      sec.items = sec.items.filter(it => !closers[this.normRef(it.ref)]);
     });
 
     const order = {};
@@ -2672,10 +2688,10 @@ window.MonalApp = {
     let added = 0;
     let buffer = [];
     const place = (entry, fallbackSec) => {
-      const overrideId = this.ITEM_SECTION_OVERRIDES[entry.ref];
+      const overrideId = this.ITEM_SECTION_OVERRIDES[this.normRef(entry.ref)];
       const sec = (overrideId && byId[overrideId]) || fallbackSec;
       if (!sec || !Array.isArray(sec.items)) return;
-      let item = sec.items.find(it => String(it.ref) === entry.ref);
+      let item = sec.items.find(it => this.normRef(it.ref) === entry.ref);
       if (!item) {
         item = { ref: entry.ref, name: entry.label || ('Ref ' + entry.ref), total: 0, avgPct: 0 };
         sec.items.push(item);
@@ -2695,7 +2711,7 @@ window.MonalApp = {
     // Keep the sheet's row order; anything the sheet does not carry sits after.
     sections.forEach(sec => {
       sec.items.sort((a, b) => {
-        const ia = order[String(a.ref)], ib = order[String(b.ref)];
+        const ia = order[this.normRef(a.ref)], ib = order[this.normRef(b.ref)];
         if (ia === undefined && ib === undefined) return 0;
         if (ia === undefined) return 1;
         if (ib === undefined) return -1;
@@ -2730,7 +2746,7 @@ window.MonalApp = {
 
     const resolvedRef = {};
     pnl.forEach(section => {
-      (section.items || []).forEach(item => { if (item.ref) write(item, item.ref); });
+      (section.items || []).forEach(item => { if (item.ref) write(item, this.normRef(item.ref)); });
       if (!section.total) return;
       const ref = this.resolveTotalRef(section, refDataMap)
         || (section.total.ref ? String(section.total.ref) : null);
@@ -2784,7 +2800,7 @@ window.MonalApp = {
         if (fromSheet[q] !== undefined) return;        // the sheet gave us a total
         let sum = 0, any = false;
         section.items.forEach(it => {
-          const d = refDataMap[it.ref];
+          const d = refDataMap[this.normRef(it.ref)];
           if (d && d[q] !== undefined) { sum += d[q]; any = true; }
         });
         if (any) {
@@ -2814,6 +2830,11 @@ window.MonalApp = {
         adjusted++;
       });
       if (adjusted) {
+        // The row is no longer the sheet's ref 4 figure, so it must not carry the
+        // sheet's wording for it - the two would disagree on screen.
+        if (!/excl/i.test(adminTotal.name || '')) {
+          adminTotal.name = (adminTotal.name || 'Administrative Expenses').replace(/\s*$/, '') + ' (Excl. Tax)';
+        }
         console.log('[Parser] ' + fyKey + ': ref ' + adminRefUsed + ' includes tax; '
           + 'removed it from the administrative total for ' + adjusted + ' month(s)');
       }
@@ -2968,6 +2989,7 @@ window.MonalApp = {
       // A ref is a number, optionally dotted, optionally with a letter: 1, 1.1,
       // 4A, 4.21. Anything else is a label - the header row's own "Ref" cell
       // used to be read as one and became a phantom line item.
+      ref = this.normRef(ref);
       if (!ref || !/^\d+(\.\d+)?[A-Za-z]?$/.test(ref)) return;
 
       // Every ref row marks the layout, values or not: a total row with an empty
