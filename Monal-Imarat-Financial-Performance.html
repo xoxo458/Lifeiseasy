@@ -1127,10 +1127,6 @@
           <button class="toggle-btn" data-mode="pct">% Rev</button>
         </div>
 
-        <button class="btn" onclick="MonalApp.exportToCsv()" title="Export CSV">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-          CSV
-        </button>
         <button class="btn" onclick="MonalApp.exportToPdf()" title="Print the P&amp;L statement">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
           PDF
@@ -1781,11 +1777,20 @@ window.MonalApp = {
     const reportingSelect = document.getElementById('reportingMonthSelect');
     if (!pillsRow || !reportingSelect) return;   // called after a sync too, not only at boot
 
-    reportingSelect.innerHTML = fyData.months.map(m => `
+    const overall = (fyData.months || []).filter(m => m.isTotal);
+    const visible = overall.concat(this.monthObjectsWithData(fyData));
+
+    // The selection can point at a month that no longer has figures - after a
+    // year change, or after a column is cleared from the sheet.
+    if (!visible.some(m => m.key === this.state.selectedMonth)) {
+      this.state.selectedMonth = (visible[visible.length - 1] || { key: 'all' }).key;
+    }
+
+    reportingSelect.innerHTML = visible.map(m => `
       <option value="${m.key}" ${m.key === this.state.selectedMonth ? 'selected' : ''}>${m.label}</option>
     `).join('');
 
-    pillsRow.innerHTML = fyData.months.map(m => {
+    pillsRow.innerHTML = visible.map(m => {
       const isSel = m.key === this.state.selectedMonth;
       return `
         <button class="month-pill-btn ${isSel ? 'active' : ''}" data-month="${m.key}">
@@ -2053,7 +2058,14 @@ window.MonalApp = {
    */
   visiblePnlColumns: function(fyData) {
     const m = this.state.selectedMonth;
-    if (!m || m === 'all') return fyData.pnlColumns || [];   // every month, then the year total
+    if (!m || m === 'all') {
+      // Every month that has figures, then the year total. An empty month would
+      // be a column of dashes.
+      const live = {};
+      this.monthObjectsWithData(fyData).forEach(x => { live[x.key] = true; });
+      const cols = (fyData.pnlColumns || []).filter(c => c.key === 'total' || live[c.key]);
+      return cols.length ? cols : (fyData.pnlColumns || []);
+    }
     const col = (fyData.pnlColumns || []).find(c => c.key === m);
     if (col) return [col];
     const meta = (fyData.months || []).find(x => x.key === m);
@@ -2288,7 +2300,7 @@ window.MonalApp = {
     if (ctxTrend) {
       if (this.charts.revenueTrend) this.charts.revenueTrend.destroy();
 
-      const activeMonths = fyData.months.filter(m => !m.isTotal);
+      const activeMonths = this.monthObjectsWithData(fyData);
       const labels = activeMonths.map(m => m.label);
       const revs = activeMonths.map(m => (fyData.monthlySummary[m.key]?.revenue || 0) / 1000000);
       const gps = activeMonths.map(m => (fyData.monthlySummary[m.key]?.grossProfit || 0) / 1000000);
@@ -2386,7 +2398,7 @@ window.MonalApp = {
     if (ctxCostTrend) {
       if (this.charts.costTrend) this.charts.costTrend.destroy();
 
-      const activeMonths = fyData.months.filter(m => !m.isTotal);
+      const activeMonths = this.monthObjectsWithData(fyData);
       const labels = activeMonths.map(m => m.label);
 
       const cogsPcts = activeMonths.map(m => {
@@ -2787,8 +2799,21 @@ window.MonalApp = {
 
   // How many months of this year actually carry figures.
   monthsWithData: function(fyData) {
-    const summ = fyData.monthlySummary || {};
-    return this.FY_MONTH_ORDER.filter(m => summ[m] && summ[m].revenue).length;
+    return this.monthObjectsWithData(fyData).length;
+  },
+
+  /**
+   * The months of this year that carry figures, as they appear in its month
+   * list. A year is laid out twelve months ahead, and showing the eleven that
+   * are still empty put a cliff to zero in every chart and eleven blank pills
+   * across the header. If nothing has figures yet, the full list is kept so the
+   * dashboard still has a shape.
+   */
+  monthObjectsWithData: function(fyData) {
+    const summ = (fyData || {}).monthlySummary || {};
+    const months = (fyData || {}).months || [];
+    const withData = months.filter(m => !m.isTotal && summ[m.key] && summ[m.key].revenue);
+    return withData.length ? withData : months.filter(m => !m.isTotal);
   },
 
   // A month with data needs a pill and a P&L column, in calendar order.
