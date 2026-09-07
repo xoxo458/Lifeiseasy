@@ -1847,6 +1847,18 @@ window.MonalApp = {
     const container = document.getElementById('kpisRowOne');
     if (!container) return;
 
+    // On the full year a month-on-month line means nothing, so each card carries
+    // the year's average instead.
+    const isYear = !this.state.selectedMonth || this.state.selectedMonth === 'all';
+    const months = isYear ? this.monthsWithData(this.getCurrentFYData()) : 0;
+    const pctOfRev = (v) => s.revenue ? ((v / s.revenue) * 100).toFixed(1) + '%' : '-';
+    const avg = {
+      rev: months ? months + ' months · avg ' + this.formatCurrency(s.revenue / months) + '/mo' : 'Awaiting data',
+      gp: months ? pctOfRev(s.grossProfit) + ' avg of revenue' : 'Awaiting data',
+      net: months ? pctOfRev(s.netProfit) + ' avg net margin' : 'Awaiting data',
+      imarat: months ? pctOfRev(s.imaratShare) + ' avg of revenue' : 'Awaiting data'
+    };
+
     const cards = [
       {
         title: 'REVENUE',
@@ -1854,8 +1866,7 @@ window.MonalApp = {
         icon: '$',
         iconClass: 'green',
         badgeHtml: '',
-        momText: s.momRev || 'Awaiting update',
-        isPositive: (s.momRev || '').startsWith('+')
+        momText: isYear ? avg.rev : (s.momRev || 'Awaiting update')
       },
       {
         title: 'GROSS PROFIT',
@@ -1863,8 +1874,7 @@ window.MonalApp = {
         icon: '↗',
         iconClass: 'green',
         badgeHtml: s.isEmpty ? '' : `<span class="kpi-pct-badge green">${(s.gpPct * 100).toFixed(1)}% of Revenue</span>`,
-        momText: s.momGp || 'Awaiting update',
-        isPositive: (s.momGp || '').startsWith('+')
+        momText: isYear ? avg.gp : (s.momGp || 'Awaiting update')
       },
       {
         title: 'NET PROFIT (EBITDA)',
@@ -1872,8 +1882,7 @@ window.MonalApp = {
         icon: '🪙',
         iconClass: 'green',
         badgeHtml: s.isEmpty ? '' : `<span class="kpi-pct-badge green">${(s.netMargin * 100).toFixed(1)}% Net Margin</span>`,
-        momText: s.momNet || 'Awaiting update',
-        isPositive: (s.momNet || '').startsWith('+')
+        momText: isYear ? avg.net : (s.momNet || 'Awaiting update')
       },
       {
         title: 'IMARAT 50% SHARE',
@@ -1881,8 +1890,7 @@ window.MonalApp = {
         icon: '♡',
         iconClass: 'gold',
         badgeHtml: s.isEmpty ? '' : `<span class="kpi-pct-badge gold">50% Partner Share</span>`,
-        momText: s.momImarat || 'Awaiting update',
-        isPositive: (s.momImarat || '').startsWith('+')
+        momText: isYear ? avg.imarat : (s.momImarat || 'Awaiting update')
       }
     ];
 
@@ -1897,12 +1905,26 @@ window.MonalApp = {
         </div>
         <div class="kpi-card-bottom">
           ${c.badgeHtml}
-          <div class="kpi-mom-text ${s.isEmpty ? 'neutral' : (c.isPositive ? 'positive' : '')}">
-            ${s.isEmpty ? '○ Awaiting Data' : (c.isPositive ? '↗ ' + c.momText : '↘ ' + c.momText)}
+          <div class="kpi-mom-text ${s.isEmpty ? 'neutral' : this.momClass(c.momText)}">
+            ${s.isEmpty ? '○ Awaiting Data' : this.momArrow(c.momText) + c.momText}
           </div>
         </div>
       </div>
     `).join('');
+  },
+
+  // Only a signed change earns an arrow; an average or a baseline note is neutral.
+  momClass: function(text) {
+    const t = String(text || '');
+    if (t.charAt(0) === '+') return 'positive';
+    if (t.charAt(0) === '-') return '';
+    return 'neutral';
+  },
+  momArrow: function(text) {
+    const t = String(text || '');
+    if (t.charAt(0) === '+') return '↗ ';
+    if (t.charAt(0) === '-') return '↘ ';
+    return '';
   },
 
   // ROW 2: 4 Major Costs (COGS, Selling, Admin Excl Tax, Tax Standalone)
@@ -1912,13 +1934,17 @@ window.MonalApp = {
     const container = document.getElementById('kpisRowTwo');
     if (!container) return;
 
+    // Across a year this ratio is the average cost to revenue, so it says so.
+    const isYear = !this.state.selectedMonth || this.state.selectedMonth === 'all';
+    const ofRev = isYear ? '% avg of Revenue' : '% of Revenue';
+
     const cards = [
       {
         title: 'COST OF GOODS SOLD (COGS)',
         val: s.isEmpty ? '-' : this.formatCurrency(s.cogs),
         icon: '🥩',
         iconClass: 'blue',
-        pctText: s.isEmpty || rev === 0 ? 'Awaiting Data' : `${((s.cogs / rev) * 100).toFixed(1)}% of Revenue`,
+        pctText: s.isEmpty || rev === 0 ? 'Awaiting Data' : ((s.cogs / rev) * 100).toFixed(1) + ofRev,
         badgeClass: 'blue',
         subnote: 'Kitchen & Materials'
       },
@@ -1927,7 +1953,7 @@ window.MonalApp = {
         val: s.isEmpty ? '-' : this.formatCurrency(s.selling),
         icon: '👜',
         iconClass: 'gold',
-        pctText: s.isEmpty || rev === 0 ? 'Awaiting Data' : `${((s.selling / rev) * 100).toFixed(1)}% of Revenue`,
+        pctText: s.isEmpty || rev === 0 ? 'Awaiting Data' : ((s.selling / rev) * 100).toFixed(1) + ofRev,
         badgeClass: 'gold',
         subnote: 'FOH & Marketing'
       },
@@ -1936,7 +1962,7 @@ window.MonalApp = {
         val: s.isEmpty ? '-' : this.formatCurrency(s.adminExclTax),
         icon: '🏠',
         iconClass: 'ochre',
-        pctText: s.isEmpty || rev === 0 ? 'Awaiting Data' : `${((s.adminExclTax / rev) * 100).toFixed(1)}% of Revenue`,
+        pctText: s.isEmpty || rev === 0 ? 'Awaiting Data' : ((s.adminExclTax / rev) * 100).toFixed(1) + ofRev,
         badgeClass: 'ochre',
         subnote: 'Management & Ops'
       },
@@ -1945,7 +1971,7 @@ window.MonalApp = {
         val: s.isEmpty ? '-' : this.formatCurrency(s.tax),
         icon: '🏛️',
         iconClass: 'blue',
-        pctText: s.isEmpty || rev === 0 ? 'Awaiting Data' : `${((s.tax / rev) * 100).toFixed(1)}% of Revenue`,
+        pctText: s.isEmpty || rev === 0 ? 'Awaiting Data' : ((s.tax / rev) * 100).toFixed(1) + ofRev,
         badgeClass: 'blue',
         subnote: 'PRA Sales & Levies'
       }
@@ -1984,10 +2010,7 @@ window.MonalApp = {
    */
   visiblePnlColumns: function(fyData) {
     const m = this.state.selectedMonth;
-    if (!m || m === 'all') {
-      const totalCol = (fyData.pnlColumns || []).find(c => c.key === 'total');
-      return [totalCol || { key: 'total', label: 'Total (PKR)' }];
-    }
+    if (!m || m === 'all') return fyData.pnlColumns || [];   // every month, then the year total
     const col = (fyData.pnlColumns || []).find(c => c.key === m);
     if (col) return [col];
     const meta = (fyData.months || []).find(x => x.key === m);
@@ -2014,8 +2037,9 @@ window.MonalApp = {
     // Percentages are always against the revenue of the scope on screen, so a
     // month's rows read as that month's share, not the year's.
     const scopeRevenue = this.getActiveSummary().revenue || 0;
+    const pctKey = isYear ? 'total' : this.state.selectedMonth;
     const pctCell = (row) => {
-      const v = row[cols[0].key];
+      const v = row[pctKey];
       if (v === null || v === undefined || !scopeRevenue) return '-';
       return (v / scopeRevenue * 100).toFixed(1) + '%';
     };
@@ -2486,6 +2510,68 @@ window.MonalApp = {
     return 'FY' + pad(start) + '_' + pad(start + 1);
   },
 
+  monthLabel: function(fyKey, monthKey) {
+    const fy = this.db[fyKey];
+    const m = fy && (fy.months || []).find(x => x.key === monthKey);
+    return m ? m.label : monthKey;
+  },
+
+  /**
+   * The month before this one on the calendar, which for July is June of the
+   * previous financial year - the comparison a reader expects, even though the
+   * two months sit in different years.
+   */
+  previousMonthOf: function(fyKey, monthKey) {
+    const idx = this.FY_MONTH_ORDER.indexOf(monthKey);
+    if (idx < 0) return null;
+    if (idx > 0) return { fyKey: fyKey, monthKey: this.FY_MONTH_ORDER[idx - 1] };
+    const m = /^FY(\d{2})_(\d{2})$/.exec(fyKey);
+    if (!m) return null;
+    const pad = (n) => String(((n % 100) + 100) % 100).padStart(2, '0');
+    const start = parseInt(m[1], 10) - 1;
+    const prevKey = 'FY' + pad(start) + '_' + pad(start + 1);
+    return this.db[prevKey] ? { fyKey: prevKey, monthKey: 'jun' } : null;
+  },
+
+  /**
+   * The month-on-month lines shipped as fixed text, so a month written by a sync
+   * kept whatever string was there - or none, which read as "Awaiting update".
+   * They are computed from the figures now.
+   */
+  recomputeMoM: function(fyKey) {
+    const fy = this.db[fyKey];
+    if (!fy || !fy.monthlySummary) return;
+    const fields = [['momRev','revenue'], ['momGp','grossProfit'],
+                    ['momNet','netProfit'], ['momImarat','imaratShare']];
+
+    this.FY_MONTH_ORDER.forEach(monthKey => {
+      const cur = fy.monthlySummary[monthKey];
+      if (!cur || !cur.revenue) return;
+
+      const ref = this.previousMonthOf(fyKey, monthKey);
+      const prevFy = ref && this.db[ref.fyKey];
+      const prev = prevFy && prevFy.monthlySummary ? prevFy.monthlySummary[ref.monthKey] : null;
+
+      if (!prev || !prev.revenue) {
+        fields.forEach(([k]) => { cur[k] = 'Baseline reporting'; });
+        return;
+      }
+      const label = this.monthLabel(ref.fyKey, ref.monthKey);
+      fields.forEach(([k, field]) => {
+        const now = cur[field] || 0, was = prev[field] || 0;
+        if (!was) { cur[k] = 'No ' + label + ' baseline'; return; }
+        const pct = ((now - was) / Math.abs(was)) * 100;
+        cur[k] = (pct >= 0 ? '+' : '') + pct.toFixed(1) + '% MoM vs ' + label;
+      });
+    });
+  },
+
+  // How many months of this year actually carry figures.
+  monthsWithData: function(fyData) {
+    const summ = fyData.monthlySummary || {};
+    return this.FY_MONTH_ORDER.filter(m => summ[m] && summ[m].revenue).length;
+  },
+
   // A month with data needs a pill and a P&L column, in calendar order.
   ensureMonthColumns: function(fy, monthMap) {
     const order = this.FY_MONTH_ORDER;
@@ -2831,6 +2917,10 @@ window.MonalApp = {
     Object.keys(byFY).forEach(fyKey => {
       if (this.applyRefsToFY(fyKey, byFY[fyKey], refDataMap, sheetRefs)) yearsUpdated.push(fyKey);
     });
+
+    // Every year, not just the ones touched: July's reference lives in the
+    // previous financial year and may have moved in this same sync.
+    Object.keys(this.db).forEach(k => { if (/^FY\d{2}_\d{2}$/.test(k)) this.recomputeMoM(k); });
 
     try {
       localStorage.setItem('MONAL_FY26_27_DATA', JSON.stringify(this.db.FY26_27));
