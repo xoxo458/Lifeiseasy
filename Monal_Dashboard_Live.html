@@ -205,6 +205,13 @@
       outline: none;
     }
 
+    .collapse-hint {
+      font-size: 0.72rem;
+      opacity: 0.8;
+      font-weight: normal;
+      margin-left: 8px;
+    }
+
     .sync-badge-btn {
       display: inline-flex;
       align-items: center;
@@ -996,6 +1003,32 @@
       .top-header, .nav-tabs-bar, .header-actions, .table-toolbar, .slider-group input { display: none !important; }
       .tab-pane { display: block !important; }
     }
+    /* ==========================================================================
+       PRINT — the P&L statement only
+       ========================================================================== */
+    @media print {
+      @page { size: A4 landscape; margin: 12mm; }
+
+      body { background: #fff; }
+      .app-header, .header-container, .nav-tabs-bar, .header-pills-row,
+      .sync-badge-btn, .toggle-group, .btn, .modal-overlay,
+      #tab-overview, #tab-benchmarks,
+      .pnl-search-wrap, .pnl-tip,
+      .accordion-toggle-btn, .collapse-hint { display: none !important; }
+
+      .main-canvas { padding: 0 !important; margin: 0 !important; }
+      #tab-pnl { display: block !important; }
+
+      /* Every row on the page, no inner scrollbar, and no page break inside a row */
+      .table-scroll-wrap, .pnl-table-wrap, .card, .section-card {
+        overflow: visible !important; box-shadow: none !important;
+        border: none !important; page-break-inside: auto;
+      }
+      table { width: 100% !important; border-collapse: collapse; font-size: 9pt; }
+      thead { display: table-header-group; }          /* repeat the header on each page */
+      tr { page-break-inside: avoid; }
+      th, td { padding: 3px 6px !important; }
+    }
   </style>
 </head>
 <body>
@@ -1095,7 +1128,7 @@
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
           CSV
         </button>
-        <button class="btn" onclick="window.print()" title="Print PDF">
+        <button class="btn" onclick="MonalApp.exportToPdf()" title="Print the P&amp;L statement">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
           PDF
         </button>
@@ -1914,6 +1947,12 @@ window.MonalApp = {
     `).join('');
   },
 
+  // "Total Revenue" must not print as "TOTAL Total Revenue".
+  totalRowLabel: function(name, prefix) {
+    const t = String(name || '');
+    return /^total\b/i.test(t) ? t : (prefix + t);
+  },
+
   // Only a signed change earns an arrow; an average or a baseline note is neutral.
   momClass: function(text) {
     const t = String(text || '');
@@ -2060,15 +2099,19 @@ window.MonalApp = {
       const isCollapsed = !!this.state.collapsedGroups[section.id];
       const hasItems = section.items && section.items.length > 0;
 
-      rowsHtml += `
-        <tr class="group-header-row" onclick="MonalApp.toggleGroupCollapse('${section.id}')">
-          <td colspan="${cols.length + 2}">
-            ${hasItems ? `<span class="accordion-toggle-btn">${isCollapsed ? '+' : '-'}</span>` : ''}
-            <strong>${section.category}</strong>
-            <span style="font-size:0.72rem; opacity:0.8; font-weight:normal; margin-left:8px;">${hasItems ? (isCollapsed ? '(Click + to expand)' : '(Click - to collapse)') : ''}</span>
-          </td>
-        </tr>
-      `;
+      // A section with no lines of its own - gross profit, net profit, the
+      // partner share - is a single row. Its band would just repeat its total.
+      if (hasItems) {
+        rowsHtml += `
+          <tr class="group-header-row" onclick="MonalApp.toggleGroupCollapse('${section.id}')">
+            <td colspan="${cols.length + 2}">
+              <span class="accordion-toggle-btn">${isCollapsed ? '+' : '-'}</span>
+              <strong>${section.category}</strong>
+              <span class="collapse-hint">${isCollapsed ? '(Click + to expand)' : '(Click - to collapse)'}</span>
+            </td>
+          </tr>
+        `;
+      }
 
       if (hasItems && !isCollapsed) {
         section.items.forEach(item => {
@@ -2087,7 +2130,7 @@ window.MonalApp = {
       if (section.total) {
         rowsHtml += `
           <tr class="total-row">
-            <td><strong>TOTAL ${section.total.name}</strong></td>
+            <td><strong>${this.totalRowLabel(section.total.name, 'TOTAL ')}</strong></td>
             ${cols.map(c => `<td class="num"><strong>${this.formatCurrency(section.total[c.key])}</strong></td>`).join('')}
             <td class="num"><strong>${pctCell(section.total)}</strong></td>
           </tr>
@@ -3271,32 +3314,125 @@ window.MonalApp = {
     }
   },
 
-  // Export CSV
-  exportToCsv: function() {
-    const fyData = this.getCurrentFYData();
-    let csv = `Monal Imarat Fine Dining - Statement of Profit & Loss (${fyData.name})\n`;
-    csv += `Ref,Line Item,${fyData.pnlColumns.map(c => c.label).join(',')},Avg %\n`;
+  /**
+   * Print the statement on its own. The print stylesheet hides the rest of the
+   * page, so switch to that tab first - otherwise printing from the Overview
+   * would produce a blank sheet.
+   */
+  exportToPdf: function() {
+    const back = this.state.activeTab;
+    this.switchTab('pnl');
+    document.body.classList.add('printing-pnl');
+    const done = () => {
+      document.body.classList.remove('printing-pnl');
+      if (back !== 'pnl') this.switchTab(back);
+      window.removeEventListener('afterprint', done);
+    };
+    window.addEventListener('afterprint', done);
+    setTimeout(() => window.print(), 60);   // let the tab render before printing
+  },
 
-    fyData.pnl.forEach(sec => {
-      csv += `,"--- ${sec.category} ---",,,,,\n`;
-      if (sec.items) {
-        sec.items.forEach(it => {
-          csv += `"${it.ref || ''}","${it.name}",${fyData.pnlColumns.map(c => it[c.key] || 0).join(',')},${it.avgPct || 0}\n`;
-        });
+  // Every month carrying figures, oldest first, across both years - the shape
+  // the linked Google Sheet has, rather than one financial year of it.
+  allMonthsWithData: function() {
+    const out = [];
+    Object.keys(this.db).filter(k => /^FY\d{2}_\d{2}$/.test(k)).sort().forEach(fyKey => {
+      const summ = (this.db[fyKey] || {}).monthlySummary || {};
+      this.FY_MONTH_ORDER.forEach(m => {
+        if (summ[m] && summ[m].revenue) out.push({ fyKey: fyKey, key: m, label: this.monthLabel(fyKey, m) });
+      });
+    });
+    return out;
+  },
+
+  sectionTotalValue: function(fyKey, secId, monthKey) {
+    const fy = this.db[fyKey];
+    const sec = fy && (fy.pnl || []).find(x => x.id === secId);
+    if (!sec || !sec.total) return null;
+    const v = sec.total[monthKey];
+    return v === undefined ? null : v;
+  },
+
+  itemValue: function(fyKey, secId, ref, monthKey) {
+    const fy = this.db[fyKey];
+    const sec = fy && (fy.pnl || []).find(x => x.id === secId);
+    if (!sec) return null;
+    const want = this.normRef(ref);
+    const it = (sec.items || []).find(x => this.normRef(x.ref) === want);
+    if (!it) return null;
+    const v = it[monthKey];
+    return v === undefined ? null : v;
+  },
+
+  /**
+   * Exports the statement as the linked sheet holds it: every month that has
+   * figures, in order and across both financial years, with the refs, the
+   * section totals and a percentage column per month. Its first three rows
+   * match the sheet's, so the file can be read straight back in.
+   */
+  exportToCsv: function() {
+    const months = this.allMonthsWithData();
+    if (!months.length) { alert('Nothing to export yet — no month carries figures.'); return; }
+    const structure = this.db[months[months.length - 1].fyKey];
+
+    const esc = (v) => '"' + String(v === null || v === undefined ? '' : v).replace(/"/g, '""') + '"';
+    const money = (v) => (typeof v === 'number' && isFinite(v)) ? Math.round(v * 100) / 100 : '';
+    const rate  = (v) => (typeof v === 'number' && isFinite(v)) ? Math.round(v * 10000) / 10000 : '';
+    const blank = months.map(() => '');
+
+    const revOf = (m) => {
+      const s = (this.db[m.fyKey].monthlySummary || {})[m.key];
+      return s ? (s.revenue || 0) : 0;
+    };
+    const revTotal = months.reduce((a, m) => a + revOf(m), 0);
+
+    const lines = [];
+    lines.push([esc('IMARAT FINE DINING — Statement of Profit & Loss (Monthly)')].join(','));
+    lines.push([esc('All figures in PKR  |  % columns express cost/income as % of Total Revenue')].join(','));
+    lines.push(['Line Item', 'Ref'].concat(months.map(m => m.label))
+      .concat(['Total (' + months.length + 'M)'])
+      .concat(months.map(m => m.label + ' %')).concat(['Avg %']).map(esc).join(','));
+
+    const row = (label, ref, getter) => {
+      const vals = months.map(getter);
+      const nums = vals.filter(v => typeof v === 'number');
+      const total = nums.length ? nums.reduce((a, b) => a + b, 0) : null;
+      lines.push([esc(label), esc(ref || '')]
+        .concat(vals.map(money))
+        .concat([money(total)])
+        .concat(months.map((m, i) => {
+          const r = revOf(m);
+          return (typeof vals[i] === 'number' && r) ? rate(vals[i] / r) : '';
+        }))
+        .concat([(total !== null && revTotal) ? rate(total / revTotal) : ''])
+        .join(','));
+    };
+
+    (structure.pnl || []).forEach(sec => {
+      const hasItems = Array.isArray(sec.items) && sec.items.length;
+      if (hasItems) {
+        lines.push([esc(sec.category), ''].concat(blank).concat(['']).concat(blank).concat(['']).join(','));
+        sec.items.forEach(it => row(it.name, it.ref, m => this.itemValue(m.fyKey, sec.id, it.ref, m.key)));
       }
       if (sec.total) {
-        csv += `"${sec.total.ref || ''}","TOTAL ${sec.total.name}",${fyData.pnlColumns.map(c => sec.total[c.key] || 0).join(',')},${sec.total.avgPct || 0}\n`;
+        row(this.totalRowLabel(sec.total.name, hasItems ? 'Total ' : ''), sec.total.ref,
+            m => this.sectionTotalValue(m.fyKey, sec.id, m.key));
       }
     });
 
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const name = 'Monal_Imarat_PnL_' + months[0].label.replace(/\s+/g, '-')
+      + '_to_' + months[months.length - 1].label.replace(/\s+/g, '-') + '.csv';
+    // A BOM so Excel opens the rupee and dash characters correctly.
+    const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `Monal_Imarat_PnL_${this.state.selectedFY}.csv`);
+    link.setAttribute('download', name);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    console.log('[Export] ' + name + ' — ' + months.length + ' months, ' + (lines.length - 3) + ' rows');
   }
 };
 
