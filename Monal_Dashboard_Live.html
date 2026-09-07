@@ -2685,12 +2685,22 @@ window.MonalApp = {
     const order = {};
     sheetRefs.forEach((r, i) => { if (order[r.ref] === undefined) order[r.ref] = i; });
 
-    let added = 0;
+    let added = 0, moved = 0;
     let buffer = [];
     const place = (entry, fallbackSec) => {
       const overrideId = this.ITEM_SECTION_OVERRIDES[this.normRef(entry.ref)];
       const sec = (overrideId && byId[overrideId]) || fallbackSec;
       if (!sec || !Array.isArray(sec.items)) return;
+
+      // A line belongs to exactly one section. Take it out of any other it is
+      // sitting in - a year restored from localStorage can carry a placement
+      // made by an older build, and adding it here would leave it in both.
+      sections.forEach(other => {
+        if (other === sec) return;
+        const i = other.items.findIndex(it => this.normRef(it.ref) === entry.ref);
+        if (i !== -1) { other.items.splice(i, 1); moved++; }
+      });
+
       let item = sec.items.find(it => this.normRef(it.ref) === entry.ref);
       if (!item) {
         item = { ref: entry.ref, name: entry.label || ('Ref ' + entry.ref), total: 0, avgPct: 0 };
@@ -2718,6 +2728,7 @@ window.MonalApp = {
         return ia - ib;
       });
     });
+    if (moved) console.log('[Parser] moved ' + moved + ' line item(s) out of the wrong section');
     return added;
   },
 
