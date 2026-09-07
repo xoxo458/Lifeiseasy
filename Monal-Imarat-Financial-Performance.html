@@ -1169,7 +1169,7 @@
           <div class="chart-clean-header">
             <div>
               <h3>Revenue, Gross Profit & Net Profit Trends</h3>
-              <p>Monthly Revenue, Gross Profit & Net Profit (EBITDA Proxy)</p>
+              <p id="trendSubtitle">Monthly Revenue, Gross Profit &amp; Net Profit (EBITDA Proxy)</p>
             </div>
             <div style="display:flex; gap:0.35rem; flex-wrap:wrap;">
               <span class="chart-badge-pill" id="badgeRev">Rev: -</span>
@@ -1205,7 +1205,7 @@
         <div class="cost-trend-header">
           <div>
             <h3>Cost Trend Analysis</h3>
-            <p>COGS, Selling, Admin (Excl. Tax) & Tax Expenses as % of Revenue</p>
+            <p id="costTrendSubtitle">COGS, Selling, Admin (Excl. Tax) &amp; Tax Expenses as % of Revenue</p>
           </div>
           <span class="cost-trend-rev-badge" id="costTrendTotalBadge">-- % of Rev</span>
         </div>
@@ -2300,15 +2300,26 @@ window.MonalApp = {
     if (ctxTrend) {
       if (this.charts.revenueTrend) this.charts.revenueTrend.destroy();
 
-      const activeMonths = this.monthObjectsWithData(fyData);
+      // The month on screen and the two before it, so a month is always read
+      // against its own run-up rather than against an empty year.
+      const activeMonths = this.trailingMonths(this.TREND_WINDOW);
       const labels = activeMonths.map(m => m.label);
-      const revs = activeMonths.map(m => (fyData.monthlySummary[m.key]?.revenue || 0) / 1000000);
-      const gps = activeMonths.map(m => (fyData.monthlySummary[m.key]?.grossProfit || 0) / 1000000);
-      const nps = activeMonths.map(m => (fyData.monthlySummary[m.key]?.netProfit || 0) / 1000000);
+      const revs = activeMonths.map(m => (m.summary.revenue || 0) / 1000000);
+      const gps = activeMonths.map(m => (m.summary.grossProfit || 0) / 1000000);
+      const nps = activeMonths.map(m => (m.summary.netProfit || 0) / 1000000);
 
       const revColors = activeMonths.map(m => (selMonth === 'all' || selMonth === m.key) ? '#125438' : 'rgba(18, 84, 56, 0.4)');
       const gpColors = activeMonths.map(m => (selMonth === 'all' || selMonth === m.key) ? '#059669' : 'rgba(5, 150, 105, 0.4)');
       const npColors = activeMonths.map(m => (selMonth === 'all' || selMonth === m.key) ? '#ca8a04' : 'rgba(202, 138, 4, 0.4)');
+
+      const windowLabel = activeMonths.length
+        ? (activeMonths.length > 1
+            ? activeMonths[0].label + ' – ' + activeMonths[activeMonths.length - 1].label
+            : activeMonths[0].label)
+        : 'no months with figures yet';
+      const trendSub = document.getElementById('trendSubtitle');
+      if (trendSub) trendSub.innerText =
+        'Revenue, Gross Profit & Net Profit (EBITDA Proxy) — ' + windowLabel;
 
       document.getElementById('badgeRev').innerText = summary.isEmpty ? 'Rev: -' : `Rev: Rs ${(summary.revenue / 1000000).toFixed(2)}M`;
       document.getElementById('badgeGP').innerText = summary.isEmpty ? 'GP: -' : `GP: Rs ${(summary.grossProfit / 1000000).toFixed(2)}M`;
@@ -2398,29 +2409,27 @@ window.MonalApp = {
     if (ctxCostTrend) {
       if (this.charts.costTrend) this.charts.costTrend.destroy();
 
-      const activeMonths = this.monthObjectsWithData(fyData);
+      const activeMonths = this.trailingMonths(this.TREND_WINDOW);
       const labels = activeMonths.map(m => m.label);
 
-      const cogsPcts = activeMonths.map(m => {
-        const s = fyData.monthlySummary[m.key];
+      const pctOf = (field) => activeMonths.map(m => {
+        const s = m.summary;
         if (!s || !s.revenue) return 0;
-        return parseFloat(((s.cogs / s.revenue) * 100).toFixed(1));
+        return parseFloat(((s[field] / s.revenue) * 100).toFixed(1));
       });
-      const sellPcts = activeMonths.map(m => {
-        const s = fyData.monthlySummary[m.key];
-        if (!s || !s.revenue) return 0;
-        return parseFloat(((s.selling / s.revenue) * 100).toFixed(1));
-      });
-      const adminPcts = activeMonths.map(m => {
-        const s = fyData.monthlySummary[m.key];
-        if (!s || !s.revenue) return 0;
-        return parseFloat(((s.adminExclTax / s.revenue) * 100).toFixed(1));
-      });
-      const taxPcts = activeMonths.map(m => {
-        const s = fyData.monthlySummary[m.key];
-        if (!s || !s.revenue) return 0;
-        return parseFloat(((s.tax / s.revenue) * 100).toFixed(1));
-      });
+      const cogsPcts = pctOf('cogs');
+      const sellPcts = pctOf('selling');
+      const adminPcts = pctOf('adminExclTax');
+      const taxPcts = pctOf('tax');
+
+      const costWindow = activeMonths.length
+        ? (activeMonths.length > 1
+            ? activeMonths[0].label + ' – ' + activeMonths[activeMonths.length - 1].label
+            : activeMonths[0].label)
+        : 'no months with figures yet';
+      const costSub = document.getElementById('costTrendSubtitle');
+      if (costSub) costSub.innerText =
+        'COGS, Selling, Admin (Excl. Tax) & Tax as % of Revenue — ' + costWindow;
 
       const totalCostPct = summary.isEmpty || !summary.revenue ? '--' : ((summary.cogs + summary.selling + summary.adminTotal) / summary.revenue * 100).toFixed(1);
       const badge = document.getElementById('costTrendTotalBadge');
@@ -2800,6 +2809,46 @@ window.MonalApp = {
   // How many months of this year actually carry figures.
   monthsWithData: function(fyData) {
     return this.monthObjectsWithData(fyData).length;
+  },
+
+  TREND_WINDOW: 3,      // the month on screen, and the two before it
+
+  /**
+   * The selected month and the ones before it, oldest first, walking back across
+   * the financial-year boundary - July's run-up is June and May of the year
+   * before, which sit in the previous year. Months with no figures are stepped
+   * over rather than drawn as a drop to zero.
+   */
+  trailingMonths: function(count) {
+    const fyKey = this.state.selectedFY;
+    const sel = this.state.selectedMonth;
+
+    let cursor;
+    if (!sel || sel === 'all') {
+      const withData = this.monthObjectsWithData(this.getCurrentFYData());
+      const last = withData[withData.length - 1];
+      cursor = last ? { fyKey: fyKey, monthKey: last.key } : null;
+    } else {
+      cursor = { fyKey: fyKey, monthKey: sel };
+    }
+
+    const out = [];
+    let steps = 0;
+    while (cursor && out.length < count && steps < 24) {
+      const fy = this.db[cursor.fyKey];
+      const summary = fy && fy.monthlySummary ? fy.monthlySummary[cursor.monthKey] : null;
+      if (summary && summary.revenue) {
+        out.unshift({
+          fyKey: cursor.fyKey,
+          key: cursor.monthKey,
+          label: this.monthLabel(cursor.fyKey, cursor.monthKey),
+          summary: summary
+        });
+      }
+      cursor = this.previousMonthOf(cursor.fyKey, cursor.monthKey);
+      steps++;
+    }
+    return out;
   },
 
   /**
