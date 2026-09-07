@@ -2401,6 +2401,15 @@ window.MonalApp = {
    * a sheet that already reads correctly.
    */
   monthFromDateHeader: function(s) {
+    if (/^\d+(\.\d+)?$/.test(s)) {                              // Excel serial: 46204
+      const n = parseFloat(s);
+      if (n >= 20000 && n <= 60000) {
+        const d = new Date(Math.round((n - 25569) * 86400000));
+        if (!isNaN(d.getTime())) {
+          return { key: this.CALENDAR_ORDER[d.getUTCMonth()], year: d.getUTCFullYear() % 100 };
+        }
+      }
+    }
     let m = s.match(/^date\((\d{4}),\s*(\d{1,2})\s*,/);        // gviz: Date(2026,6,26), month 0-based
     if (m) return { key: this.CALENDAR_ORDER[parseInt(m[2], 10)], year: parseInt(m[1], 10) % 100 };
     m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);                // ISO: 2026-07-26
@@ -2636,6 +2645,7 @@ window.MonalApp = {
     // STEP 1: month columns with their year, plus the ref and total columns
     const monthCols = [];
     const claimedCol = {};
+    const claimedMonth = {};
     let refCol = -1, totalCol = -1;
 
     for (let r = 0; r < Math.min(json.length, 8); r++) {
@@ -2652,22 +2662,40 @@ window.MonalApp = {
         // A real month header is short. The sheet's title row ("...Monthly |
         // Mar-Jun 2026") would otherwise claim March for the line-item column.
         if (s.length > 30) return;
-        const take = (key, year) => {
-          claimedCol[cIdx] = true;
-          monthCols.push({ key: key, year: year, col: cIdx, qualified: key + (year === null ? '' : '-' + year) });
-        };
+
+        let key = null, year = null;
         for (const m of this.FY_MONTH_ORDER) {
           if (!MONTH_PATTERNS[m].test(s)) continue;
-          take(m, this.yearFromHeader(s));
+          key = m; year = this.yearFromHeader(s);
           break;
         }
-        if (!claimedCol[cIdx]) {
+        if (!key) {
           const dated = this.monthFromDateHeader(s);
-          if (dated && dated.key) take(dated.key, dated.year);
+          if (dated && dated.key) { key = dated.key; year = dated.year; }
         }
+        if (!key) return;
+
+        // The first column carrying a month wins. A "% of revenue" block to the
+        // right of the Total repeats the same month headers, and taking the last
+        // match would read ratios where the figures should be.
+        const qualified = key + (year === null ? '' : '-' + year);
+        if (claimedMonth[qualified]) return;
+        claimedMonth[qualified] = true;
+        claimedCol[cIdx] = true;
+        monthCols.push({ key: key, year: year, col: cIdx, qualified: qualified });
       });
     }
     if (refCol < 0) refCol = 1;
+    if (totalCol < 0) {                                          // a bare "Total" header
+      for (let r = 0; r < Math.min(json.length, 8) && totalCol < 0; r++) {
+        const row = json[r];
+        if (!Array.isArray(row)) continue;
+        row.forEach((cell, cIdx) => {
+          if (totalCol < 0 && cell !== null && cell !== undefined
+              && cell.toString().trim().toLowerCase() === 'total') totalCol = cIdx;
+        });
+      }
+    }
     console.log('[Parser] Months:', monthCols.map(mc => mc.qualified), 'RefCol:', refCol, 'TotalCol:', totalCol);
 
     // STEP 2: ref -> values, keyed by month-and-year, plus the sheet's own row
