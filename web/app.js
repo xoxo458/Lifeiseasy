@@ -470,7 +470,6 @@ const COLUMNS = [
   ["Description",   "description",  62, null,         "left"],
   ["Remitter Name", "remitterName", 22, null,         "left"],
   ["Remitter IBAN", "remitterIban", 26, null,         "left"],
-  ["Remitter Bank", "remitterBank", 16, null,         "left"],
   ["Chq / Ref No",  "refNo",        14, "@",          "left"],
   ["Debit",         "debit",        16, "#,##0.00",   "right"],
   ["Credit",        "credit",       16, "#,##0.00",   "right"],
@@ -479,16 +478,18 @@ const COLUMNS = [
 
 const HEADER_ROW = 3;
 const FIRST_DATA_ROW = HEADER_ROW + 1;
+const HEADER_FILL = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1F3864" } };
+const HEADER_FONT = { color: { argb: "FFFFFFFF" }, bold: true, size: 11 };
 const BORDER = { top: { style: "thin", color: { argb: "FFD9D9D9" } },
                  left: { style: "thin", color: { argb: "FFD9D9D9" } },
                  bottom: { style: "thin", color: { argb: "FFD9D9D9" } },
                  right: { style: "thin", color: { argb: "FFD9D9D9" } } };
 
-async function buildWorkbook(statement, report, sourceName) {
-  const wb = new ExcelJS.Workbook();
-  const ws = wb.addWorksheet("Statement");
+/* Write one statement into a worksheet - the header block, styled/filtered/
+ * frozen column row, and one row per transaction. Every statement lives on its
+ * own tab; nothing is combined across statements. */
+function writeStatementSheet(ws, statement) {
   const meta = statement.meta;
-
   ws.columns = COLUMNS.map(([, , width]) => ({ width }));
 
   const fmtDate = (d) => d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" });
@@ -505,9 +506,10 @@ async function buildWorkbook(statement, report, sourceName) {
   if (meta.periodFrom && meta.periodTo)
     ws.getCell(2, 1).value = `Statement Period: ${fmtDate(meta.periodFrom)} to ${fmtDate(meta.periodTo)}`;
   if (meta.openingBalance !== null) {
-    ws.getCell(2, 9).value = "Opening Balance:";
-    ws.getCell(2, 9).font = { bold: true, size: 11 };
-    const cell = ws.getCell(2, 11);
+    const labelCol = COLUMNS.length - 1, valueCol = COLUMNS.length;
+    ws.getCell(2, labelCol).value = "Opening Balance:";
+    ws.getCell(2, labelCol).font = { bold: true, size: 11 };
+    const cell = ws.getCell(2, valueCol);
     cell.value = centsToNumber(meta.openingBalance);
     cell.numFmt = "#,##0.00";
   }
@@ -515,8 +517,8 @@ async function buildWorkbook(statement, report, sourceName) {
   COLUMNS.forEach(([header], i) => {
     const cell = ws.getCell(HEADER_ROW, i + 1);
     cell.value = header;
-    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1F3864" } };
-    cell.font = { color: { argb: "FFFFFFFF" }, bold: true, size: 11 };
+    cell.fill = HEADER_FILL;
+    cell.font = HEADER_FONT;
     cell.alignment = { horizontal: "left", vertical: "middle" };
     cell.border = BORDER;
   });
@@ -542,45 +544,75 @@ async function buildWorkbook(statement, report, sourceName) {
   const lastRow = Math.max(FIRST_DATA_ROW + statement.transactions.length - 1, HEADER_ROW);
   ws.autoFilter = { from: { row: HEADER_ROW, column: 1 }, to: { row: lastRow, column: COLUMNS.length } };
   ws.views = [{ state: "frozen", ySplit: FIRST_DATA_ROW - 1 }];
+  return ws;
+}
+
+// Excel tab names: <=31 chars, none of []:*?/\, non-blank, unique in the book.
+function sheetName(name, taken) {
+  let base = String(name).replace(/\.[^.]+$/, "").replace(/[\[\]:*?/\\]/g, "-").trim().slice(0, 31);
+  if (!base) base = "Statement";
+  let candidate = base, n = 2;
+  while (taken.has(candidate.toLowerCase())) {
+    const suffix = ` (${n++})`;
+    candidate = base.slice(0, 31 - suffix.length) + suffix;
+  }
+  taken.add(candidate.toLowerCase());
+  return candidate;
+}
+
+/* Build ONE workbook holding every statement: one tab per statement, plus a
+ * single Validation tab summarising all of them. `items` is [{name, statement,
+ * report}]. Statements are never merged - each keeps its own tab. */
+async function buildCombinedWorkbook(items) {
+  const wb = new ExcelJS.Workbook();
+  const taken = new Set();
+
+  for (const { name, statement } of items) {
+    writeStatementSheet(wb.addWorksheet(sheetName(name, taken)), statement);
+  }
 
   const vs = wb.addWorksheet("Validation");
-  const t = statement.totals;
-  const rows = [
-    ["Source file", sourceName],
-    ["Extraction engine", "browser (pdf.js text layer)"],
-    ["Transactions extracted", report.checkedRows],
-    ["Balance chain", report.balanceChainOk ? "OK" : "FAILED"],
-    ["Footer totals", report.totalsOk ? "OK" : "FAILED"],
-    ["Errors", report.errors.length],
-    ["Warnings", report.warnings.length],
-    ["", ""],
-    ["Opening balance (printed)", centsToNumber(meta.openingBalance)],
-    ["Closing balance (printed)", centsToNumber(t.closingBalance)],
-    ["Available balance (printed)", centsToNumber(t.availableBalance)],
-    ["Total DR transactions (printed)", t.totalDrCount],
-    ["Total CR transactions (printed)", t.totalCrCount],
-    ["Sum of DR transactions (printed)", centsToNumber(t.sumDr)],
-    ["Sum of CR transactions (printed)", centsToNumber(t.sumCr)],
-  ];
-  rows.forEach(([label, value], i) => {
-    vs.getCell(i + 1, 1).value = label;
-    if (label) vs.getCell(i + 1, 1).font = { bold: true };
-    vs.getCell(i + 1, 2).value = value === undefined ? null : value;
-  });
-  const start = rows.length + 2;
-  ["Severity", "Row", "Check", "Detail"].forEach((h, c) => {
-    const cell = vs.getCell(start, c + 1);
+  const summaryHead = ["Statement", "Transactions", "Balance chain", "Footer totals", "Errors", "Warnings"];
+  summaryHead.forEach((h, c) => {
+    const cell = vs.getCell(1, c + 1);
     cell.value = h;
-    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1F3864" } };
-    cell.font = { color: { argb: "FFFFFFFF" }, bold: true };
+    cell.fill = HEADER_FILL;
+    cell.font = HEADER_FONT;
   });
-  report.issues.forEach((issue, i) => {
-    vs.getCell(start + i + 1, 1).value = issue.severity;
-    vs.getCell(start + i + 1, 2).value = issue.row;
-    vs.getCell(start + i + 1, 3).value = issue.check;
-    vs.getCell(start + i + 1, 4).value = issue.detail;
+  items.forEach(({ name, report }, i) => {
+    const row = i + 2;
+    vs.getCell(row, 1).value = name;
+    vs.getCell(row, 2).value = report.checkedRows;
+    vs.getCell(row, 3).value = report.balanceChainOk ? "OK" : "FAILED";
+    vs.getCell(row, 4).value = report.totalsOk ? "OK" : "FAILED";
+    vs.getCell(row, 5).value = report.errors.length;
+    vs.getCell(row, 6).value = report.warnings.length;
   });
-  vs.columns = [{ width: 34 }, { width: 22 }, { width: 18 }, { width: 90 }];
+
+  // Detailed issues across all statements, only if there are any.
+  const withIssues = items.filter((it) => it.report.issues.length);
+  if (withIssues.length) {
+    let row = items.length + 3;
+    ["Statement", "Severity", "Row", "Check", "Detail"].forEach((h, c) => {
+      const cell = vs.getCell(row, c + 1);
+      cell.value = h;
+      cell.fill = HEADER_FILL;
+      cell.font = HEADER_FONT;
+    });
+    row++;
+    for (const { name, report } of withIssues) {
+      for (const issue of report.issues) {
+        vs.getCell(row, 1).value = name;
+        vs.getCell(row, 2).value = issue.severity;
+        vs.getCell(row, 3).value = issue.row;
+        vs.getCell(row, 4).value = issue.check;
+        vs.getCell(row, 5).value = issue.detail;
+        row++;
+      }
+    }
+  }
+  vs.columns = [{ width: 30 }, { width: 14 }, { width: 14 }, { width: 14 }, { width: 10 }, { width: 90 }];
+  vs.views = [{ state: "frozen", ySplit: 1 }];
 
   return wb.xlsx.writeBuffer();
 }

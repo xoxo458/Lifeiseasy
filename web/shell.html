@@ -60,8 +60,9 @@
 <div class="wrap">
   <header>
     <h1>MCB Statement → Excel</h1>
-    <p>Drop a statement PDF to get a formatted spreadsheet. Everything runs in this
-       page — your statement is never uploaded anywhere.</p>
+    <p>Drop one or many statement PDFs to get a single Excel workbook — one tab per
+       statement. Everything runs in this page; your statements are never uploaded
+       anywhere.</p>
   </header>
 
   <div id="drop">
@@ -73,13 +74,13 @@
   <div class="opts">
     <label><input type="checkbox" id="wrapSpace"> Put spaces between wrapped lines</label>
     <span>·</span>
-    <span>Drop or choose as many statements as you like — each becomes its own separate Excel.</span>
+    <span>Choose as many statements as you like — each becomes its own tab in one workbook.</span>
   </div>
 
   <div id="batch" class="card" hidden>
     <div class="sub" id="batchStatus"></div>
     <p style="margin:12px 0 0">
-      <button id="downloadAll" disabled>Download all as ZIP</button>
+      <button id="downloadAll" disabled>Download workbook</button>
       <button class="ghost" id="clearAll">Clear</button>
     </p>
   </div>
@@ -89,13 +90,12 @@
   <footer>
     Offline and self-contained: no network requests, no API keys, no cost.
     Every conversion is checked against the statement's own balance chain and
-    printed totals — see the <code>Validation</code> sheet in each workbook.
+    printed totals — see the <code>Validation</code> tab in the workbook.
   </footer>
 </div>
 
 <script type="text/plain" id="pdf-worker-src">/*__PDF_WORKER__*/</script>
 <script>/*__EXCELJS__*/</script>
-<script>/*__JSZIP__*/</script>
 <script type="module">
 /*__PDFJS__*/
 
@@ -121,9 +121,9 @@ const batchStatus = document.getElementById("batchStatus");
 const downloadAllBtn = document.getElementById("downloadAll");
 const clearAllBtn = document.getElementById("clearAll");
 
-// Every successful conversion keeps its own workbook here. Files are never
-// combined - each entry becomes one separate .xlsx, in the page and in the ZIP.
-const converted = [];   // { name, blob }
+// Every successful conversion is kept here. Statements are never merged - each
+// becomes its own tab in the single combined workbook.
+const converted = [];   // { name, statement, report }
 let okCount = 0, failCount = 0, totalSeen = 0;
 
 drop.addEventListener("click", () => input.click());
@@ -153,39 +153,26 @@ function updateBatch() {
   if (remaining > 0) parts.push(`${remaining} in progress…`);
   batchStatus.textContent = parts.join(" · ");
   downloadAllBtn.disabled = converted.length === 0;
-  downloadAllBtn.textContent = converted.length > 1
-    ? `Download all ${converted.length} as ZIP`
-    : "Download all as ZIP";
-}
-
-// Two statements can share an output name only if their PDFs did; keep both by
-// suffixing, so nothing is silently overwritten inside the ZIP.
-function uniqueName(name, taken) {
-  if (!taken.has(name)) { taken.add(name); return name; }
-  const dot = name.lastIndexOf(".");
-  const stem = dot === -1 ? name : name.slice(0, dot);
-  const ext = dot === -1 ? "" : name.slice(dot);
-  let n = 2, candidate;
-  do { candidate = `${stem} (${n++})${ext}`; } while (taken.has(candidate));
-  taken.add(candidate);
-  return candidate;
+  downloadAllBtn.textContent = converted.length
+    ? `Download workbook (${converted.length} tab${converted.length > 1 ? "s" : ""})`
+    : "Download workbook";
 }
 
 downloadAllBtn.addEventListener("click", async () => {
   if (!converted.length) return;
   downloadAllBtn.disabled = true;
   const label = downloadAllBtn.textContent;
-  downloadAllBtn.textContent = "Zipping…";
+  downloadAllBtn.textContent = "Building workbook…";
   try {
-    const zip = new JSZip();
-    const taken = new Set();
-    for (const item of converted) zip.file(uniqueName(item.name, taken), item.blob);
-    const blob = await zip.generateAsync({ type: "blob", compression: "DEFLATE" });
+    // One workbook, one tab per statement, plus a Validation summary tab.
+    const data = await buildCombinedWorkbook(converted);
+    const blob = new Blob([data], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
     const url = URL.createObjectURL(blob);
     const stamp = new Date().toISOString().slice(0, 10);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `bank-statements-${stamp}.zip`;
+    a.download = `bank-statements-${stamp}.xlsx`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   } finally {
@@ -218,11 +205,7 @@ async function run(file) {
       },
     });
 
-    const data = await buildWorkbook(statement, report, file.name);
-    const blob = new Blob([data], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-    const url = URL.createObjectURL(blob);
-    const outName = file.name.replace(/\.pdf$/i, "") + ".xlsx";
+    const tabName = file.name.replace(/\.pdf$/i, "");
 
     const pill = (ok, label) => `<span class="pill ${ok ? "ok" : "bad"}">${label}: ${ok ? "OK" : "FAILED"}</span>`;
     const warnPill = report.warnings.length
@@ -230,13 +213,12 @@ async function run(file) {
 
     card.innerHTML = `
       <h3>${esc(file.name)}</h3>
-      <div class="sub">${report.checkedRows} transactions extracted</div>
+      <div class="sub">${report.checkedRows} transactions extracted → tab “${esc(tabName)}”</div>
       <div>
         ${pill(report.balanceChainOk, "Balance chain")}
         ${pill(report.totalsOk, "Footer totals")}
         ${warnPill}
       </div>
-      <p style="margin:14px 0 0"><button data-dl>Download ${esc(outName)}</button></p>
       ${report.issues.length ? `
         <details${report.errors.length ? " open" : ""}>
           <summary>${report.errors.length} error${report.errors.length === 1 ? "" : "s"},
@@ -250,15 +232,9 @@ async function run(file) {
           </table></div>
         </details>` : ""}
     `;
-    card.querySelector("[data-dl]").addEventListener("click", () => {
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = outName;
-      a.click();
-    });
 
-    // Record this workbook for the batch ZIP - kept separate, never merged.
-    converted.push({ name: outName, blob });
+    // Record this statement for the combined workbook - its own tab, never merged.
+    converted.push({ name: tabName, statement, report });
     okCount++;
     updateBatch();
   } catch (err) {

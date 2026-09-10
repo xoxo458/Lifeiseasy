@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 from . import __version__
-from .excel import write as write_excel
+from .excel import write as write_excel, write_combined
 from .models import Statement
 from .parse import dedupe, stitch
 from .validate import Report, summarise, validate
@@ -52,6 +52,11 @@ def build_parser() -> argparse.ArgumentParser:
         choices=("low", "medium", "high", "xhigh", "max"),
         default="high",
         help="vision engine: transcription effort (default: high)",
+    )
+    parser.add_argument(
+        "--combine",
+        metavar="OUT.xlsx",
+        help="write all inputs into one workbook, a tab per statement, at this path",
     )
     parser.add_argument("--json", dest="json_out", help="also write the extracted data as JSON")
     parser.add_argument(
@@ -142,6 +147,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     failures = 0
+    combined: list[tuple[str, Statement, Report]] = []
     for pdf_path in pdfs:
         if not pdf_path.is_file():
             print(f"{pdf_path}: not found", file=sys.stderr)
@@ -156,9 +162,6 @@ def main(argv: list[str] | None = None) -> int:
             failures += 1
             continue
 
-        out_path = _output_path(pdf_path, args, many=len(pdfs) > 1)
-        write_excel(statement, str(out_path), report)
-
         if args.json_out:
             json_path = (
                 Path(args.json_out)
@@ -169,16 +172,32 @@ def main(argv: list[str] | None = None) -> int:
             json_path.write_text(json.dumps(statement.to_dict(), indent=2), encoding="utf-8")
 
         log(_indent(summarise(report)))
-        print(f"{out_path}  ({len(statement.transactions)} transactions)")
+
+        if args.combine:
+            # Defer to one workbook, a tab per statement; nothing merged.
+            combined.append((pdf_path.stem, statement, report))
+        else:
+            out_path = _output_path(pdf_path, args, many=len(pdfs) > 1)
+            write_excel(statement, str(out_path), report)
+            print(f"{out_path}  ({len(statement.transactions)} transactions)")
 
         if report.errors:
             print(
                 f"{pdf_path.name}: {len(report.errors)} validation error(s) - see the "
-                "Validation sheet before using this file",
+                "Validation tab before using this file",
                 file=sys.stderr,
             )
             if args.strict:
                 failures += 1
+
+    if args.combine and combined:
+        out_path = Path(args.combine)
+        if out_path.suffix.lower() != ".xlsx":
+            out_path = out_path.with_suffix(".xlsx")
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        write_combined(combined, str(out_path))
+        total = sum(len(s.transactions) for _, s, _ in combined)
+        print(f"{out_path}  ({len(combined)} tabs, {total} transactions)")
 
     return 1 if failures else 0
 

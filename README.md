@@ -7,10 +7,9 @@ the same validation of the result.
 ## The browser app (no install, no cost)
 
 Open **`mcb-statement-to-excel.html`** in any browser and drop one or many
-statement PDFs on it. Each statement becomes its own separate formatted workbook
-— nothing is ever merged. Download them one at a time, or use **Download all as
-ZIP** to get every `.xlsx` in a single archive (one file per statement, named
-after its PDF).
+statement PDFs on it. Click **Download workbook** to get a single `.xlsx` with
+**one tab per statement** (named after its PDF) plus a **Validation** summary
+tab. Statements are never merged — each keeps its own tab.
 
 - **Nothing to install** — no Python, no packages, no build step
 - **Nothing leaves your machine** — no network requests at all; the PDF is read
@@ -58,7 +57,6 @@ filtered, frozen column header, and transactions start at row 4:
 | Description | text | wrapped lines rejoined |
 | Remitter Name | text | wrapped lines rejoined |
 | Remitter IBAN | text | wrapped lines rejoined into the full IBAN |
-| Remitter Bank | text | |
 | Chq / Ref No | text | leading zeros preserved (`0000014203`) |
 | Debit | number | `#,##0.00`; blank stays blank, never `0` |
 | Credit | number | `#,##0.00` |
@@ -160,6 +158,7 @@ you can get it.
 ```
 -o, --output PATH        .xlsx path (single input) or output directory
     --engine CHOICE      auto | text | ocr | vision      (default: auto)
+    --combine OUT.xlsx    one workbook, a tab per statement (batch)
     --wrap-join CHOICE   none | space                    (default: none)
     --ocr-scale N        ocr: page render multiplier     (default: 4.0)
     --pages-per-call N   vision: pages per request       (default: 4)

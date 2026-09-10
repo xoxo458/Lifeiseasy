@@ -18,7 +18,6 @@ def build(lib_dir: Path, out_path: Path) -> Path:
         "/*__PDFJS__*/": lib_dir / "build" / "pdf.min.mjs",
         "/*__PDF_WORKER__*/": lib_dir / "build" / "pdf.worker.min.mjs",
         "/*__EXCELJS__*/": lib_dir / "dist" / "exceljs.min.js",
-        "/*__JSZIP__*/": lib_dir / "dist" / "jszip.min.js",
         "/*__APP__*/": HERE / "app.js",
     }
     html = (HERE / "shell.html").read_text(encoding="utf-8")

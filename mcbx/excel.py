@@ -9,6 +9,7 @@ A second sheet records the validation result so the output is auditable.
 
 from __future__ import annotations
 
+import re
 from decimal import Decimal
 
 from openpyxl import Workbook
@@ -29,7 +30,6 @@ COLUMNS = [
     ("Description",    "description",    62, None,         "left"),
     ("Remitter Name",  "remitter_name",  22, None,         "left"),
     ("Remitter IBAN",  "remitter_iban",  26, None,         "left"),
-    ("Remitter Bank",  "remitter_bank",  16, None,         "left"),
     ("Chq / Ref No",   "ref_no",         14, "@",          "left"),
     ("Debit",          "debit",          16, "#,##0.00",   "right"),
     ("Credit",         "credit",         16, "#,##0.00",   "right"),
@@ -44,20 +44,53 @@ CELL_BORDER = Border(left=_THIN, right=_THIN, top=_THIN, bottom=_THIN)
 
 
 def write(statement: Statement, out_path: str, report: Report | None = None) -> str:
+    """Write one statement to its own workbook (Statement + Validation sheets)."""
     wb = Workbook()
     ws = wb.active
     ws.title = "Statement"
-
-    _write_header_block(ws, statement)
-    _write_columns(ws)
-    _write_rows(ws, statement)
-    _finish_sheet(ws, statement)
+    _write_statement_sheet(ws, statement)
 
     if report is not None:
         _write_validation_sheet(wb, statement, report)
 
     wb.save(out_path)
     return out_path
+
+
+def write_combined(items: list[tuple[str, Statement, Report | None]], out_path: str) -> str:
+    """Write many statements into one workbook: one tab per statement, plus a
+    single Validation tab summarising all of them. Statements are never merged.
+
+    ``items`` is a list of ``(tab_name, statement, report)``.
+    """
+    wb = Workbook()
+    wb.remove(wb.active)
+    taken: set[str] = set()
+    for name, statement, _report in items:
+        ws = wb.create_sheet(_sheet_name(name, taken))
+        _write_statement_sheet(ws, statement)
+    _write_combined_validation(wb, items)
+    wb.save(out_path)
+    return out_path
+
+
+def _write_statement_sheet(ws, statement: Statement) -> None:
+    _write_header_block(ws, statement)
+    _write_columns(ws)
+    _write_rows(ws, statement)
+    _finish_sheet(ws, statement)
+
+
+def _sheet_name(name: str, taken: set[str]) -> str:
+    """Excel tab name: <=31 chars, none of []:*?/\\, non-blank, unique."""
+    base = re.sub(r"[\[\]:*?/\\]", "-", str(name)).strip()[:31] or "Statement"
+    candidate, n = base, 2
+    while candidate.lower() in taken:
+        suffix = f" ({n})"
+        candidate = base[: 31 - len(suffix)] + suffix
+        n += 1
+    taken.add(candidate.lower())
+    return candidate
 
 
 def _write_header_block(ws, statement) -> None:
@@ -78,8 +111,8 @@ def _write_header_block(ws, statement) -> None:
     ws.cell(row=1, column=5, value=right)
     ws.cell(row=2, column=1, value=f"Statement Period: {period}" if period else "")
     if meta.opening_balance is not None:
-        ws.cell(row=2, column=9, value="Opening Balance:").font = TITLE_FONT
-        cell = ws.cell(row=2, column=11, value=_number(meta.opening_balance))
+        ws.cell(row=2, column=len(COLUMNS) - 1, value="Opening Balance:").font = TITLE_FONT
+        cell = ws.cell(row=2, column=len(COLUMNS), value=_number(meta.opening_balance))
         cell.number_format = "#,##0.00"
 
 
@@ -172,6 +205,47 @@ def _write_validation_sheet(wb, statement, report: Report) -> None:
     ws.column_dimensions["B"].width = 22
     ws.column_dimensions["C"].width = 18
     ws.column_dimensions["D"].width = 90
+
+
+def _write_combined_validation(wb, items: list[tuple[str, Statement, Report | None]]) -> None:
+    """One summary tab covering every statement, then their issues in detail."""
+    ws = wb.create_sheet("Validation")
+    summary_head = ("Statement", "Transactions", "Balance chain", "Footer totals", "Errors", "Warnings")
+    for column, header in enumerate(summary_head, start=1):
+        cell = ws.cell(row=1, column=column, value=header)
+        cell.fill = HEADER_FILL
+        cell.font = HEADER_FONT
+
+    for offset, (name, _statement, report) in enumerate(items, start=2):
+        ws.cell(row=offset, column=1, value=name)
+        if report is None:
+            continue
+        ws.cell(row=offset, column=2, value=report.checked_rows)
+        ws.cell(row=offset, column=3, value="OK" if report.balance_chain_ok else "FAILED")
+        ws.cell(row=offset, column=4, value="OK" if report.totals_ok else "FAILED")
+        ws.cell(row=offset, column=5, value=len(report.errors))
+        ws.cell(row=offset, column=6, value=len(report.warnings))
+
+    with_issues = [(n, r) for n, _s, r in items if r is not None and r.issues]
+    if with_issues:
+        row = len(items) + 3
+        for column, header in enumerate(("Statement", "Severity", "Row", "Check", "Detail"), start=1):
+            cell = ws.cell(row=row, column=column, value=header)
+            cell.fill = HEADER_FILL
+            cell.font = HEADER_FONT
+        row += 1
+        for name, report in with_issues:
+            for issue in report.issues:
+                ws.cell(row=row, column=1, value=name)
+                ws.cell(row=row, column=2, value=issue.severity)
+                ws.cell(row=row, column=3, value=issue.row)
+                ws.cell(row=row, column=4, value=issue.check)
+                ws.cell(row=row, column=5, value=issue.detail)
+                row += 1
+
+    for col, width in zip("ABCDEF", (30, 14, 14, 14, 10, 90)):
+        ws.column_dimensions[col].width = width
+    ws.freeze_panes = "A2"
 
 
 def _opt(value):

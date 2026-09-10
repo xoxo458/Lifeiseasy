@@ -338,21 +338,25 @@ def test_end_to_end_excel_layout(converted, tmp_path):
 
     wb = load_workbook(out)
     ws = wb["Statement"]
-    assert [c.value for c in ws[excel.HEADER_ROW]] == [c[0] for c in excel.COLUMNS]
+    headers = [c.value for c in ws[excel.HEADER_ROW]]
+    assert headers == [c[0] for c in excel.COLUMNS]
+    assert "Remitter Bank" not in headers   # the removed column
     assert ws.freeze_panes == f"A{excel.FIRST_DATA_ROW}"
     assert ws.auto_filter.ref.startswith(f"A{excel.HEADER_ROW}:")
 
+    # Columns are looked up by header so the test survives further reordering.
+    col = {name: i + 1 for i, name in enumerate(headers)}
     first = excel.FIRST_DATA_ROW
     assert ws.cell(row=first, column=1).value.strftime("%d-%b-%Y") == "01-Aug-2026"
     assert ws.cell(row=first, column=1).number_format == "d-mmm-yyyy"
-    assert ws.cell(row=first, column=9).value == 1.0          # debit is a number
-    assert ws.cell(row=first, column=10).value is None        # blank credit, not 0
-    assert ws.cell(row=first, column=11).number_format == "#,##0.00"
+    assert ws.cell(row=first, column=col["Debit"]).value == 1.0     # debit is a number
+    assert ws.cell(row=first, column=col["Credit"]).value is None   # blank credit, not 0
+    assert ws.cell(row=first, column=col["Balance"]).number_format == "#,##0.00"
 
     # Branch 0069 becomes 69; a reference number keeps its leading zeros as text.
-    branches = [ws.cell(row=first + i, column=3).value for i in range(9)]
+    branches = [ws.cell(row=first + i, column=col["Tran. Br."]).value for i in range(9)]
     assert 69 in branches
-    refs = [ws.cell(row=first + i, column=8).value for i in range(9)]
+    refs = [ws.cell(row=first + i, column=col["Chq / Ref No"]).value for i in range(9)]
     assert "0000014203" in refs
 
     assert "Validation" in wb.sheetnames
@@ -439,3 +443,52 @@ def test_opening_balance_is_read_beside_its_label():
 
     rows = [["Opening", "Balance", "Ledger:", "10,509,605.87"], ["Actual:", "10,509,605.87"]]
     assert parse_meta("", rows).opening_balance == Decimal("10509605.87")
+
+
+def test_write_combined_makes_one_tab_per_statement(converted, tmp_path):
+    """Many statements -> one workbook, a tab each, plus a Validation summary."""
+    from openpyxl import load_workbook
+
+    statement, report = converted
+    out = tmp_path / "combined.xlsx"
+    excel.write_combined(
+        [("1175809501009469", statement, report),
+         ("1175835901009470", statement, report)],
+        str(out),
+    )
+
+    wb = load_workbook(out)
+    assert wb.sheetnames == ["1175809501009469", "1175835901009470", "Validation"]
+    for tab in ("1175809501009469", "1175835901009470"):
+        ws = wb[tab]
+        assert [c.value for c in ws[excel.HEADER_ROW]] == [c[0] for c in excel.COLUMNS]
+        assert ws.max_row == excel.FIRST_DATA_ROW + len(statement.transactions) - 1
+
+    vs = wb["Validation"]
+    assert [c.value for c in vs[1]][:4] == ["Statement", "Transactions", "Balance chain", "Footer totals"]
+    assert vs.cell(row=2, column=1).value == "1175809501009469"
+    assert vs.cell(row=3, column=1).value == "1175835901009470"
+
+
+def test_combined_sheet_names_are_deduped_and_capped():
+    from mcbx.excel import _sheet_name
+
+    taken = set()
+    assert _sheet_name("acct", taken) == "acct"
+    assert _sheet_name("acct", taken) == "acct (2)"          # duplicate suffixed
+    long = "x" * 40
+    assert len(_sheet_name(long, taken)) == 31                # capped to Excel's limit
+    assert _sheet_name("a:b/c", taken) == "a-b-c"             # illegal chars replaced
+
+
+def test_cli_combine_writes_one_workbook(fixture_pdf, tmp_path):
+    from openpyxl import load_workbook
+
+    from mcbx.cli import main
+
+    out = tmp_path / "all.xlsx"
+    assert main([fixture_pdf, fixture_pdf, "--combine", str(out), "-q"]) == 0
+    wb = load_workbook(out)
+    # Two inputs (same stem) -> two deduped tabs + Validation.
+    assert len(wb.sheetnames) == 3
+    assert wb.sheetnames[-1] == "Validation"
