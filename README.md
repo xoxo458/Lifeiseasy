@@ -6,8 +6,11 @@ the same validation of the result.
 
 ## The browser app (no install, no cost)
 
-Open **`mcb-statement-to-excel.html`** in any browser and drop a statement PDF
-on it. A formatted workbook downloads.
+Open **`mcb-statement-to-excel.html`** in any browser and drop one or many
+statement PDFs on it. Each statement becomes its own separate formatted workbook
+— nothing is ever merged. Download them one at a time, or use **Download all as
+ZIP** to get every `.xlsx` in a single archive (one file per statement, named
+after its PDF).
 
 - **Nothing to install** — no Python, no packages, no build step
 - **Nothing leaves your machine** — no network requests at all; the PDF is read

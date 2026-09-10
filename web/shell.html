@@ -73,7 +73,15 @@
   <div class="opts">
     <label><input type="checkbox" id="wrapSpace"> Put spaces between wrapped lines</label>
     <span>·</span>
-    <span>Needs a text-based PDF (from internet banking), not a scan.</span>
+    <span>Drop or choose as many statements as you like — each becomes its own separate Excel.</span>
+  </div>
+
+  <div id="batch" class="card" hidden>
+    <div class="sub" id="batchStatus"></div>
+    <p style="margin:12px 0 0">
+      <button id="downloadAll" disabled>Download all as ZIP</button>
+      <button class="ghost" id="clearAll">Clear</button>
+    </p>
   </div>
 
   <div id="results"></div>
@@ -87,6 +95,7 @@
 
 <script type="text/plain" id="pdf-worker-src">/*__PDF_WORKER__*/</script>
 <script>/*__EXCELJS__*/</script>
+<script>/*__JSZIP__*/</script>
 <script type="module">
 /*__PDFJS__*/
 
@@ -107,6 +116,15 @@ const drop = document.getElementById("drop");
 const input = document.getElementById("file");
 const results = document.getElementById("results");
 const wrapSpace = document.getElementById("wrapSpace");
+const batch = document.getElementById("batch");
+const batchStatus = document.getElementById("batchStatus");
+const downloadAllBtn = document.getElementById("downloadAll");
+const clearAllBtn = document.getElementById("clearAll");
+
+// Every successful conversion keeps its own workbook here. Files are never
+// combined - each entry becomes one separate .xlsx, in the page and in the ZIP.
+const converted = [];   // { name, blob }
+let okCount = 0, failCount = 0, totalSeen = 0;
 
 drop.addEventListener("click", () => input.click());
 drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.add("over"); });
@@ -119,8 +137,69 @@ drop.addEventListener("drop", (e) => {
 input.addEventListener("change", () => { handle([...input.files]); input.value = ""; });
 
 async function handle(files) {
+  if (!files.length) return;
+  totalSeen += files.length;
+  updateBatch();
+  // Convert one at a time so a big batch stays responsive and ordered.
   for (const file of files) await run(file);
+  updateBatch();
 }
+
+function updateBatch() {
+  batch.hidden = totalSeen === 0;
+  const remaining = totalSeen - okCount - failCount;
+  const parts = [`${okCount} converted`];
+  if (failCount) parts.push(`${failCount} failed`);
+  if (remaining > 0) parts.push(`${remaining} in progress…`);
+  batchStatus.textContent = parts.join(" · ");
+  downloadAllBtn.disabled = converted.length === 0;
+  downloadAllBtn.textContent = converted.length > 1
+    ? `Download all ${converted.length} as ZIP`
+    : "Download all as ZIP";
+}
+
+// Two statements can share an output name only if their PDFs did; keep both by
+// suffixing, so nothing is silently overwritten inside the ZIP.
+function uniqueName(name, taken) {
+  if (!taken.has(name)) { taken.add(name); return name; }
+  const dot = name.lastIndexOf(".");
+  const stem = dot === -1 ? name : name.slice(0, dot);
+  const ext = dot === -1 ? "" : name.slice(dot);
+  let n = 2, candidate;
+  do { candidate = `${stem} (${n++})${ext}`; } while (taken.has(candidate));
+  taken.add(candidate);
+  return candidate;
+}
+
+downloadAllBtn.addEventListener("click", async () => {
+  if (!converted.length) return;
+  downloadAllBtn.disabled = true;
+  const label = downloadAllBtn.textContent;
+  downloadAllBtn.textContent = "Zipping…";
+  try {
+    const zip = new JSZip();
+    const taken = new Set();
+    for (const item of converted) zip.file(uniqueName(item.name, taken), item.blob);
+    const blob = await zip.generateAsync({ type: "blob", compression: "DEFLATE" });
+    const url = URL.createObjectURL(blob);
+    const stamp = new Date().toISOString().slice(0, 10);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `bank-statements-${stamp}.zip`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  } finally {
+    downloadAllBtn.textContent = label;
+    downloadAllBtn.disabled = false;
+  }
+});
+
+clearAllBtn.addEventListener("click", () => {
+  converted.length = 0;
+  okCount = failCount = totalSeen = 0;
+  results.innerHTML = "";
+  batch.hidden = true;
+});
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
 
@@ -177,10 +256,17 @@ async function run(file) {
       a.download = outName;
       a.click();
     });
+
+    // Record this workbook for the batch ZIP - kept separate, never merged.
+    converted.push({ name: outName, blob });
+    okCount++;
+    updateBatch();
   } catch (err) {
     card.innerHTML = `<h3>${esc(file.name)}</h3>
       <div><span class="pill bad">Could not convert</span></div>
       <div class="sub" style="margin-top:8px">${esc(err.message || err)}</div>`;
+    failCount++;
+    updateBatch();
   }
 }
 </script>
