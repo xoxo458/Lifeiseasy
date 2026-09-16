@@ -1604,7 +1604,7 @@ const MONAL_FINANCIAL_DATABASE = {
       items: [
         { ref: "B1", name: "Gross Profit Margin", actualAvgPct: 0.5319, pakBenchmark: "55.0% - 60.0%", intBenchmark: "65.0% - 70.0%", pakMin: 0.55, pakMax: 0.60, status: "warning", variance: -0.0181 },
         { ref: "B2", name: "Cost of Goods Sold (COGS)", actualAvgPct: 0.4681, pakBenchmark: "40.0% - 45.0%", intBenchmark: "30.0% - 35.0%", pakMin: 0.40, pakMax: 0.45, status: "risk", variance: 0.0181 },
-        { ref: "B3", name: "Total Prime Cost (COGS + Kitchen Labour)", actualAvgPct: 0.5283, pakBenchmark: "52.0% - 60.0%", intBenchmark: "55.0% - 65.0%", pakMin: 0.52, pakMax: 0.60, status: "favourable", variance: 0.0083 },
+        { ref: "B3", name: "Total Prime Cost (Food + Fuel/Power + Direct Labour)", actualAvgPct: 0.5283, pakBenchmark: "52.0% - 60.0%", intBenchmark: "55.0% - 65.0%", pakMin: 0.52, pakMax: 0.60, status: "favourable", variance: 0.0083 },
         { ref: "B4", name: "Net Profit / EBITDA Margin", actualAvgPct: 0.2429, pakBenchmark: "12.0% - 18.0%", intBenchmark: "15.0% - 20.0%", pakMin: 0.12, pakMax: 0.18, status: "favourable", variance: 0.0629 }
       ]
     },
@@ -2186,11 +2186,16 @@ window.MonalApp = {
     const labourAll = kitchenLabour + line('3.2') + line('4.1');  // + selling and admin salaries
     const utilities = line('2.3') + line('3.3') + line('4.16');   // power and utilities, all three books
 
+    // Prime cost is three named lines added together - food, fuel and power, and
+    // direct labour. It is not built from Total COGS: 2.1, 2.3 and 2.4 all sit
+    // inside that total, so adding them to it would count each of them twice.
+    const primeCost = line('2.1') + line('2.3') + line('2.4');
+
     return {
       hasData: rev > 0,
       B1: ratio(s.grossProfit),
       B2: ratio(s.cogs),
-      B3: ratio((s.cogs || 0) + kitchenLabour),
+      B3: ratio(primeCost),
       B4: ratio(s.netProfit),
       B5: ratio(labourAll),
       B6: ratio(utilities),
