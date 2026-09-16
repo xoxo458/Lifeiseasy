@@ -1894,6 +1894,14 @@ window.MonalApp = {
     const isYear = !this.state.selectedMonth || this.state.selectedMonth === 'all';
     const months = isYear ? this.monthsWithData(this.getCurrentFYData()) : 0;
     const pctOfRev = (v) => s.revenue ? ((v / s.revenue) * 100).toFixed(1) + '%' : '-';
+    // Quote last month's figure beside the change, so the percentage has a
+    // number next to it without a second chip.
+    const prev = this.previousMonthFigures();
+    const withRef = (text, field) => {
+      const fig = prev ? this.referenceMoney(prev.summary[field]) : null;
+      return fig ? text + ' · ' + fig : text;
+    };
+
     const avg = {
       rev: months ? months + ' months · avg ' + this.formatCurrency(s.revenue / months) + '/mo' : 'Awaiting data',
       gp: months ? pctOfRev(s.grossProfit) + ' avg of revenue' : 'Awaiting data',
@@ -1908,7 +1916,7 @@ window.MonalApp = {
         icon: '$',
         iconClass: 'green',
         badgeHtml: '',
-        momText: isYear ? avg.rev : (s.momRev || 'Awaiting update')
+        momText: isYear ? avg.rev : withRef(s.momRev || 'Awaiting update', 'revenue')
       },
       {
         title: 'GROSS PROFIT',
@@ -1916,7 +1924,7 @@ window.MonalApp = {
         icon: '↗',
         iconClass: 'green',
         badgeHtml: s.isEmpty ? '' : `<span class="kpi-pct-badge green">${(s.gpPct * 100).toFixed(1)}% of Revenue</span>`,
-        momText: isYear ? avg.gp : (s.momGp || 'Awaiting update')
+        momText: isYear ? avg.gp : withRef(s.momGp || 'Awaiting update', 'grossProfit')
       },
       {
         title: 'NET PROFIT (EBITDA)',
@@ -1924,7 +1932,7 @@ window.MonalApp = {
         icon: '🪙',
         iconClass: 'green',
         badgeHtml: s.isEmpty ? '' : `<span class="kpi-pct-badge green">${(s.netMargin * 100).toFixed(1)}% Net Margin</span>`,
-        momText: isYear ? avg.net : (s.momNet || 'Awaiting update')
+        momText: isYear ? avg.net : withRef(s.momNet || 'Awaiting update', 'netProfit')
       },
       {
         title: 'IMARAT 50% SHARE',
@@ -1932,7 +1940,7 @@ window.MonalApp = {
         icon: '♡',
         iconClass: 'gold',
         badgeHtml: s.isEmpty ? '' : `<span class="kpi-pct-badge gold">50% Partner Share</span>`,
-        momText: isYear ? avg.imarat : (s.momImarat || 'Awaiting update')
+        momText: isYear ? avg.imarat : withRef(s.momImarat || 'Awaiting update', 'imaratShare')
       }
     ];
 
@@ -1961,6 +1969,36 @@ window.MonalApp = {
     return /^total\b/i.test(t) ? t : (prefix + t);
   },
 
+  /**
+   * Last month's figures, for the chips to quote alongside the change. Uses the
+   * same reference the percentages do, so July's comparison is June even though
+   * the two sit in different financial years. Nothing for the full-year view,
+   * which has no preceding month.
+   */
+  previousMonthFigures: function() {
+    const sel = this.state.selectedMonth;
+    if (!sel || sel === 'all') return null;
+    const ref = this.previousMonthOf(this.state.selectedFY, sel);
+    const fy = ref && this.db[ref.fyKey];
+    const summary = fy && fy.monthlySummary ? fy.monthlySummary[ref.monthKey] : null;
+    if (!summary || !summary.revenue) return null;
+    return { label: this.monthLabel(ref.fyKey, ref.monthKey), summary: summary };
+  },
+
+  /**
+   * A reference figure always reads as money, even when the cards are switched
+   * to "% Rev" - a previous month shown as a share of this month's revenue
+   * would mean nothing.
+   */
+  referenceMoney: function(v) {
+    if (typeof v !== 'number' || !isFinite(v) || v === 0) return null;
+    const sign = v < 0 ? '-' : '';
+    if (this.state.displayMode === 'raw') {
+      return sign + 'Rs ' + Math.abs(Math.round(v)).toLocaleString();
+    }
+    return sign + 'Rs ' + Math.abs(v / 1000000).toFixed(2) + 'M';
+  },
+
   // Only a signed change earns an arrow; an average or a baseline note is neutral.
   momClass: function(text) {
     const t = String(text || '');
@@ -1986,9 +2024,17 @@ window.MonalApp = {
     const isYear = !this.state.selectedMonth || this.state.selectedMonth === 'all';
     const ofRev = isYear ? '% avg of Revenue' : '% of Revenue';
 
+    // The corner of each cost card quotes the same line last month.
+    const prev = this.previousMonthFigures();
+    const lastMonth = (field) => {
+      const fig = prev ? this.referenceMoney(prev.summary[field]) : null;
+      return fig ? prev.label + ': ' + fig : 'Operating Pillar';
+    };
+
     const cards = [
       {
         title: 'COST OF GOODS SOLD (COGS)',
+        lastMonth: lastMonth('cogs'),
         val: s.isEmpty ? '-' : this.formatCurrency(s.cogs),
         icon: '🥩',
         iconClass: 'blue',
@@ -1998,6 +2044,7 @@ window.MonalApp = {
       },
       {
         title: 'SELLING EXPENSES',
+        lastMonth: lastMonth('selling'),
         val: s.isEmpty ? '-' : this.formatCurrency(s.selling),
         icon: '👜',
         iconClass: 'gold',
@@ -2007,6 +2054,7 @@ window.MonalApp = {
       },
       {
         title: 'ADMIN EXPENSES (EXCL. TAX)',
+        lastMonth: lastMonth('adminExclTax'),
         val: s.isEmpty ? '-' : this.formatCurrency(s.adminExclTax),
         icon: '🏠',
         iconClass: 'ochre',
@@ -2016,6 +2064,7 @@ window.MonalApp = {
       },
       {
         title: 'TAX EXPENSE (STANDALONE)',
+        lastMonth: lastMonth('tax'),
         val: s.isEmpty ? '-' : this.formatCurrency(s.tax),
         icon: '🏛️',
         iconClass: 'blue',
@@ -2038,7 +2087,7 @@ window.MonalApp = {
         <div class="kpi-card-bottom">
           <span class="kpi-pct-badge ${c.badgeClass}">${c.pctText}</span>
           <div style="font-size:0.7rem; color:var(--text-muted); font-weight:600;">
-            Operating Pillar
+            ${c.lastMonth}
           </div>
         </div>
       </div>
