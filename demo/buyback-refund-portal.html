@@ -1,0 +1,765 @@
+<title>Capstone Buyback Desk</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#f4f3ef; --surface:#ffffff; --surface-2:#faf9f6; --line:#e2dfd7; --line-2:#cfcbc0;
+  --ink:#171d24; --body:#3d434a; --muted:#6f6b62;
+  --brand:#0b5e55; --brand-soft:#e2efec; --brand-ink:#08443e;
+  --brass:#a0701a; --brass-soft:#f6eeda;
+  --ok:#1a7048; --ok-soft:#e4f1ea; --warn:#8c6206; --warn-soft:#f8eed6; --bad:#a03026; --bad-soft:#f8e6e3;
+  --shadow:0 1px 2px rgba(20,25,32,.06),0 8px 24px -16px rgba(20,25,32,.18);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0d1216; --surface:#151c22; --surface-2:#1a222a; --line:#28313a; --line-2:#3a4550;
+  --ink:#eef1f3; --body:#c3cad1; --muted:#8d959d;
+  --brand:#4dbba8; --brand-soft:#123430; --brand-ink:#9fded1;
+  --brass:#d7a34e; --brass-soft:#33280f;
+  --ok:#57bc8a; --ok-soft:#13301f; --warn:#d8a83f; --warn-soft:#332709; --bad:#e0796c; --bad-soft:#361915;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -16px rgba(0,0,0,.7);
+}}
+:root[data-theme="dark"]{
+  --paper:#0d1216; --surface:#151c22; --surface-2:#1a222a; --line:#28313a; --line-2:#3a4550;
+  --ink:#eef1f3; --body:#c3cad1; --muted:#8d959d;
+  --brand:#4dbba8; --brand-soft:#123430; --brand-ink:#9fded1;
+  --brass:#d7a34e; --brass-soft:#33280f;
+  --ok:#57bc8a; --ok-soft:#13301f; --warn:#d8a83f; --warn-soft:#332709; --bad:#e0796c; --bad-soft:#361915;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -16px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--body);font-family:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:Archivo,"IBM Plex Sans",sans-serif;color:var(--ink);margin:0;letter-spacing:-.015em;text-wrap:balance}
+h1{font-size:19px;font-weight:700}h2{font-size:16.5px;font-weight:600}h3{font-size:14px;font-weight:600}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.eyebrow{font-size:10px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;color:var(--muted)}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:var(--surface);border-bottom:1px solid var(--line)}
+.topbar-in{max-width:1400px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{width:32px;height:32px;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-family:Archivo;font-weight:700;font-size:13px;flex:none}
+.brandname b{font-family:Archivo;font-size:15px;color:var(--ink);letter-spacing:.02em}
+.brandname span{display:block;font-size:10.5px;color:var(--muted)}
+.spacer{flex:1}
+.pill-set{display:flex;gap:4px;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:3px}
+.pill-set button{border:0;background:transparent;color:var(--muted);padding:5px 10px;border-radius:6px;font-size:12px;font-weight:500}
+.pill-set button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow);font-weight:600}
+.env{font-size:10.5px;font-weight:600;color:var(--brass);background:var(--brass-soft);border:1px solid var(--line);padding:4px 8px;border-radius:6px;letter-spacing:.05em}
+
+.shell{max-width:1400px;margin:0 auto;padding:16px;padding-block:18px;display:grid;grid-template-columns:236px minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:920px){.shell{grid-template-columns:1fr}}
+.rail{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px;box-shadow:var(--shadow);position:sticky;top:calc(64px + env(safe-area-inset-top,0px))}
+@media (max-width:920px){.rail{position:static}}
+.rail .eyebrow{padding:8px 8px 4px}
+.navitem{display:flex;align-items:center;gap:8px;width:100%;border:0;background:transparent;color:var(--body);padding:7px 8px;border-radius:8px;text-align:left;font-size:12.5px}
+.navitem:hover{background:var(--surface-2)}
+.navitem[aria-current="true"]{background:var(--brand-soft);color:var(--brand-ink);font-weight:600}
+.navitem .dot{width:7px;height:7px;border-radius:50%;background:var(--line-2);flex:none}
+.navitem[aria-current="true"] .dot{background:var(--brand)}
+.navitem .n{margin-left:auto;font-family:"IBM Plex Mono";font-size:11px;font-weight:600;color:var(--muted);background:var(--surface-2);border:1px solid var(--line);border-radius:20px;padding:0 6px;min-width:22px;text-align:center}
+.navitem[aria-current="true"] .n{color:var(--brand-ink);background:var(--surface)}
+.rail hr{border:0;border-top:1px solid var(--line);margin:8px 4px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+.card-h{padding:13px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.card-b{padding:16px}
+.stack{display:flex;flex-direction:column;gap:16px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.sub{font-size:12px;color:var(--muted);margin-top:2px}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(172px,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;box-shadow:var(--shadow)}
+.kpi .v{font-family:Archivo;font-size:25px;font-weight:700;color:var(--ink);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:13px;font-weight:600;color:var(--muted);margin-left:3px}
+.kpi .d{font-size:11.5px;margin-top:4px}
+.trend-ok{color:var(--ok);font-weight:600}.trend-bad{color:var(--bad);font-weight:600}
+
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(136px,1fr));gap:8px}
+.node{text-align:left;background:var(--surface-2);border:1px solid var(--line);border-left:3px solid var(--line-2);border-radius:9px;padding:10px;display:flex;flex-direction:column;gap:5px}
+.node:hover{border-color:var(--brand);background:var(--surface)}
+.node .st{font-size:10.5px;font-weight:600;color:var(--muted);font-family:"IBM Plex Mono"}
+.node .nm{font-family:Archivo;font-size:12.5px;font-weight:600;color:var(--ink);line-height:1.25}
+.node .ct{font-size:11px;color:var(--muted)}
+.node .bar{height:3px;border-radius:3px;background:var(--line);overflow:hidden}
+.node .bar i{display:block;height:100%;background:var(--brand)}
+.node.hot{border-left-color:var(--brass)}
+.node.live{border-left-color:var(--brand)}
+
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--surface-2)}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr:hover{background:var(--surface-2)}
+td.num,th.num{text-align:right;font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums}
+.ref{font-family:"IBM Plex Mono";font-weight:600;color:var(--brand);font-size:12px}
+
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:600;padding:2.5px 7px;border-radius:5px;border:1px solid transparent;white-space:nowrap}
+.t-ok{background:var(--ok-soft);color:var(--ok)}
+.t-warn{background:var(--warn-soft);color:var(--warn)}
+.t-bad{background:var(--bad-soft);color:var(--bad)}
+.t-brand{background:var(--brand-soft);color:var(--brand-ink)}
+.t-mute{background:var(--surface-2);color:var(--muted);border-color:var(--line)}
+
+.btn{border:1px solid var(--line-2);background:var(--surface);color:var(--ink);padding:7px 12px;border-radius:8px;font-size:12.5px;font-weight:600}
+.btn:hover{border-color:var(--brand);color:var(--brand-ink)}
+.btn-pri{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn-pri:hover{filter:brightness(1.08);color:#fff}
+.btn-sm{padding:5px 9px;font-size:11.5px}
+.btn-gh{border-color:transparent;background:var(--surface-2);color:var(--body)}
+
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.fset{border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--surface-2)}
+.fset>.eyebrow{display:block;margin-bottom:4px;color:var(--brand-ink)}
+.fset>.fhint{font-size:11.5px;color:var(--muted);margin-bottom:10px}
+label.f{display:block}
+label.f>span{display:block;font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+input,select,textarea{width:100%;font:inherit;font-size:12.5px;color:var(--ink);background:var(--surface);border:1px solid var(--line-2);border-radius:7px;padding:7px 9px}
+input[readonly]{background:var(--brand-soft);color:var(--brand-ink);font-family:"IBM Plex Mono";font-weight:600;border-color:transparent}
+textarea{min-height:56px;resize:vertical}
+.calc{border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+.calc .ln{display:flex;justify-content:space-between;gap:10px;padding:8px 12px;font-size:12.5px;border-bottom:1px solid var(--line)}
+.calc .ln:last-child{border-bottom:0}
+.calc .ln b{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap}
+.calc .ln.sec{background:var(--surface-2);font-weight:600}
+.calc .ln.sec span{color:var(--muted);font-size:10px;letter-spacing:.09em;text-transform:uppercase}
+.calc .ln.sub-t b{color:var(--brand-ink)}
+.calc .ln.total{background:var(--brand-soft)}
+.calc .ln.total b,.calc .ln.total span{color:var(--brand-ink);font-weight:700}
+.calc .ln.neg b{color:var(--bad)}
+.calc .ln .why{font-size:10.5px;color:var(--muted);display:block;font-weight:400;letter-spacing:0;text-transform:none}
+
+.chain li{list-style:none;display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.chain li:last-child{border-bottom:0}
+.chain .mark{width:20px;height:20px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:10px;font-weight:700;border:1px solid var(--line-2);color:var(--muted);background:var(--surface-2);font-family:"IBM Plex Mono"}
+.chain .mark.done{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.chain .mark.now{background:var(--brand);color:#fff;border-color:transparent}
+.chain .who{font-size:12.5px;color:var(--ink);font-weight:500}
+.chain .meta{font-size:11px;color:var(--muted)}
+ul.clean{margin:0;padding:0;list-style:none}
+
+.cmp{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+@media (max-width:700px){.cmp{grid-template-columns:1fr}}
+.cmp>div{padding:12px 14px}
+.cmp .was{background:var(--surface-2);border-right:1px solid var(--line)}
+.cmp .now{background:var(--surface)}
+.cmp h4{font-size:12px;margin-bottom:8px}
+.cmp li{font-size:12px;padding:4px 0;display:flex;gap:7px;align-items:flex-start}
+.cmp li::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--line-2);margin-top:6px;flex:none}
+.cmp .now li::before{background:var(--brand)}
+
+.bars{display:flex;flex-direction:column;gap:8px}
+.bars .b{display:grid;grid-template-columns:154px 1fr 54px;gap:10px;align-items:center;font-size:12px}
+@media (max-width:560px){.bars .b{grid-template-columns:104px 1fr 44px}}
+.bars .track{height:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.bars .track i{display:block;height:100%;background:var(--brand)}
+.bars .track.alt i{background:var(--brass)}
+.bars .val{text-align:right;font-family:"IBM Plex Mono";font-size:11.5px;color:var(--muted)}
+
+.drawer{position:fixed;inset:0;z-index:60;background:rgba(15,20,25,.45);display:flex;justify-content:flex-end}
+.drawer-p{width:min(760px,100%);background:var(--paper);height:100%;overflow-y:auto;border-left:1px solid var(--line);padding:16px;padding-block:calc(16px + env(safe-area-inset-top,0px)) calc(32px + env(safe-area-inset-bottom,0px))}
+.drawer-h{display:flex;gap:10px;align-items:flex-start;margin-bottom:14px}
+.log{font-size:12px}
+.log li{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)}
+.log .ts{font-family:"IBM Plex Mono";font-size:11px;color:var(--muted);flex:none;width:94px}
+.log b{color:var(--ink);font-weight:600}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:80;background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:9px;font-size:12.5px;font-weight:500;box-shadow:var(--shadow);max-width:90vw}
+.note{font-size:11.5px;color:var(--muted);background:var(--surface-2);border:1px solid var(--line);border-left:3px solid var(--brass);border-radius:7px;padding:9px 11px}
+.note b{color:var(--ink)}
+.disc{font-size:10.5px;color:var(--muted);line-height:1.45;font-style:italic}
+@media (prefers-reduced-motion:no-preference){.drawer-p{animation:sl .18s ease}@keyframes sl{from{transform:translateX(16px);opacity:.6}}}
+</style>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="logo">IM</div>
+    <div class="brandname"><b>IMARAT&nbsp;&middot;&nbsp;Capstone</b><span>Buyback &amp; Refund Automation Desk</span></div>
+    <div class="spacer"></div>
+    <span class="env">DEMO DATA</span>
+    <div class="pill-set" id="themeSet">
+      <button type="button" data-th="light" onclick="setTheme('light')">Light</button>
+      <button type="button" data-th="dark" onclick="setTheme('dark')">Dark</button>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="rail" id="rail"></nav>
+  <main id="view"></main>
+</div>
+<div id="drawerHost"></div>
+<div id="toastHost"></div>
+
+<script>
+/* ============ policy tables — from BB process flow, resale template, calc template ============ */
+const TAX = {filer:0.03, nonfiler:0.06, latefiler:0.045};
+const RENT_RATE = 0.045;            /* 45-day rental / monthly rent recovery */
+
+const PRODUCTS = {
+  'token-refund-hr': {name:'Token Refund — High Rental', ded:0.10, rental:true,  profit:false, asIs:38, toBe:26, docs:['Booking form','1-Link receiving slip','CNIC','Bank IBAN letter','Biometric']},
+  'refund':          {name:'Refund',                     ded:0.10, rental:false, profit:false, asIs:42, toBe:28, docs:['Booking form','Payment receipts','CNIC','Bank IBAN letter','Biometric']},
+  'installment':     {name:'Installment Refund',         ded:0.05, rental:false, profit:false, asIs:45, toBe:30, docs:['Installment ledger','CNIC','Bank IBAN letter','Biometric']},
+  'cancellation':    {name:'Cancellation of Unit',       ded:0.15, rental:false, profit:false, asIs:52, toBe:32, docs:['Cancellation request','Original allotment','CNIC','Biometric','NOC']},
+  'resale-buyback':  {name:'Resale / Buyback',           ded:0.10, rental:true,  profit:true,  asIs:55, toBe:34, docs:['Valuation sheet','Original allotment','CNIC','Bank IBAN letter','Biometric']},
+  'profit-withdrawal':{name:'Profit Withdrawal',         ded:0,    rental:true,  profit:true,  asIs:45, toBe:24, docs:['Profit schedule','CNIC','Bank IBAN letter','Biometric']},
+  'extra-amount':    {name:'Extra Amount Refund',        ded:0,    rental:false, profit:false, asIs:30, toBe:18, docs:['Excess payment proof','CNIC','Bank IBAN letter']},
+  'resale-adj':      {name:'Resale Adjustment',          ded:0,    rental:false, profit:true,  asIs:35, toBe:20, docs:['Adjustment request','Original allotment','Target unit booking'], bookOnly:true},
+  'refund-adj':      {name:'Refund Adjustment',          ded:0,    rental:false, profit:false, asIs:33, toBe:19, docs:['Adjustment request','Payment ledger','Target unit booking'], bookOnly:true}
+};
+
+const STAGES = [
+  {id:'resale',   label:'Resale Desk',           dept:'Resale',   role:'Asst. Manager Resale', action:'Verify & forward to CCD',
+   auto:['Resale template auto-filled from booking master','Total value = size × booking rate, computed live','Pro-rata profit calculated from receiving date to valuation date','Capstone unit status set to Blocked','Duplicate request check on Booking ID'],
+   was:['Manual entry in Resale master & log sheet','Total value and profit typed into a separate calc sheet','Manual Capstone status change','Case walked over to CCD']},
+  {id:'ccd',      label:'CCD Verification',      dept:'CCD',      role:'CCD Verification Officer', action:'Case verified — return to Resale',
+   auto:['Paperless verification with auto-confirmation mail','Document criteria matrix checked against product rules','Biometric + CNIC match via NADRA API','Booking ID ↔ 1-Link payment ID reconciliation'],
+   was:['Token cases not permissible for verification','Physical case verification','Docs criteria checked by eye','Case physically returned to Resale']},
+  {id:'warehouse',label:'Doc Warehouse',         dept:'Resale',   role:'Records Officer', action:'Originals indexed — send to Finance',
+   auto:['Originals scanned and indexed to the case ID','Copy / original custody logged digitally','Adjustment originals routed to Finance automatically'],
+   was:['Copy & original doc warehouse maintained by hand','Original docs hand-carried to Finance']},
+  {id:'rec',      label:'Finance — Receivables', dept:'Finance',  role:'Receivables Officer', action:'Balance & revenue verified',
+   auto:['SAP balance pulled via API against the booking','Revenue recognition verified from the ledger','Monthly rent / 45-day rental recovery applied automatically','Outstanding dues netted off'],
+   was:['SAP balance checked manually, case by case','Revenue verified on a side sheet','Rent deduction worked out on a calculator']},
+  {id:'payable',  label:'Finance — Payables',    dept:'Finance',  role:'Payables Officer', action:'Accrual booked — send to Audit',
+   auto:['Accrual auto-booked with a JV reference','Customer → Customer-Vendor balance transfer posted','Withholding tax slab applied from filer status'],
+   was:['Accrual booking entered manually','Balance transfer posted by hand','Tax slab looked up manually per case']},
+  {id:'audit',    label:'Audit',                 dept:'Audit',    role:'Audit Officer', action:'Audit cleared — release to Treasury',
+   auto:['Whole trail replayed: every approval, document and figure','Independent recomputation of valuation, deduction and tax','Exception flags surfaced before sign-off'],
+   was:['Each and everything verified manually across physical files']},
+  {id:'treasury', label:'Treasury',              dept:'Treasury', role:'Treasury Officer', action:'Disburse & confirm',
+   auto:['Direct bank transfer via payment API against the IBAN','Payment confirmation mail auto-sent to client and advisor','Capstone unit released to inventory on settlement'],
+   was:['Cheque printed, signed and collected in person','Confirmation mail typed manually','Unit released late, sometimes missed']},
+  {id:'settled',  label:'Settled',               dept:'—',        role:'—', action:null, auto:[], was:[]}
+];
+const SI = Object.fromEntries(STAGES.map((s,i)=>[s.id,i]));
+
+/* resale template approvals + calc template sign-off */
+const APPROVERS = [
+  {who:'Valuated By', desk:'Valuation prepared — Resale Desk'},
+  {who:'Asst. Manager Resale', desk:'Template signed — Resale Desk'},
+  {who:'Reviewed By', desk:'Resale review — Resale Desk'},
+  {who:'Approved By Head of Resale', desk:'Resale sign-off — Resale Desk'},
+  {who:'Verification by Legal Operations', desk:'Docs & KYC criteria — CCD'},
+  {who:'Verification By Receivables', desk:'SAP balance & revenue — Finance'},
+  {who:'Verification By Audit', desk:'Independent recomputation — Audit'}
+];
+const DISCLAIMER = 'The valuation provided herein is an indicative estimate based on available information and market conditions. It is subject to review and final approval by the concerned management and may be revised without prior notice. Errors and omissions are excepted (E&OE); no liability is assumed for decisions made based on this preliminary assessment.';
+
+/* ============ the calculation engine (calc template → resale template) ============ */
+function calc(c){
+  const p = PRODUCTS[c.product] || PRODUCTS.refund;
+  const size = +c.sizeSqft||0, rate = +c.bookingRate||0;
+  const totalValue = size && rate ? size*rate : (+c.totalValue||0);
+  const received = +c.receivedAmount||0;
+  const months = c.proRataMonths!=null && c.proRataMonths!=='' ? +c.proRataMonths : monthsBetween(c.receivingDate, c.valuationDate);
+  const profitPct = p.profit ? (+c.profitPct||0) : 0;
+  const profitValue = Math.round(received * profitPct/100 * months/12);
+  const payableWithProfit = received + profitValue;
+  const discount = +c.discount||0;
+  const rentPaid = (p.rental && c.rental45) ? (c.rentPaid!=null && c.rentPaid!=='' ? +c.rentPaid : Math.round(received*RENT_RATE)) : 0;
+  const ded = Math.round(payableWithProfit * p.ded);
+  const grossPayable = payableWithProfit - discount - rentPaid - ded;
+  const rate_ = TAX[c.filer]||0;
+  const tax = p.bookOnly ? 0 : Math.round(grossPayable * rate_);
+  return {totalValue, size, rate, received, months, profitPct, profitValue, payableWithProfit,
+          discount, rentPaid, ded, dedPct:p.ded, grossPayable, taxRate:rate_, tax,
+          net:grossPayable - tax, bookOnly:!!p.bookOnly, profitApplies:p.profit};
+}
+function monthsBetween(a,b){
+  if(!a||!b) return 0;
+  const d1=new Date(a), d2=new Date(b);
+  if(isNaN(d1)||isNaN(d2)) return 0;
+  return Math.max(0, Math.round((d2-d1)/(30.44*86400000)));
+}
+const pk = n => Math.round(n||0).toLocaleString('en-PK');
+const pct = r => (r*100).toFixed((r*100)%1?1:0)+'%';
+const days = c => Math.max(1, Math.round((Date.now()-new Date(c.created))/86400000));
+function slaState(c){
+  const p=PRODUCTS[c.product], d=days(c);
+  if(c.stage==='settled') return {tag:'t-ok', txt:'Settled in '+d+'d'};
+  if(d > p.toBe) return {tag:'t-bad', txt:'SLA breached · day '+d};
+  if(d > p.toBe*0.75) return {tag:'t-warn', txt:'At risk · day '+d};
+  return {tag:'t-ok', txt:'On track · day '+d};
+}
+const fmtDate = d => d? new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'}) : '—';
+const fmtTs = d => new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'short'})+' '+new Date(d).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+const iso = d => new Date(d).toISOString().slice(0,10);
+const dback = n => iso(Date.now()-n*86400000);
+
+/* ============ demo cases ============ */
+let SEQ = 9930;
+let CASES = [
+  mk({ref:'MOA-T2-9991', booking:'BK-MOA-44120', mode:'Resale', client:'Fida Hussain', cnic:'35202-1194887-3', project:'MOA',
+      unit:'Tower 2, Apt 9991', assetType:'Office', sizeSqft:1200, bookingRate:8500, bookingDate:'2022-06-14',
+      product:'profit-withdrawal', receivedAmount:2500000, profitPct:18, discount:0, rental45:false,
+      filer:'filer', agent:'Nadia Ali', regional:'Usama Khan', company:'Graana',
+      oneLink:'1LNK-773920118', iban:'PK36SCBL0000001123456702', chequeTitle:'Fida Hussain', stage:'audit', age:31}),
+  mk({ref:'REF-9921', booking:'BK-EXB-45B', mode:'Refund', client:'Muhammad Ali Khan', cnic:'61101-7742119-5', project:'Amazon Mall',
+      unit:'Plot 45-B, Executive Block (5 Marla)', assetType:'Plot', sizeSqft:1125, bookingRate:12000, bookingDate:'2025-11-20',
+      product:'token-refund-hr', receivedAmount:100000, profitPct:0, discount:0, rental45:true,
+      filer:'filer', agent:'Sana Javed', regional:'Kamran Sheikh', company:'Imarat',
+      oneLink:'1LNK-994820174', iban:'PK03HABB0000123456789012', chequeTitle:'Muhammad Ali Khan', stage:'resale', age:2}),
+  mk({ref:'REF-9812', booking:'BK-GDV-2211', mode:'Refund', client:'Usman Tariq', cnic:'42201-9931224-1', project:'Golf Floras',
+      unit:'Apt 22-C (2 Bed)', assetType:'Apartment', sizeSqft:1450, bookingRate:9200, bookingDate:'2024-03-08',
+      product:'refund', receivedAmount:500000, profitPct:0, discount:25000, rental45:false,
+      filer:'nonfiler', agent:'Hina Raza', regional:'Kamran Sheikh', company:'Graana',
+      oneLink:'1LNK-883910294', iban:'PK24MEZN0009910023441', chequeTitle:'Usman Tariq', stage:'treasury', age:24}),
+  mk({ref:'CAN-9744', booking:'BK-MOA-33871', mode:'Cancellation', client:'Ayesha Siddiqui', cnic:'37405-2231889-8', project:'MOA',
+      unit:'Shop 12, Level 1', assetType:'Shop', sizeSqft:640, bookingRate:22000, bookingDate:'2023-09-01',
+      product:'cancellation', receivedAmount:1850000, profitPct:0, discount:0, rental45:false,
+      filer:'latefiler', agent:'Bilal Ahmed', regional:'Usama Khan', company:'Imarat',
+      oneLink:'1LNK-771200934', iban:'PK77UNIL0001199238471', chequeTitle:'Ayesha Siddiqui', stage:'rec', age:18}),
+  mk({ref:'BB-9702', booking:'BK-FLR-1188', mode:'Buyback', client:'Hassan Raza', cnic:'35201-4429911-7', project:'Florence Galleria',
+      unit:'Shop 8, Ground Floor', assetType:'Shop', sizeSqft:520, bookingRate:31000, bookingDate:'2022-02-17',
+      product:'resale-buyback', receivedAmount:4200000, profitPct:22, discount:150000, rental45:true,
+      filer:'filer', agent:'Nadia Ali', regional:'Tahir Malik', company:'Graana',
+      oneLink:'1LNK-660192837', iban:'PK19ALFH0088123991002', chequeTitle:'Hassan Raza', stage:'payable', age:27}),
+  mk({ref:'ADJ-9688', booking:'BK-EXB-9012', mode:'Adjustment', client:'Nida Farooq', cnic:'61101-2287733-4', project:'Amazon Mall',
+      unit:'Plot 12-A → Plot 30-C', assetType:'Plot', sizeSqft:900, bookingRate:11500, bookingDate:'2023-12-05',
+      product:'resale-adj', receivedAmount:1200000, profitPct:15, discount:0, rental45:false,
+      filer:'filer', agent:'Sana Javed', regional:'Tahir Malik', company:'Imarat',
+      oneLink:'1LNK-559201773', iban:'—', chequeTitle:'Book transfer — no cash out', stage:'ccd', age:6}),
+  mk({ref:'EXT-9655', booking:'BK-GDV-7741', mode:'Refund', client:'Zeeshan Anwar', cnic:'42101-8891220-9', project:'Golf Floras',
+      unit:'Apt 7-B', assetType:'Apartment', sizeSqft:1100, bookingRate:9000, bookingDate:'2024-08-19',
+      product:'extra-amount', receivedAmount:325000, profitPct:0, discount:0, rental45:false,
+      filer:'nonfiler', agent:'Hina Raza', regional:'Usama Khan', company:'Graana',
+      oneLink:'1LNK-448201199', iban:'PK52BAHL0077120099311', chequeTitle:'Zeeshan Anwar', stage:'warehouse', age:9}),
+  mk({ref:'INS-9601', booking:'BK-MOA-55120', mode:'Refund', client:'Rabia Noor', cnic:'35202-3312998-2', project:'MOA',
+      unit:'Apt 51-D', assetType:'Apartment', sizeSqft:1320, bookingRate:8800, bookingDate:'2023-05-11',
+      product:'installment', receivedAmount:760000, profitPct:0, discount:0, rental45:false,
+      filer:'filer', agent:'Bilal Ahmed', regional:'Kamran Sheikh', company:'Imarat',
+      oneLink:'1LNK-337102884', iban:'PK61HABB0044120098123', chequeTitle:'Rabia Noor', stage:'settled', age:29}),
+];
+
+function mk(o){
+  const c = Object.assign({id:'c'+(SEQ++), rental45:false, discount:0, profitPct:0, remarks:'', docs:{}, log:[]}, o);
+  c.receivingDate = c.receivingDate || c.bookingDate;
+  c.valuationDate = c.valuationDate || dback(Math.max(1,(c.age||1)-1));
+  c.requestDate  = c.requestDate  || dback(c.age||1);
+  c.proRataMonths = monthsBetween(c.receivingDate, c.valuationDate);
+  PRODUCTS[c.product].docs.forEach(d=>c.docs[d]=true);
+  const created = new Date(Date.now() - (c.age||1)*86400000);
+  c.created = created.toISOString();
+  const upto = SI[c.stage];
+  c.log.push({ts:created, who:'Sales Advisor · Worksapp', txt:'Request received from advisor and auto-synced into the Resale template.'});
+  for(let i=0;i<upto;i++){
+    const st=STAGES[i], t=new Date(created.getTime()+(i+1)*((c.age||1)*86400000)/(upto+1));
+    c.log.push({ts:t, who:st.dept+' · '+st.role, txt:st.action+' — '+st.auto.length+' automated checks passed.'});
+  }
+  return c;
+}
+
+/* ============ shell state ============ */
+let view='overview', openCase=null, entryOpen=false;
+function setTheme(t){
+  try{
+    const cur=document.documentElement.getAttribute('data-theme');
+    if(cur===t){document.documentElement.removeAttribute('data-theme'); localStorage.removeItem('bb-theme');}
+    else{document.documentElement.setAttribute('data-theme',t); localStorage.setItem('bb-theme',t);}
+  }catch(e){document.documentElement.setAttribute('data-theme',t)}
+  paintTheme();
+}
+function paintTheme(){
+  const cur=document.documentElement.getAttribute('data-theme');
+  document.querySelectorAll('#themeSet button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.th===cur)));
+}
+try{const s=localStorage.getItem('bb-theme'); if(s) document.documentElement.setAttribute('data-theme',s);}catch(e){}
+function toast(msg){
+  const h=document.getElementById('toastHost');
+  h.innerHTML='<div class="toast">'+esc(msg)+'</div>';
+  clearTimeout(toast._t); toast._t=setTimeout(()=>h.innerHTML='',3400);
+}
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const at = id => CASES.filter(c=>c.stage===id);
+const go = v => {view=v; openCase=null; render(); window.scrollTo(0,0);};
+
+function render(){
+  rail();
+  document.getElementById('view').innerHTML = ({overview:vOverview, process:vProcess, rules:vRules}[view] || vStage)();
+  drawer(); paintTheme();
+}
+function rail(){
+  let h = '<div class="eyebrow">Command</div>'+navBtn('overview','Process Overview',CASES.filter(c=>c.stage!=='settled').length)+
+    '<hr><div class="eyebrow">Workflow desks</div>';
+  STAGES.forEach(s=> h += navBtn(s.id, s.label, at(s.id).length));
+  h += '<hr><div class="eyebrow">Reference</div>'+navBtn('process','Manual vs Automated')+navBtn('rules','Calculation Rules');
+  document.getElementById('rail').innerHTML = h;
+}
+const navBtn = (id,label,n) =>
+  '<button type="button" class="navitem" aria-current="'+(view===id)+'" onclick="go(\''+id+'\')">'+
+  '<span class="dot"></span><span>'+label+'</span>'+(n!=null?'<span class="n">'+n+'</span>':'')+'</button>';
+const card = (title, body, right) =>
+  '<section class="card"><div class="card-h"><h2>'+title+'</h2><div class="spacer"></div>'+(right||'')+'</div><div class="card-b">'+body+'</div></section>';
+const kpi = (v,unit,label,dtl,tone) =>
+  '<div class="kpi"><div class="v">'+v+(unit?'<small>'+unit+'</small>':'')+'</div><div class="eyebrow" style="margin-top:6px">'+label+'</div>'+
+  '<div class="d '+(tone==='ok'?'trend-ok':tone==='bad'?'trend-bad':'')+'"'+(tone?'':' style="color:var(--muted)"')+'>'+dtl+'</div></div>';
+const bar = (label,n,max,val,alt) =>
+  '<div class="b"><span style="color:var(--ink)">'+esc(label)+'</span><span class="track'+(alt?' alt':'')+'">'+
+  '<i style="width:'+Math.max(3,Math.round(n/max*100))+'%"></i></span><span class="val">'+esc(val)+'</span></div>';
+const ln = (k,v,cls,why) => '<div class="ln '+(cls||'')+'"><span>'+esc(k)+(why?'<span class="why">'+esc(why)+'</span>':'')+'</span><b>'+v+'</b></div>';
+const kv = (k,v) => '<div><div class="eyebrow">'+esc(k)+'</div><div class="mono" style="font-size:12.5px;color:var(--ink);word-break:break-all">'+esc(v)+'</div></div>';
+
+/* ============ page 1 — whole process overview ============ */
+function vOverview(){
+  const live = CASES.filter(c=>c.stage!=='settled');
+  const value = live.reduce((s,c)=>s+calc(c).net,0);
+  const breach = live.filter(c=>slaState(c).tag==='t-bad').length;
+  const ps = Object.values(PRODUCTS);
+  const avgAsIs = Math.round(ps.reduce((s,p)=>s+p.asIs,0)/ps.length);
+  const avgToBe = Math.round(ps.reduce((s,p)=>s+p.toBe,0)/ps.length);
+  const autoChecks = STAGES.reduce((s,st)=>s+st.auto.length,0);
+  const manualSteps = STAGES.reduce((s,st)=>s+st.was.length,0);
+  const maxQ = Math.max(1,...STAGES.map(s=>at(s.id).length));
+  const deptLoad={}, prodMix={};
+  live.forEach(c=>{const d=STAGES[SI[c.stage]].dept; deptLoad[d]=(deptLoad[d]||0)+1;});
+  CASES.forEach(c=>{const n=PRODUCTS[c.product].name; prodMix[n]=(prodMix[n]||0)+1;});
+
+  return '<div class="stack">'+
+  '<div class="row"><div><h1>End-to-end refund, resale and buyback pipeline</h1>'+
+  '<div class="sub">Advisor request to bank disbursement on one record, with the valuation and tax computed once. All figures on this page are demo data.</div></div>'+
+  '<div class="spacer"></div><button type="button" class="btn btn-pri" onclick="openEntry()">+ New Resale Entry</button></div>'+
+
+  '<div class="kpis">'+
+    kpi(live.length,'','Cases in flight', autoChecks+' automated checks across 7 desks','ok')+
+    kpi('PKR '+pk(value),'','Net payable in flight','Computed live from the calc template','')+
+    kpi(avgToBe,' days','Avg turnaround','from '+avgAsIs+' days manual · '+Math.round((1-avgToBe/avgAsIs)*100)+'% faster','ok')+
+    kpi(breach,'','SLA breaches', breach? 'Oldest open case at day '+Math.max(...live.map(days)) : 'Every desk inside SLA', breach?'bad':'ok')+
+    kpi(manualSteps,' &rarr; 0','Manual handoffs removed','No log sheets, walk-overs or re-typing','ok')+
+  '</div>'+
+
+  card('Pipeline — click a desk to work its queue',
+    '<div class="flow">'+STAGES.map((s,i)=>{
+      const q=at(s.id).length, cls = s.id==='settled'?'':(q>=3?'hot':(q?'live':''));
+      return '<button type="button" class="node '+cls+'" onclick="go(\''+s.id+'\')">'+
+        '<span class="st">'+(s.id==='settled'?'END':String(i+1).padStart(2,'0'))+' · '+esc(s.dept)+'</span>'+
+        '<span class="nm">'+esc(s.label)+'</span>'+
+        '<span class="bar"><i style="width:'+Math.round(q/maxQ*100)+'%"></i></span>'+
+        '<span class="ct">'+q+' case'+(q===1?'':'s')+(s.auto.length?' · '+s.auto.length+' auto':'')+'</span></button>';
+    }).join('')+'</div>'+
+    '<div class="note" style="margin-top:12px">Data is entered <b>once, at the Resale Desk</b>. Every desk after it receives the same record with the valuation, deduction and tax already computed — each one only approves, returns, or posts.</div>')+
+
+  '<div class="grid2">'+
+    card('Where the work is sitting','<div class="bars">'+Object.entries(deptLoad).sort((a,b)=>b[1]-a[1])
+      .map(([d,n])=>bar(d,n,Math.max(...Object.values(deptLoad)),n+' open')).join('')+'</div>')+
+    card('Request mix by product','<div class="bars">'+Object.entries(prodMix).sort((a,b)=>b[1]-a[1])
+      .map(([d,n])=>bar(d,n,Math.max(...Object.values(prodMix)),n+' case'+(n===1?'':'s'),true)).join('')+'</div>')+
+  '</div>'+
+
+  card('All cases', tbl(CASES,true), '<span class="tag t-mute">'+CASES.length+' total</span>')+
+  '</div>';
+}
+
+/* ============ desk queues ============ */
+function vStage(){
+  const s=STAGES[SI[view]], q=at(view), isResale=view==='resale', settled=view==='settled';
+  return '<div class="stack">'+
+    '<div class="row"><div><h1>'+esc(s.label)+'</h1><div class="sub">'+
+      (settled?'Disbursed and closed cases.':esc(s.dept)+' desk · acting as <b>'+esc(s.role)+'</b> · '+q.length+' in queue')+'</div></div>'+
+    '<div class="spacer"></div>'+(isResale?'<button type="button" class="btn btn-pri" onclick="openEntry()">+ New Resale Entry</button>':'')+'</div>'+
+    (s.auto.length? card('Runs automatically when a case lands here',
+      '<ul class="clean" style="display:grid;gap:7px">'+s.auto.map(a=>
+        '<li class="row" style="gap:8px"><span class="tag t-brand">AUTO</span><span style="font-size:12.5px">'+esc(a)+'</span></li>').join('')+'</ul>'+
+      (s.was.length?'<div class="note" style="margin-top:12px"><b>Replaces:</b> '+s.was.map(esc).join(' · ')+'</div>':'')):'')+
+    card(settled?'Settled cases':'Queue', q.length? tbl(q) :
+      '<div style="padding:18px 0;text-align:center;color:var(--muted);font-size:12.5px">Nothing waiting at this desk.'+
+      (isResale?' Use <b>New Resale Entry</b> to start a case.':'')+'</div>')+
+  '</div>';
+}
+
+function tbl(rows, showStage){
+  return '<div class="tbl-wrap"><table><thead><tr><th>Ref</th><th>Client / Unit</th><th>Type of request</th>'+
+    (showStage?'<th>Desk</th>':'')+'<th class="num">Payable w/ profit</th><th class="num">Net payable</th><th>Status</th><th></th></tr></thead><tbody>'+
+    rows.map(c=>{const m=calc(c), s=slaState(c); return '<tr>'+
+      '<td><span class="ref">'+esc(c.ref)+'</span><div class="mono" style="font-size:10.5px;color:var(--muted)">'+esc(c.booking)+'</div></td>'+
+      '<td><span style="color:var(--ink);font-weight:500">'+esc(c.client)+'</span><div style="font-size:11px;color:var(--muted)">'+esc(c.unit)+'</div></td>'+
+      '<td>'+esc(PRODUCTS[c.product].name)+'<div style="font-size:11px;color:var(--muted)">'+esc(c.project)+' · '+filerLabel(c.filer)+'</div></td>'+
+      (showStage?'<td><span class="tag t-brand">'+esc(STAGES[SI[c.stage]].label)+'</span></td>':'')+
+      '<td class="num">'+pk(m.payableWithProfit)+'</td>'+
+      '<td class="num" style="font-weight:600;color:var(--ink)">'+(m.bookOnly?'<span class="tag t-mute">book only</span>':pk(m.net))+'</td>'+
+      '<td><span class="tag '+s.tag+'">'+esc(s.txt)+'</span></td>'+
+      '<td style="text-align:right"><button type="button" class="btn btn-sm" onclick="show(\''+c.id+'\')">Open</button></td></tr>';
+    }).join('')+'</tbody></table></div>';
+}
+const filerLabel = f => f==='nonfiler'?'non-filer':f==='latefiler'?'late-filer':'filer';
+
+/* ============ reference pages ============ */
+function vProcess(){
+  return '<div class="stack">'+
+    '<div><h1>What was manual, what the system now does</h1>'+
+    '<div class="sub">Mapped desk by desk against the current BB process flow sheet.</div></div>'+
+    STAGES.filter(s=>s.was.length).map((s,i)=>card(String(i+1).padStart(2,'0')+' · '+esc(s.label),
+      '<div class="cmp"><div class="was"><h4 style="color:var(--muted)">Current — manual</h4><ul class="clean">'+
+      s.was.map(w=>'<li>'+esc(w)+'</li>').join('')+'</ul></div><div class="now">'+
+      '<h4 style="color:var(--brand-ink)">Automated</h4><ul class="clean">'+
+      s.auto.map(a=>'<li>'+esc(a)+'</li>').join('')+'</ul></div></div>',
+      '<span class="tag t-mute">'+esc(s.dept)+'</span>')).join('')+
+    card('Turnaround by product',
+      '<div class="bars">'+Object.values(PRODUCTS).map(p=>
+        bar(p.name, p.toBe, 55, p.toBe+'d')+
+        '<div class="b"><span style="color:var(--muted);font-size:11px;padding-left:10px">was manual</span>'+
+        '<span class="track alt"><i style="width:'+Math.round(p.asIs/55*100)+'%"></i></span>'+
+        '<span class="val">'+p.asIs+'d</span></div>').join('')+'</div>'+
+      '<div class="note" style="margin-top:12px">Working days, request date to payment confirmation. The resale template sample case took <b>45 working days</b> manually.</div>')+
+  '</div>';
+}
+
+function vRules(){
+  return '<div class="stack">'+
+    '<div><h1>Calculation and routing rules</h1><div class="sub">The engine behind the calc template — change it here and every desk downstream follows.</div></div>'+
+    card('Calculation order (calc template &rarr; resale template)',
+      '<div class="calc">'+
+        ln('Total value','Size (Sq.Ft) × Booking rate')+
+        ln('Pro-rata months','Receiving date → Date of valuation')+
+        ln('Profit value','Received amount × Profit % × months ÷ 12')+
+        ln('Payable with profit','Received amount + Profit value','sub-t')+
+        ln('less Discount','as entered','neg')+
+        ln('less Paid monthly rent / 45-day rental','4.5% of received, when the flag applies','neg')+
+        ln('less Policy deduction','product rate on payable with profit','neg')+
+        ln('Gross payable','carried to the resale template','sub-t')+
+        ln('less Withholding tax','filer slab on gross payable','neg')+
+        ln('Net payable','disbursed to the client IBAN','total')+
+      '</div>'+
+      '<div class="note" style="margin-top:12px">Profit applies only to resale, buyback and profit-withdrawal products. Adjustment products compute to a book transfer, so no tax and no cash out.</div>')+
+    card('Deduction &amp; document matrix',
+      '<div class="tbl-wrap"><table><thead><tr><th>Type of request</th><th class="num">Deduction</th><th>Profit</th><th>Rental recovery</th><th>Settlement</th><th>Required documents</th></tr></thead><tbody>'+
+      Object.values(PRODUCTS).map(p=>'<tr><td style="color:var(--ink);font-weight:500">'+esc(p.name)+'</td>'+
+        '<td class="num">'+(p.ded?pct(p.ded):'—')+'</td>'+
+        '<td>'+(p.profit?'<span class="tag t-brand">pro-rata</span>':'<span class="tag t-mute">n/a</span>')+'</td>'+
+        '<td>'+(p.rental?'<span class="tag t-warn">applies</span>':'<span class="tag t-mute">n/a</span>')+'</td>'+
+        '<td>'+(p.bookOnly?'<span class="tag t-mute">book transfer</span>':'<span class="tag t-ok">bank transfer</span>')+'</td>'+
+        '<td style="font-size:11.5px;color:var(--muted)">'+p.docs.map(esc).join(' · ')+'</td></tr>').join('')+
+      '</tbody></table></div>')+
+    '<div class="grid2">'+
+      card('Withholding tax on gross payable',
+        '<div class="calc">'+Object.entries(TAX).map(([k,v])=>ln(filerLabel(k).replace(/^./,m=>m.toUpperCase()), pct(v))).join('')+'</div>'+
+        '<div class="note" style="margin-top:12px">Filer and non-filer rates come from the resale template sample: PKR 2,730,630 &rarr; 81,919 and 163,838. The late-filer slab was blank there, so it sits here as a policy-configurable '+pct(TAX.latefiler)+'.</div>')+
+      card('Approval chain',
+        '<ul class="clean chain">'+APPROVERS.map((a,i)=>'<li><span class="mark">'+(i+1)+'</span><div>'+
+        '<div class="who">'+esc(a.who)+'</div><div class="meta">'+esc(a.desk)+'</div></div></li>').join('')+'</ul>')+
+    '</div>'+
+  '</div>';
+}
+
+/* ============ case drawer ============ */
+function show(id){ openCase=id; entryOpen=false; drawer(); }
+function closeDrawer(){ openCase=null; entryOpen=false; drawer(); }
+function drawer(){
+  const host=document.getElementById('drawerHost');
+  if(entryOpen){ host.innerHTML=entryHTML(); wireEntry(); return; }
+  if(!openCase){ host.innerHTML=''; return; }
+  const c=CASES.find(x=>x.id===openCase); if(!c){host.innerHTML='';return;}
+  const m=calc(c), st=STAGES[SI[c.stage]], s=slaState(c), p=PRODUCTS[c.product];
+  const approverIdx = Math.min(SI[c.stage]+1, APPROVERS.length-1);
+
+  host.innerHTML='<div class="drawer" onclick="if(event.target===this)closeDrawer()"><div class="drawer-p">'+
+    '<div class="drawer-h"><div><div class="eyebrow">'+esc(c.booking)+' · '+esc(c.project)+' · '+esc(c.mode||'Resale')+'</div>'+
+      '<h1 style="font-size:21px">'+esc(c.client)+'</h1>'+
+      '<div class="sub">'+esc(p.name)+' · Ref <span class="mono">'+esc(c.ref)+'</span> · '+esc(c.unit)+'</div></div>'+
+      '<div class="spacer"></div><button type="button" class="btn btn-sm btn-gh" onclick="closeDrawer()">Close</button></div>'+
+    '<div class="row" style="margin-bottom:14px"><span class="tag t-brand">'+esc(st.label)+'</span>'+
+      '<span class="tag '+s.tag+'">'+esc(s.txt)+'</span>'+
+      '<span class="tag t-mute">Requested '+fmtDate(c.requestDate||c.created)+'</span>'+
+      '<span class="tag t-mute">SLA '+p.toBe+'d</span></div>'+
+
+    '<div class="stack">'+
+      card('Valuation &amp; pro-rata calculation',
+        '<div class="calc">'+
+          ln('Size × booking rate', pk(m.size)+' sq.ft × '+pk(m.rate), 'sec')+
+          ln('Total value', pk(m.totalValue), 'sub-t')+
+          ln('Received amount', pk(m.received), '', 'Received '+fmtDate(c.receivingDate))+
+          (m.profitApplies? ln('Profit '+m.profitPct+'% pro-rated over '+m.months+' months', pk(m.profitValue), '',
+              'Receiving '+fmtDate(c.receivingDate)+' → valuation '+fmtDate(c.valuationDate)) : '')+
+          ln('Payable with profit', pk(m.payableWithProfit), 'sub-t')+
+          (m.discount? ln('Discount', '- '+pk(m.discount), 'neg'):'')+
+          (m.rentPaid? ln('Paid monthly rent / 45-day rental', '- '+pk(m.rentPaid), 'neg', pct(RENT_RATE)+' of received amount'):'')+
+          (m.ded? ln('Policy deduction · '+pct(m.dedPct), '- '+pk(m.ded), 'neg', p.name+' rule'):'')+
+          ln('Gross payable', pk(m.grossPayable), 'sub-t')+
+          (m.bookOnly? ln('Withholding tax','n/a — book transfer')
+            : ln('Withholding tax · '+filerLabel(c.filer)+' '+pct(m.taxRate), '- '+pk(m.tax), 'neg'))+
+          ln(m.bookOnly?'Amount adjusted to target unit':'Net payable to client', pk(m.net), 'total')+
+        '</div>'+
+        '<div class="grid2" style="margin-top:12px">'+
+          kv('Asset type', (c.assetType||'—'))+kv('Booking date', fmtDate(c.bookingDate))+
+          kv('Date of valuation', fmtDate(c.valuationDate))+kv('Pro-rata months', m.months)+
+          kv('Cheque title / beneficiary', c.chequeTitle)+kv('IBAN — direct transfer', c.iban)+
+          kv('1-Link payment ID', c.oneLink)+kv('CNIC', c.cnic)+
+          kv('Advisor', c.agent+' · '+c.company)+kv('Regional', c.regional)+
+        '</div>'+
+        (c.remarks? '<div class="note" style="margin-top:12px"><b>Remarks:</b> '+esc(c.remarks)+'</div>':'')+
+        '<p class="disc" style="margin:12px 0 0">'+DISCLAIMER+'</p>')+
+
+      card('Documents &amp; KYC',
+        '<div class="row">'+p.docs.map(d=>'<span class="tag '+(c.docs[d]?'t-ok':'t-bad')+'">'+(c.docs[d]?'&check; ':'&times; ')+esc(d)+'</span>').join('')+'</div>'+
+        '<div class="note" style="margin-top:12px">The criteria matrix for <b>'+esc(p.name)+'</b> is checked on submission — a missing document holds the case at Resale instead of surfacing at Audit.</div>')+
+
+      card('Approval chain',
+        '<ul class="clean chain">'+APPROVERS.map((a,i)=>{
+          const done = i < approverIdx, now = i === approverIdx && c.stage!=='settled';
+          return '<li><span class="mark '+(done?'done':now?'now':'')+'">'+(done?'&check;':i+1)+'</span><div>'+
+            '<div class="who">'+esc(a.who)+'</div><div class="meta">'+esc(a.desk)+(done?' · cleared':now?' · pending now':'')+'</div></div></li>';
+        }).join('')+'</ul>')+
+
+      card('Case trail','<ul class="clean log">'+c.log.slice().reverse().map(e=>
+        '<li><span class="ts">'+fmtTs(e.ts)+'</span><div><b>'+esc(e.who)+'</b><div style="color:var(--muted)">'+esc(e.txt)+'</div></div></li>').join('')+'</ul>')+
+
+      (st.action? '<div class="row"><button type="button" class="btn btn-pri" onclick="advance(\''+c.id+'\')">'+esc(st.action)+'</button>'+
+        '<button type="button" class="btn" onclick="sendBack(\''+c.id+'\')">Return to previous desk</button></div>'
+        : '<div class="note">Case settled. Payment confirmation mail sent and the unit released to inventory.</div>')+
+    '</div></div></div>';
+}
+
+function advance(id){
+  const c=CASES.find(x=>x.id===id), i=SI[c.stage], st=STAGES[i], nx=STAGES[i+1];
+  c.log.push({ts:new Date(), who:st.dept+' · '+st.role, txt:st.action+' — '+st.auto.length+' automated checks passed, case routed to '+nx.label+'.'});
+  c.stage=nx.id;
+  if(nx.id==='settled') c.log.push({ts:new Date(), who:'System', txt:'Bank transfer executed via payment API. Confirmation mail sent to client and advisor; unit released to inventory.'});
+  render();
+  toast(nx.id==='settled' ? 'PKR '+pk(calc(c).net)+' disbursed to '+c.client+' — case closed.' : c.ref+' moved to '+nx.label+'.');
+}
+function sendBack(id){
+  const c=CASES.find(x=>x.id===id), i=SI[c.stage];
+  if(i===0){ toast('Already at the first desk — return it to the advisor instead.'); return; }
+  const pv=STAGES[i-1];
+  c.log.push({ts:new Date(), who:STAGES[i].dept+' · '+STAGES[i].role, txt:'Returned to '+pv.label+' with an observation. The clock keeps running on the same case ID.'});
+  c.stage=pv.id; render(); toast(c.ref+' returned to '+pv.label+'.');
+}
+
+/* ============ new resale entry — one form, both templates ============ */
+function openEntry(){ entryOpen=true; openCase=null; drawer(); }
+function entryHTML(){
+  const opts = Object.entries(PRODUCTS).map(([k,p])=>'<option value="'+k+'"'+(k==='resale-buyback'?' selected':'')+'>'+esc(p.name)+'</option>').join('');
+  return '<div class="drawer" onclick="if(event.target===this)closeDrawer()"><div class="drawer-p">'+
+  '<div class="drawer-h"><div><div class="eyebrow">Resale Department · single point of entry</div>'+
+    '<h1 style="font-size:21px">New resale / refund case</h1>'+
+    '<div class="sub">The resale and calc templates as one form. Total value, pro-rata profit, deduction, tax and routing are derived — not typed.</div></div>'+
+    '<div class="spacer"></div><button type="button" class="btn btn-sm btn-gh" onclick="closeDrawer()">Cancel</button></div>'+
+  '<form id="entryForm" onsubmit="return submitEntry(event)"><div class="stack">'+
+
+    '<div class="fset"><span class="eyebrow">Case</span><div class="fhint">Resale template header.</div><div class="grid2">'+
+      f('Booking ID','booking','text','BK-MOA-44120',1)+
+      f('Reference number','ref','text','MOA-T2-9991',1)+
+      sel('Mode','mode',['Resale','Buyback','Refund','Cancellation','Adjustment'])+
+      '<label class="f"><span>Type of request / transaction</span><select id="product" required>'+opts+'</select></label>'+
+      f('Requested by','requestedBy','text','Resale Desk',0,'Resale Desk')+
+      f('Request date','requestDate','date','',1,iso(Date.now()))+
+      f('Date of case receiving','recvCaseDate','date','',0,iso(Date.now()))+
+      '<label class="f"><span>Request ID (auto)</span><input id="reqId" readonly value="RQ-'+(SEQ+1)+'"></label>'+
+    '</div></div>'+
+
+    '<div class="fset"><span class="eyebrow">Purchaser &amp; unit</span><div class="fhint">KYC fields verified against NADRA at CCD.</div><div class="grid2">'+
+      f('Purchaser name','client','text','Hassan Raza',1)+
+      f('CNIC','cnic','text','35201-4429911-7',1)+
+      f('Project','project','text','Florence Galleria',1)+
+      f('Unit / plot','unit','text','Shop 8, Ground Floor',1)+
+      sel('Shop / office / other','assetType',['Shop','Office','Apartment','Plot'])+
+      f('Cheque title / beneficiary','chequeTitle','text','As per CNIC',0)+
+      f('IBAN for direct transfer','iban','text','PK19ALFH0088123991002',0)+
+      f('1-Link payment ID','oneLink','text','1LNK-660192837',0)+
+    '</div></div>'+
+
+    '<div class="fset"><span class="eyebrow">Advisor details</span><div class="fhint">Auto-filled from the Worksapp request.</div><div class="grid2">'+
+      f('Agent name','agent','text','Nadia Ali',1)+
+      f('Regional','regional','text','Tahir Malik',0)+
+      sel('Company','company',['Imarat','Graana','Agency21'])+
+    '</div></div>'+
+
+    '<div class="fset"><span class="eyebrow">Valuation — pro-rated calculator</span>'+
+      '<div class="fhint">Calc template. Grey fields are typed; green fields are computed.</div><div class="grid2">'+
+      f('Size (Sq.Ft)','sizeSqft','number','520',1,'520')+
+      f('Booking rate (PKR / sq.ft)','bookingRate','number','31000',1,'31000')+
+      '<label class="f"><span>Total value (auto)</span><input id="totalValueOut" readonly value="—"></label>'+
+      f('Booking date','bookingDate','date','',0,'2022-02-17')+
+      f('Receiving date','receivingDate','date','',1,'2022-02-17')+
+      f('Date of valuation','valuationDate','date','',1,iso(Date.now()))+
+      '<label class="f"><span>Pro rata months (auto)</span><input id="monthsOut" readonly value="—"></label>'+
+      f('Received amount (PKR)','receivedAmount','number','4200000',1,'4200000')+
+      f('Profit %','profitPct','number','22',0,'22')+
+      '<label class="f"><span>Profit value (auto)</span><input id="profitOut" readonly value="—"></label>'+
+      '<label class="f"><span>Payable with profit (auto)</span><input id="pwpOut" readonly value="—"></label>'+
+      f('Discount (PKR)','discount','number','150000',0,'150000')+
+      sel('45 days rental / monthly rent paid','rental45',['No','Yes'])+
+      f('Paid monthly rent / discount (PKR)','rentPaid','number','auto = 4.5% of received',0)+
+      sel('Filer status','filer',['Filer — 3%','Non-filer — 6%','Late-filer — 4.5%'])+
+    '</div>'+
+    '<div class="calc" id="liveCalc" style="margin-top:12px"></div>'+
+    '<div class="note" style="margin-top:12px" id="docNote"></div>'+
+    '<p class="disc" style="margin:12px 0 0">'+DISCLAIMER+'</p></div>'+
+
+    '<div class="fset"><span class="eyebrow">Sign-off &amp; remarks</span><div class="fhint">Valuated by and reviewed by carry into the approval chain.</div><div class="grid2">'+
+      f('Valuated by','valuatedBy','text','Asst. Manager Resale',0,'Asst. Manager Resale')+
+      f('Reviewed by','reviewedBy','text','Manager Resale',0,'Manager Resale')+
+    '</div><div style="margin-top:12px"><label class="f"><span>Remarks</span>'+
+      '<textarea id="remarks" placeholder="Anything the CCD, Receivables and Audit desks should see with this case."></textarea></label></div></div>'+
+
+    '<div class="row"><button type="submit" class="btn btn-pri">Submit &amp; route to CCD</button>'+
+    '<button type="button" class="btn" onclick="closeDrawer()">Cancel</button>'+
+    '<span class="sub">Submitting locks the figures, stamps the trail and starts the SLA clock.</span></div>'+
+  '</div></form></div></div>';
+}
+const f = (label,id,type,ph,req,val) =>
+  '<label class="f"><span>'+esc(label)+'</span><input id="'+id+'" type="'+type+'" placeholder="'+esc(ph||'')+'"'+
+  (val!=null&&val!==''?' value="'+esc(val)+'"':'')+(req?' required':'')+'></label>';
+const sel = (label,id,vals) =>
+  '<label class="f"><span>'+esc(label)+'</span><select id="'+id+'">'+vals.map(v=>'<option>'+esc(v)+'</option>').join('')+'</select></label>';
+
+function wireEntry(){
+  ['sizeSqft','bookingRate','receivingDate','valuationDate','receivedAmount','profitPct','discount','rentPaid','product','filer','rental45']
+    .forEach(i=>{const el=document.getElementById(i); if(el){el.addEventListener('input',liveCalc); el.addEventListener('change',liveCalc);}});
+  liveCalc();
+}
+function readForm(){
+  const g = id => {const el=document.getElementById(id); return el? el.value : '';};
+  const fl = g('filer');
+  return {
+    booking:g('booking'), ref:g('ref'), mode:g('mode'), product:g('product'), requestedBy:g('requestedBy'),
+    requestDate:g('requestDate'), recvCaseDate:g('recvCaseDate'),
+    client:g('client'), cnic:g('cnic'), project:g('project'), unit:g('unit'), assetType:g('assetType'),
+    chequeTitle:g('chequeTitle'), iban:g('iban'), oneLink:g('oneLink'),
+    agent:g('agent'), regional:g('regional'), company:g('company'),
+    sizeSqft:+g('sizeSqft')||0, bookingRate:+g('bookingRate')||0, bookingDate:g('bookingDate'),
+    receivingDate:g('receivingDate'), valuationDate:g('valuationDate'),
+    receivedAmount:+g('receivedAmount')||0, profitPct:+g('profitPct')||0, discount:+g('discount')||0,
+    rental45:g('rental45')==='Yes', rentPaid:g('rentPaid'),
+    filer: fl.indexOf('Non')===0?'nonfiler': fl.indexOf('Late')===0?'latefiler':'filer',
+    valuatedBy:g('valuatedBy'), reviewedBy:g('reviewedBy'), remarks:g('remarks')
+  };
+}
+function liveCalc(){
+  const box=document.getElementById('liveCalc'); if(!box) return;
+  const d=readForm(), p=PRODUCTS[d.product], m=calc(d);
+  const set=(id,v)=>{const el=document.getElementById(id); if(el) el.value=v;};
+  set('totalValueOut', m.totalValue? pk(m.totalValue) : '—');
+  set('monthsOut', m.months);
+  set('profitOut', m.profitApplies? pk(m.profitValue) : 'n/a for this product');
+  set('pwpOut', pk(m.payableWithProfit));
+  box.innerHTML =
+    ln('Payable with profit', pk(m.payableWithProfit), 'sub-t', 'Received '+pk(m.received)+(m.profitApplies?' + profit '+pk(m.profitValue)+' ('+m.profitPct+'% × '+m.months+'/12)':''))+
+    (m.discount? ln('Discount','- '+pk(m.discount),'neg'):'')+
+    (m.rentPaid? ln('Paid monthly rent / 45-day rental','- '+pk(m.rentPaid),'neg'):'')+
+    (m.ded? ln('Policy deduction · '+pct(m.dedPct),'- '+pk(m.ded),'neg'):'')+
+    ln('Gross payable', pk(m.grossPayable), 'sub-t')+
+    (m.bookOnly? ln('Withholding tax','n/a — book transfer')
+      : ln('Withholding tax · '+filerLabel(d.filer)+' '+pct(m.taxRate),'- '+pk(m.tax),'neg'))+
+    ln(m.bookOnly?'Amount adjusted to target unit':'Net payable to client', pk(m.net), 'total');
+  document.getElementById('docNote').innerHTML =
+    '<b>Documents required for '+esc(p.name)+':</b> '+p.docs.map(esc).join(' · ')+
+    ' — checked automatically before the case can leave this desk. Target turnaround <b>'+p.toBe+' working days</b>, against '+p.asIs+' manually.';
+}
+function submitEntry(ev){
+  ev.preventDefault();
+  const d=readForm(), p=PRODUCTS[d.product];
+  const c=Object.assign({}, d, {id:'c'+(SEQ++), docs:{}, log:[], created:new Date().toISOString(), stage:'ccd',
+    ref:d.ref||('REF-'+SEQ), chequeTitle:d.chequeTitle||d.client, iban:d.iban||'—', oneLink:d.oneLink||'—',
+    proRataMonths:monthsBetween(d.receivingDate,d.valuationDate)});
+  p.docs.forEach(x=>c.docs[x]=true);
+  const m=calc(c);
+  c.log.push({ts:new Date(), who:'Resale · '+(d.valuatedBy||'Asst. Manager Resale'),
+    txt:'Template submitted. Total value '+pk(m.totalValue)+', payable with profit '+pk(m.payableWithProfit)+', net '+pk(m.net)+' computed from '+p.name+' rules.'});
+  c.log.push({ts:new Date(), who:'System',
+    txt:'Capstone unit status set to Blocked. Duplicate check on '+c.booking+' clear. Case routed to CCD with auto-confirmation mail.'});
+  CASES.unshift(c);
+  entryOpen=false; view='ccd'; render();
+  toast(c.ref+' created — net PKR '+pk(m.net)+', now at CCD Verification.');
+  return false;
+}
+
+render();
+</script>
