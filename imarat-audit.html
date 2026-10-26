@@ -1,5 +1,9 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Imarat Audit Status</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap">
 <style>
 :root {
@@ -31,52 +35,37 @@
   --danger: #FF8A80;
   --shadow: 0 1px 3px rgba(0,0,0,.4); color-scheme: dark;
 }
-* { box-sizing: border-box }
-body {
-  background: var(--bg); color: var(--fg); font-family: var(--f-body);
-  font-size: 14px; line-height: 1.45;
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 0 32px; margin: 0;
-}
-body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--deep) }
-.wrap { max-width: 1360px; margin: 0 auto }
+* { box-sizing: border-box; margin: 0 }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 14px; line-height: 1.45; padding: 0 16px 32px }
+[hidden] { display: none !important }
 button, input, select { font: inherit; color: inherit }
 :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px }
-[hidden] { display: none !important }
+.wrap { max-width: 1360px; margin: 0 auto }
 
-.mast {
-  margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px)));
-  padding-inline: max(16px, env(safe-area-inset-left, 0px));
-  background: linear-gradient(115deg, var(--deep) 0%, var(--deep-2) 62%, #0E7A4A 100%);
-  border-bottom: 3px solid var(--gold); color: #fff;
-  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9;
-}
-.mast-in { max-width: 1360px; margin: 0 auto; display: flex; align-items: center; gap: 16px; padding-block: 14px; flex-wrap: wrap }
+.mast { margin: 0 -16px; padding: 0 16px; background: linear-gradient(115deg, var(--deep) 0%, var(--deep-2) 62%, #0E7A4A 100%); border-bottom: 3px solid var(--gold); color: #fff; position: sticky; top: 0; z-index: 9 }
+.mast-in { max-width: 1360px; margin: 0 auto; display: flex; align-items: center; gap: 16px; padding: 14px 0; flex-wrap: wrap }
 .brand { display: flex; align-items: center; gap: 14px; min-width: 0; flex: 1 1 300px }
-.brand h1 { font: 700 20px/1.15 var(--f-disp); margin: 0; letter-spacing: -.01em }
-.brand h1 b { color: #F3D77A; font-weight: 700 }
+.brand h1 { font: 700 20px/1.15 var(--f-disp); letter-spacing: -.01em }
+.brand h1 b { color: #F3D77A }
 .brand p { margin: 3px 0 0; font-size: 12px; color: rgba(255,255,255,.7) }
-.role-badge { display: inline-flex; align-items: center; gap: 5px; border-radius: 6px; padding: 3px 10px; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; cursor: pointer; user-select: none; transition: background .15s }
-.role-badge.admin { background: rgba(243,215,122,.25); border: 1px solid rgba(243,215,122,.6); color: #F3D77A }
-.role-badge.viewer { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.3); color: rgba(255,255,255,.8) }
-.role-badge:hover { background: rgba(255,255,255,.22) }
-.role-toggle { display: flex; gap: 6px; align-items: center }
-.role-toggle .sep { color: rgba(255,255,255,.3); font-size: 12px }
+.role-badge { display: inline-flex; align-items: center; border-radius: 6px; padding: 3px 10px; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; cursor: pointer; user-select: none; transition: all .15s }
+.role-badge.on { background: rgba(243,215,122,.25); border: 1.5px solid rgba(243,215,122,.7); color: #F3D77A }
+.role-badge.off { background: rgba(255,255,255,.08); border: 1.5px solid rgba(255,255,255,.2); color: rgba(255,255,255,.45) }
+.role-badge:hover { background: rgba(255,255,255,.18) }
 .acts { display: flex; gap: 8px; flex-wrap: wrap }
 .btn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 8px 13px; font-weight: 600; cursor: pointer; display: inline-flex; gap: 7px; align-items: center; font-size: 13px }
 .btn:hover { border-color: var(--brand) }
 .btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none }
 .mast .btn { background: transparent; color: #fff; border-color: rgba(247,235,198,.5) }
 .mast .btn:hover { background: rgba(255,255,255,.1) }
-.btn.gold { background: linear-gradient(#EBC45A, #C9981F); color: var(--on-gold); border-color: transparent }
 .btn.primary { background: var(--brand); color: #fff; border-color: transparent }
 .btn.ghost { background: transparent }
 .btn.danger { color: var(--danger) }
+.btn.gold { background: linear-gradient(#EBC45A, #C9981F); color: var(--on-gold); border-color: transparent }
 
 main { display: grid; gap: 14px; padding-top: 16px }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); min-width: 0 }
-.card h2 { font: 600 14px/1.2 var(--f-disp); margin: 0; letter-spacing: -.005em }
+.card h2 { font: 600 14px/1.2 var(--f-disp); margin: 0 }
 .card .sub { color: var(--muted); font-size: 12px; margin-top: 3px }
 .ch { padding: 14px 16px 0 }
 .kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px }
@@ -107,13 +96,12 @@ tr:hover td { background: color-mix(in srgb, var(--gold-soft) 35%, transparent) 
 td.code { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap }
 td.code.na { color: var(--muted); font-weight: 500 }
 td.nm { font-weight: 600; min-width: 200px }
-td.fy { white-space: nowrap; color: var(--muted); font-variant-numeric: tabular-nums }
+td.fy { white-space: nowrap; color: var(--muted) }
 .sel { appearance: none; -webkit-appearance: none; border-radius: 99px; border: 1px solid color-mix(in srgb, var(--c) 45%, transparent);
   background: color-mix(in srgb, var(--c) 13%, var(--surface)) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23778' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 10px center;
   color: color-mix(in srgb, var(--c) 30%, var(--fg)); font-weight: 600; font-size: 12.5px; padding: 6px 28px 6px 12px; cursor: pointer; max-width: 100% }
 .sel[data-s="0"] { --c: var(--s0) } .sel[data-s="1"] { --c: var(--s1) } .sel[data-s="2"] { --c: var(--s2) } .sel[data-s="3"] { --c: var(--s3) } .sel[data-s="4"] { --c: var(--s4) }
 .sel[data-s="na"] { --c: var(--muted); font-weight: 500 }
-.sel[disabled] { cursor: default; opacity: .7 }
 .fs { display: flex; align-items: center; gap: 6px; white-space: nowrap }
 .fname { max-width: 140px; overflow: hidden; text-overflow: ellipsis; font-size: 12.5px; color: var(--brand); font-weight: 600 }
 .none { color: var(--muted); font-size: 12.5px }
@@ -144,36 +132,37 @@ td.fy { white-space: nowrap; color: var(--muted); font-variant-numeric: tabular-
 label.f { display: grid; gap: 5px; font-size: 12px; font-weight: 600; color: var(--muted) }
 label.f input, label.f select { width: 100%; font-weight: 400; color: var(--fg) }
 .fyrow { display: grid; grid-template-columns: 80px 1fr 1.3fr; gap: 10px; align-items: center }
-.fyrow .chk { display: flex; gap: 7px; align-items: center; font-size: 12.5px; color: var(--fg) }
+.fyrow .chk { display: flex; gap: 7px; align-items: center; font-size: 12.5px }
 .err { color: var(--danger); font-size: 12.5px; font-weight: 600 }
 .pdfbox { height: min(70vh, 640px); border: 1px solid var(--line); border-radius: 8px; width: 100%; background: var(--surface-2) }
-.toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--deep); color: #fff;
-  border: 1px solid var(--gold); padding: 10px 16px; border-radius: 10px; z-index: 60; font-weight: 600; max-width: calc(100% - 32px) }
+.toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--deep); color: #fff; border: 1px solid var(--gold); padding: 10px 16px; border-radius: 10px; z-index: 60; font-weight: 600; max-width: calc(100% - 32px) }
 
 @media (max-width: 1040px) { .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)) } .charts { grid-template-columns: minmax(0, 1fr) } }
 @media (max-width: 620px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)) } .donut-wrap { grid-template-columns: 1fr } .cv { height: 170px }
   .fyrow { grid-template-columns: 1fr } .fcount { margin-left: 0; width: 100% } .brand h1 { font-size: 17px } .kpi .v { font-size: 24px } }
 </style>
+</head>
+<body>
 
 <div class="mast"><div class="mast-in">
   <div class="brand">
-    <div><h1><b>Imarat</b> Group of Companies</h1><p>Audit Status Dashboard · <span id="asof"></span> · <span class="role-toggle">
-      <button class="role-badge admin" id="roleAdmin" title="Switch to Admin mode">ADMIN</button>
-      <span class="sep">|</span>
-      <button class="role-badge viewer" id="roleViewer" title="Switch to Viewer mode">VIEWER</button>
+    <div><h1><b>Imarat</b> Group of Companies</h1><p>Audit Status Dashboard · <span id="asof"></span> · <span style="display:inline-flex;gap:6px;align-items:center">
+      <button class="role-badge on" id="roleAdmin">ADMIN</button>
+      <span style="color:rgba(255,255,255,.3);font-size:12px">|</span>
+      <button class="role-badge off" id="roleViewer">VIEWER</button>
     </span></p></div>
   </div>
   <div class="acts">
     <button class="btn" id="addBtn" hidden><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add Company</button>
     <button class="btn" id="addYrBtn" hidden><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add Year</button>
+    <button class="btn gold" id="exportBtn" hidden><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Export &amp; Share</button>
   </div>
 </div></div>
 
 <div class="wrap"><main>
   <section class="fybar" id="fyBar" role="group" aria-label="Financial year"></section>
   <section class="kpis" id="kpis" aria-label="Key figures"></section>
-
-  <section class="card" id="tableCard">
+  <section class="card">
     <div class="filters">
       <input class="fld search" id="q" type="search" placeholder="Search code, company, auditor…" aria-label="Search">
       <select class="fld" id="stF" aria-label="Filter by status"></select>
@@ -186,19 +175,21 @@ label.f input, label.f select { width: 100%; font-weight: 400; color: var(--fg) 
       <tbody id="tb"></tbody>
     </table></div>
   </section>
-
   <section class="charts">
     <div class="card"><div class="ch"><h2>Audit Status Distribution</h2><div class="sub" id="donutSub"></div></div>
-      <div class="donut-wrap"><div class="cv"><canvas id="cDonut" aria-label="Audit status distribution"></canvas></div><ul class="legend" id="legend"></ul></div></div>
+      <div class="donut-wrap"><div class="cv"><canvas id="cDonut"></canvas></div><ul class="legend" id="legend"></ul></div></div>
     <div class="card"><div class="ch"><h2>Financial-Year Comparison</h2><div class="sub">All financial years</div></div>
-      <div class="fycv"><canvas id="cFY" aria-label="Financial year comparison"></canvas></div></div>
+      <div class="fycv"><canvas id="cFY"></canvas></div></div>
   </section>
-
   <div class="foot"><span id="store"></span><span>Charts and KPIs follow the selected year and search filters.</span></div>
 </main></div>
 
 <input type="file" id="fileIn" accept="application/pdf,.pdf" hidden>
 <div id="layer"></div>
+
+<!--EMBEDDED_DATA_START-->
+<script id="embeddedData" type="application/json">null</script>
+<!--EMBEDDED_DATA_END-->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
@@ -217,57 +208,24 @@ const ICON = {
 };
 const ic = n => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICON[n]}</svg>`;
 
-let S = { companies: [], years: [], ready: false };
-let F = { fy: '', q: '', st: '' };
-let isAdmin = false;
-let pend = null, canvasCharts = {}, idb = null;
-
-const DB_NAME = 'imarat-audit-db', DB_VER = 1;
-
-function openIDB() {
-  return new Promise((resolve, reject) => {
-    try {
-      const req = indexedDB.open(DB_NAME, DB_VER);
-      req.onupgradeneeded = e => {
-        const db = e.target.result;
-        if (!db.objectStoreNames.contains('files')) db.createObjectStore('files');
-        if (!db.objectStoreNames.contains('state')) db.createObjectStore('state');
-      };
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => resolve(null);
-    } catch(e) { resolve(null) }
-  });
-}
-
-function idbGet(store, key) {
-  if (!idb) return Promise.resolve(null);
-  return new Promise(r => { try { const tx = idb.transaction(store,'readonly'); const s = tx.objectStore(store); const req = s.get(key); req.onsuccess = () => r(req.result||null); req.onerror = () => r(null) } catch(e) { r(null) } });
-}
-function idbPut(store, key, val) {
-  if (!idb) return Promise.resolve();
-  return new Promise(r => { try { const tx = idb.transaction(store,'readwrite'); const s = tx.objectStore(store); s.put(val, key); tx.oncomplete = () => r(); tx.onerror = () => r() } catch(e) { r() } });
-}
-function idbDel(store, key) {
-  if (!idb) return Promise.resolve();
-  return new Promise(r => { try { const tx = idb.transaction(store,'readwrite'); const s = tx.objectStore(store); s.delete(key); tx.oncomplete = () => r(); tx.onerror = () => r() } catch(e) { r() } });
-}
-
-try { const f = JSON.parse(localStorage.getItem('imarat-filters')||'{}'); F.fy = f.fy||''; F.q = f.q||''; F.st = f.st||'' } catch(e) {}
-try { isAdmin = localStorage.getItem('imarat-role') === 'admin' } catch(e) {}
-const saveF = () => { try { localStorage.setItem('imarat-filters', JSON.stringify(F)) } catch(e) {} };
-const saveRole = () => { try { localStorage.setItem('imarat-role', isAdmin ? 'admin' : 'viewer') } catch(e) {} };
-
 const SEED = [{"id":"c01","order":1,"code":"1000","name":"Imarat Holding (Pvt) Ltd","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c02","order":2,"code":"1100","name":"Estate Agency 21","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Audit Completed","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c03","order":3,"code":"1200","name":"Graana (Pvt) Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c04","order":4,"code":"1300","name":"Propsure Digital Solutions","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c05","order":5,"code":"1400","name":"Agency 21 Services Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c06","order":6,"code":"1500","name":"Graana Services Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c07","order":7,"code":"1600","name":"Imarat Wealth + Pvt Ltd","records":{"2024":null,"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c08","order":8,"code":"1700","name":"Propmax.Ai Pvt Ltd","records":{"2024":null,"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c09","order":9,"code":"5100","name":"Amazon Mall 2","records":{"2024":null,"2025":null,"2026":null}},{"id":"c10","order":10,"code":"5200","name":"Amazon Mall Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Audit Completed","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c11","order":11,"code":"5300","name":"Imarat Developers Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c12","order":12,"code":"5400","name":"Imarat Residencies Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c13","order":13,"code":"5500","name":"Golf Floras(Aop)","records":{"2024":null,"2025":null,"2026":null}},{"id":"c14","order":14,"code":"5600","name":"Amazon Marketing Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c15","order":15,"code":"5700","name":"Imarat Bavylon Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c16","order":16,"code":"5800","name":"Hoon Adventures Farm House","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c17","order":17,"code":"5900","name":"Imarat IBM Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c18","order":18,"code":"6000","name":"Imarat Hospitality","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c19","order":19,"code":"6100","name":"Imarat Prestige Pvt Ltd","records":{"2024":null,"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c20","order":20,"code":"7000","name":"Imarat Rmc Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"BDO"},"2026":{"status":"Audit In Progress","auditor":"RSM"}}},{"id":"c21","order":21,"code":"N/A","name":"Golf Floras Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c22","order":22,"code":"N/A","name":"Imarat Institute Of Technical Training PVT LTD","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c23","order":23,"code":"N/A","name":"Imarat Cyber Tower Pvt Ltd","records":{"2024":null,"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c24","order":24,"code":"N/A","name":"Imarat Executive Club","records":{"2024":null,"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}}];
 
-async function init() {
-  idb = await openIDB();
-  const saved = await idbGet('state','companies');
-  if (saved && saved.length) { S.companies = saved } else { S.companies = JSON.parse(JSON.stringify(SEED)) }
-  const savedYears = await idbGet('state','years');
-  S.years = savedYears || ['2024','2025','2026'];
-  S.ready = true;
-  updateRoleBadge();
-  boot();
+let S, F = { fy: '', q: '', st: '' }, isAdmin = false, pendUpload = null, charts = {};
+
+// Load embedded data if present, else use SEED
+function loadData() {
+  try {
+    const el = $('#embeddedData');
+    if (el) { const d = JSON.parse(el.textContent); if (d && d.companies) return d }
+  } catch(e) {}
+  return { companies: JSON.parse(JSON.stringify(SEED)), years: ['2024','2025','2026'] };
+}
+
+function init() {
+  S = loadData();
+  try { const f = JSON.parse(localStorage.getItem('imarat-f')||'{}'); F.fy=f.fy||''; F.q=f.q||''; F.st=f.st||'' } catch(e) {}
+  try { isAdmin = localStorage.getItem('imarat-role') === 'admin' } catch(e) {}
+  updateRole(); boot();
 }
 
 function boot() {
@@ -276,46 +234,34 @@ function boot() {
   render();
 }
 
-function updateRoleBadge() {
-  $('#roleAdmin').classList.toggle('admin', isAdmin);
-  $('#roleAdmin').classList.toggle('viewer', !isAdmin);
-  $('#roleViewer').classList.toggle('viewer', !isAdmin);
-  $('#roleViewer').classList.toggle('admin', isAdmin);
-  $('#roleAdmin').style.opacity = isAdmin ? '1' : '.45';
-  $('#roleViewer').style.opacity = isAdmin ? '.45' : '1';
+const saveF = () => { try { localStorage.setItem('imarat-f', JSON.stringify(F)) } catch(e) {} };
+
+function updateRole() {
+  try { localStorage.setItem('imarat-role', isAdmin?'admin':'viewer') } catch(e) {}
+  $('#roleAdmin').className = 'role-badge ' + (isAdmin?'on':'off');
+  $('#roleViewer').className = 'role-badge ' + (!isAdmin?'on':'off');
   $('#addBtn').hidden = !isAdmin;
   $('#addBtn2').hidden = !isAdmin;
   $('#addYrBtn').hidden = !isAdmin;
+  $('#exportBtn').hidden = !isAdmin;
 }
 
-function switchRole(admin) {
-  isAdmin = admin; saveRole(); updateRoleBadge(); render();
-  toast(isAdmin ? 'Switched to Admin mode' : 'Switched to Viewer mode');
-}
-
-$('#roleAdmin').onclick = () => switchRole(true);
-$('#roleViewer').onclick = () => switchRole(false);
-
-async function persist() {
-  await idbPut('state','companies', JSON.parse(JSON.stringify(S.companies)));
-  await idbPut('state','years', S.years);
-}
+$('#roleAdmin').onclick = () => { isAdmin = true; updateRole(); render(); toast('Switched to Admin') };
+$('#roleViewer').onclick = () => { isAdmin = false; updateRole(); render(); toast('Switched to Viewer') };
 
 const yearsOf = () => { const y = new Set(S.years); S.companies.forEach(c => Object.keys(c.records||{}).forEach(k => y.add(k))); return [...y].sort() };
-
 function allRows() { const r = []; S.companies.forEach(c => S.years.forEach(fy => { const rec = (c.records||{})[fy]; r.push({ c, fy, rec: rec||null }) })); return r }
 const inFY = r => F.fy === 'all' || r.fy === F.fy;
 function matchQ(r) { const q = F.q.trim().toLowerCase(); if (!q) return true; return [r.c.code, r.c.name, r.rec&&r.rec.auditor, r.rec&&r.rec.status, r.fy].join(' ').toLowerCase().includes(q) }
 const scope = () => allRows().filter(r => inFY(r) && matchQ(r) && r.rec);
-function tableRows() { return allRows().filter(r => inFY(r) && matchQ(r) && (!F.st || (F.st==='NA' ? !r.rec : r.rec && r.rec.status === F.st)))
-  .sort((a,b) => a.c.order - b.c.order || a.fy.localeCompare(b.fy)) }
+function tableRows() { return allRows().filter(r => inFY(r) && matchQ(r) && (!F.st || (F.st==='NA' ? !r.rec : r.rec && r.rec.status === F.st))).sort((a,b) => a.c.order - b.c.order || a.fy.localeCompare(b.fy)) }
 function counts(rows) { const n = [0,0,0,0,0]; rows.forEach(r => n[STATUSES.indexOf(r.rec.status)]++); return n }
 
 function render() {
-  if (!S.ready) return;
   $('#asof').textContent = new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
   renderFilters(); renderKPIs(); renderTable(); renderCharts();
-  $('#store').textContent = 'Data stored in browser. Uploaded PDFs are saved locally via IndexedDB.';
+  const pdfCount = S.companies.reduce((n,c) => n + Object.values(c.records||{}).filter(r => r && r.pdf).length, 0);
+  $('#store').textContent = pdfCount ? `${pdfCount} PDF(s) embedded. Use "Export & Share" to generate a shareable file.` : 'No PDFs attached yet. Admin can upload financial statements.';
 }
 
 function renderFilters() {
@@ -329,22 +275,15 @@ function renderKPIs() {
   const sc = scope(), n = sc.length, c = counts(sc);
   const cos = new Set(sc.map(r => r.c.id)).size;
   const done = c[4], prog = c[1], pend = c[0]+c[2]+c[3], pct = n ? Math.round(done/n*100) : 0;
-  const k = [
-    ['Total Companies', cos, `${n} audit records`, 'var(--brand)'],
-    ['Completed', done, 'Audit Completed', 'var(--s4)'],
-    ['In Progress', prog, 'Audit In Progress', 'var(--s1)'],
-    ['Pending', pend, `Init ${c[0]} · Initials ${c[2]} · Board ${c[3]}`, 'var(--s2)']
-  ];
+  const k = [['Total Companies',cos,`${n} audit records`,'var(--brand)'],['Completed',done,'Audit Completed','var(--s4)'],['In Progress',prog,'Audit In Progress','var(--s1)'],['Pending',pend,`Init ${c[0]} · Initials ${c[2]} · Board ${c[3]}`,'var(--s2)']];
   $('#kpis').innerHTML = k.map(x => `<div class="card kpi"><div class="l"><i style="background:${x[3]}"></i>${x[0]}</div><div class="v">${x[1]}</div><div class="n">${x[2]}</div></div>`).join('') +
     `<div class="card kpi pct"><div class="l"><i style="background:var(--gold)"></i>Completion</div><div class="v">${pct}%</div><div class="bar-track"><span style="width:${pct}%"></span></div></div>`;
 }
 
 function statusSel(r) {
   const s = r.rec ? STATUSES.indexOf(r.rec.status) : 'na';
-  if (!isAdmin) {
-    return r.rec ? `<span class="sel" style="cursor:default;pointer-events:none" data-s="${s}">${esc(r.rec.status)}</span>` : '<span class="none">N/A</span>';
-  }
-  return `<select class="sel" data-act="status" data-id="${r.c.id}" data-fy="${r.fy}" data-s="${s}" aria-label="Status for ${esc(r.c.name)} FY ${r.fy}">` +
+  if (!isAdmin) return r.rec ? `<span class="sel" style="cursor:default;pointer-events:none" data-s="${s}">${esc(r.rec.status)}</span>` : '<span class="none">N/A</span>';
+  return `<select class="sel" data-act="status" data-id="${r.c.id}" data-fy="${r.fy}" data-s="${s}">` +
     (r.rec ? '' : '<option value="" selected disabled hidden>N/A</option>') +
     STATUSES.map(x => `<option ${r.rec&&r.rec.status===x?'selected':''}>${x}</option>`).join('') + '</select>';
 }
@@ -354,12 +293,11 @@ function fsCell(r) {
   if (!r.rec) return '<span class="none">N/A</span>';
   const p = r.rec.pdf;
   if (p) {
-    let html = `<div class="fs"><span class="fname" title="${esc(p.name)}">${esc(p.name)}</span>`;
-    html += `<button class="ib" data-act="view" ${k} title="Preview PDF" aria-label="Preview">${ic('eye')}</button>`;
-    html += `<button class="ib" data-act="dl" ${k} title="Download PDF" aria-label="Download">${ic('dl')}</button>`;
-    if (isAdmin) html += `<button class="ib" data-act="up" ${k} title="Replace PDF" aria-label="Replace">${ic('up')}</button>`;
-    html += '</div>';
-    return html;
+    let h = `<div class="fs"><span class="fname" title="${esc(p.name)}">${esc(p.name)}</span>`;
+    h += `<button class="ib" data-act="view" ${k} title="Preview">${ic('eye')}</button>`;
+    h += `<button class="ib" data-act="dl" ${k} title="Download">${ic('dl')}</button>`;
+    if (isAdmin) h += `<button class="ib" data-act="up" ${k} title="Replace">${ic('up')}</button>`;
+    return h + '</div>';
   }
   if (isAdmin) return `<div class="fs"><span class="none">Not uploaded</span><button class="btn" data-act="up" ${k}>${ic('up')}Upload</button></div>`;
   return '<span class="none">Not uploaded</span>';
@@ -370,133 +308,139 @@ function renderTable() {
   $('#fcount').textContent = `Showing ${rows.length} of ${allRows().filter(inFY).length} records`;
   $('#tb').innerHTML = rows.length ? rows.map(r => `<tr>
     <td class="code ${/^n\/a$/i.test(r.c.code)?'na':''}">${esc(r.c.code)}</td>
-    <td class="nm">${esc(r.c.name)}</td>
-    <td class="fy">FY ${r.fy}</td>
-    <td>${statusSel(r)}</td>
-    <td>${esc((r.rec&&r.rec.auditor)||'—')}</td>
+    <td class="nm">${esc(r.c.name)}</td><td class="fy">FY ${r.fy}</td>
+    <td>${statusSel(r)}</td><td>${esc((r.rec&&r.rec.auditor)||'—')}</td>
     <td>${fsCell(r)}</td>
-    <td>${isAdmin ? `<button class="ib" data-act="edit" data-id="${r.c.id}" title="Edit" aria-label="Edit ${esc(r.c.name)}">${ic('edit')}</button>` : ''}</td></tr>`).join('')
-    : `<tr><td colspan="7" class="empty">${S.companies.length ? 'No records match filters.' : 'No companies yet.'}</td></tr>`;
+    <td>${isAdmin?`<button class="ib" data-act="edit" data-id="${r.c.id}" title="Edit">${ic('edit')}</button>`:''}</td></tr>`).join('')
+    : '<tr><td colspan="7" class="empty">No records match filters.</td></tr>';
 }
-
-function themeOpts() { const t = cssv('--fg'), m = cssv('--muted'), l = cssv('--line'); Chart.defaults.color = m; Chart.defaults.font.family = cssv('--f-body'); Chart.defaults.font.size = 12; return { t, m, l } }
-const sCol = () => [0,1,2,3,4].map(i => cssv('--s'+i));
 
 function renderCharts() {
   if (typeof Chart === 'undefined') return;
-  const { t, m, l } = themeOpts(), cols = sCol(), sc = scope(), cn = counts(sc), surf = cssv('--surface');
+  const m = cssv('--muted'), l = cssv('--line'), surf = cssv('--surface');
+  Chart.defaults.color = m; Chart.defaults.font.family = cssv('--f-body'); Chart.defaults.font.size = 12;
+  const cols = [0,1,2,3,4].map(i => cssv('--s'+i)), sc = scope(), cn = counts(sc);
   const total = cn.reduce((a,b)=>a+b,0), pct = total ? Math.round(cn[4]/total*100) : 0;
-  $('#donutSub').textContent = (F.fy==='all'?'All years':'FY '+F.fy) + ' · ' + total + (total===1?' audit':' audits');
+  $('#donutSub').textContent = (F.fy==='all'?'All years':'FY '+F.fy)+' · '+total+(total===1?' audit':' audits');
   $('#legend').innerHTML = STATUSES.map((s,i) => `<li><button data-st="${s}" aria-pressed="${F.st===s}"><i style="background:${cols[i]}"></i>${s}<b>${cn[i]}</b></button></li>`).join('');
 
-  const centre = { id:'centre', afterDraw(ch) { const{ctx,chartArea:a}=ch, x=(a.left+a.right)/2, y=(a.top+a.bottom)/2; ctx.save(); ctx.textAlign='center'; ctx.fillStyle=cssv('--fg');
-    ctx.font='700 26px '+cssv('--f-disp'); ctx.fillText(pct+'%',x,y+4); ctx.fillStyle=cssv('--muted'); ctx.font='500 11px '+cssv('--f-body'); ctx.fillText('completed',x,y+22); ctx.restore() } };
-  upsert('donut','cDonut',{type:'doughnut',data:{labels:STATUSES,datasets:[{data:cn,backgroundColor:cols,borderColor:surf,borderWidth:2,hoverOffset:4}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{display:false}},
-      onClick:(e,els)=>{if(els.length){const s=STATUSES[els[0].index];F.st=F.st===s?'':s;saveF();render()}}},plugins:[centre]});
+  const centre = { id:'centre', afterDraw(ch) { const{ctx,chartArea:a}=ch,x=(a.left+a.right)/2,y=(a.top+a.bottom)/2; ctx.save(); ctx.textAlign='center'; ctx.fillStyle=cssv('--fg');
+    ctx.font='700 26px '+cssv('--f-disp'); ctx.fillText(pct+'%',x,y+4); ctx.fillStyle=m; ctx.font='500 11px '+cssv('--f-body'); ctx.fillText('completed',x,y+22); ctx.restore() } };
+  upc('donut','cDonut',{type:'doughnut',data:{labels:STATUSES,datasets:[{data:cn,backgroundColor:cols,borderColor:surf,borderWidth:2,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{display:false}},onClick:(e,els)=>{if(els.length){const s=STATUSES[els[0].index];F.st=F.st===s?'':s;saveF();render()}}},plugins:[centre]});
 
-  const yrs = S.years, qrows = allRows().filter(r => r.rec && matchQ(r));
-  const per = yrs.map(y => counts(qrows.filter(r => r.fy===y)));
-  const labels = yrs.map((y,i) => { const n = per[i].reduce((a,b)=>a+b,0); return ['FY '+y, (n?Math.round(per[i][4]/n*100):0)+'% complete'] });
-  const order = [4,3,2,1,0];
-  upsert('fy','cFY',{type:'bar',data:{labels,datasets:order.map(i=>({label:STATUSES[i],data:per.map(p=>p[i]),backgroundColor:cols[i],borderColor:surf,borderWidth:2,borderRadius:3,borderSkipped:false,maxBarThickness:56}))},
+  const yrs = S.years, qr = allRows().filter(r => r.rec && matchQ(r));
+  const per = yrs.map(y => counts(qr.filter(r => r.fy===y)));
+  const labels = yrs.map((y,i) => { const n=per[i].reduce((a,b)=>a+b,0); return ['FY '+y,(n?Math.round(per[i][4]/n*100):0)+'% complete'] });
+  upc('fy','cFY',{type:'bar',data:{labels,datasets:[4,3,2,1,0].map(i=>({label:STATUSES[i],data:per.map(p=>p[i]),backgroundColor:cols[i],borderColor:surf,borderWidth:2,borderRadius:3,borderSkipped:false,maxBarThickness:56}))},
     options:{responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true,grid:{display:false},border:{color:l}},y:{stacked:true,beginAtZero:true,ticks:{precision:0},grid:{color:l},border:{display:false}}},
       plugins:{legend:{position:'bottom',labels:{boxWidth:10,boxHeight:10,usePointStyle:true,pointStyle:'rectRounded',color:m,padding:10,font:{size:11}}},tooltip:{mode:'index'}}}});
 }
+function upc(k,id,cfg) { if(charts[k]) charts[k].destroy(); charts[k]=new Chart($('#'+id),cfg) }
 
-function upsert(k, id, cfg) { const old = canvasCharts[k]; if (old) old.destroy(); canvasCharts[k] = new Chart($('#'+id), cfg) }
-
-/* events */
-document.addEventListener('click', async e => {
+// Events
+document.addEventListener('click', e => {
   const t = e.target.closest('[data-fy],[data-act],[data-st]'); if (!t) return;
-  if (t.dataset.fy && t.classList.contains('chip')) { F.fy = t.dataset.fy; saveF(); render(); return }
-  if (t.dataset.st && t.closest('#legend')) { F.st = F.st===t.dataset.st ? '' : t.dataset.st; saveF(); render(); return }
-  const a = t.dataset.act; if (!a || a==='status') return;
+  if (t.dataset.fy && t.classList.contains('chip')) { F.fy=t.dataset.fy; saveF(); render(); return }
+  if (t.dataset.st && t.closest('#legend')) { F.st=F.st===t.dataset.st?'':t.dataset.st; saveF(); render(); return }
+  const a = t.dataset.act; if (!a||a==='status') return;
   const c = S.companies.find(x => x.id===t.dataset.id), fy = t.dataset.fy;
-  if (a==='edit' && isAdmin) return companyModal(c);
-  if (a==='up' && isAdmin) { pend = {c, fy}; $('#fileIn').value = ''; $('#fileIn').click() }
-  if (a==='view') viewPdf(c, fy);
-  if (a==='dl') dlPdf(c, fy);
+  if (a==='edit'&&isAdmin) companyModal(c);
+  if (a==='up'&&isAdmin) { pendUpload={c,fy}; $('#fileIn').value=''; $('#fileIn').click() }
+  if (a==='view') viewPdf(c,fy);
+  if (a==='dl') dlPdf(c,fy);
 });
-
-document.addEventListener('change', async e => {
+document.addEventListener('change', e => {
   const t = e.target;
-  if (t.dataset && t.dataset.act === 'status' && isAdmin) {
+  if (t.dataset&&t.dataset.act==='status'&&isAdmin) {
     const c = S.companies.find(x => x.id===t.dataset.id);
     c.records[t.dataset.fy] = { ...(c.records[t.dataset.fy]||{}), status: t.value };
-    render(); toast('Status updated'); persist();
+    render(); toast('Status updated');
   }
 });
+$('#q').addEventListener('input', e => { F.q=e.target.value; saveF(); renderKPIs(); renderTable(); renderCharts() });
+$('#stF').addEventListener('change', e => { F.st=e.target.value; saveF(); render() });
+$('#clr').addEventListener('click', () => { F.q=''; F.st=''; F.fy=S.years[S.years.length-1]||'all'; saveF(); render() });
+$('#addBtn').addEventListener('click', () => isAdmin&&companyModal(null));
+$('#addBtn2').addEventListener('click', () => isAdmin&&companyModal(null));
+$('#addYrBtn').addEventListener('click', () => isAdmin&&addYearModal());
+document.addEventListener('keydown', e => { if (e.key==='Escape') $('#layer').innerHTML='' });
 
-$('#q').addEventListener('input', e => { F.q = e.target.value; saveF(); renderKPIs(); renderTable(); renderCharts() });
-$('#stF').addEventListener('change', e => { F.st = e.target.value; saveF(); render() });
-$('#clr').addEventListener('click', () => { F.q = ''; F.st = ''; F.fy = S.years[S.years.length-1]||'all'; saveF(); render() });
-$('#addBtn').addEventListener('click', () => { if (isAdmin) companyModal(null) });
-$('#addBtn2').addEventListener('click', () => { if (isAdmin) companyModal(null) });
-$('#addYrBtn').addEventListener('click', () => { if (isAdmin) addYearModal() });
-
+// PDF upload — convert to base64 and store in data
 $('#fileIn').addEventListener('change', async e => {
-  const f = e.target.files[0]; if (!f || !pend) return;
-  const {c, fy} = pend;
-  if (!(f.type === 'application/pdf' || /\.pdf$/i.test(f.name))) return toast('Please choose a PDF file.');
+  const f = e.target.files[0]; if (!f||!pendUpload) return;
+  const {c,fy} = pendUpload;
+  if (!(f.type==='application/pdf'||/\.pdf$/i.test(f.name))) return toast('Please choose a PDF.');
   if (f.size > 50*1024*1024) return toast('PDF must be under 50 MB.');
-  toast('Saving…');
-  const rec = c.records[fy], old = rec.pdf;
+  toast('Reading file…');
   try {
     const buf = await f.arrayBuffer();
-    const fKey = c.id + '_' + fy;
-    await idbPut('files', fKey, buf);
-    rec.pdf = { key: fKey, name: f.name, size: f.size, at: Date.now() };
-    if (old && old.key && old.key !== fKey) await idbDel('files', old.key);
-    render(); await persist();
-    toast(old ? 'Statement replaced' : 'Statement uploaded');
-  } catch(err) { console.error(err); toast('Upload failed: ' + (err.message||'Please try again.')) }
+    const bytes = new Uint8Array(buf);
+    let bin = ''; for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    const b64 = btoa(bin);
+    c.records[fy].pdf = { name: f.name, size: f.size, b64 };
+    render(); toast('Statement attached — use Export & Share to save the file.');
+  } catch(err) { toast('Failed to read file.') }
 });
 
-async function viewPdf(c, fy) {
-  const p = c.records[fy].pdf; if (!p) return;
-  toast('Loading PDF…');
-  const buf = await idbGet('files', p.key);
-  if (!buf) return toast('PDF not found in local storage.');
-  const blob = new Blob([buf], { type: 'application/pdf' });
-  const url = URL.createObjectURL(blob);
-  const close = () => { $('#layer').innerHTML = ''; URL.revokeObjectURL(url) };
-  $('#layer').innerHTML = `<div class="ov"><div class="md wide"><div class="mh"><h3>${esc(c.name)} · FY ${fy}</h3><button class="ib" id="mx" aria-label="Close">${ic('x')}</button></div>
-    <div class="mb-modal"><iframe class="pdfbox" src="${url}" title="Financial statements"></iframe>
-    <div class="none">${esc(p.name)} · ${(p.size/1048576).toFixed(2)} MB</div></div>
-    <div class="mf">${isAdmin ? '<button class="btn danger" id="rm">Remove file</button><span style="flex:1"></span>' : '<span style="flex:1"></span>'}
-    ${isAdmin ? `<button class="btn" id="rp">${ic('up')}Replace</button>` : ''}
+// View PDF from base64
+function viewPdf(c, fy) {
+  const p = c.records[fy]&&c.records[fy].pdf; if (!p) return;
+  let url;
+  try {
+    const bin = atob(p.b64), bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+  } catch(e) { return toast('Could not load PDF.') }
+  const close = () => { $('#layer').innerHTML=''; URL.revokeObjectURL(url) };
+  $('#layer').innerHTML = `<div class="ov"><div class="md wide"><div class="mh"><h3>${esc(c.name)} · FY ${fy}</h3><button class="ib" id="mx">${ic('x')}</button></div>
+    <div class="mb-modal"><iframe class="pdfbox" src="${url}"></iframe><div class="none">${esc(p.name)} · ${(p.size/1048576).toFixed(2)} MB</div></div>
+    <div class="mf">${isAdmin?'<button class="btn danger" id="rm">Remove file</button><span style="flex:1"></span>':'<span style="flex:1"></span>'}
+    ${isAdmin?`<button class="btn" id="rp">${ic('up')}Replace</button>`:''}
     <button class="btn primary" id="dd">${ic('dl')}Download</button></div></div></div>`;
   $('#mx').onclick = close;
   $('.ov').onclick = ev => { if (ev.target.classList.contains('ov')) close() };
-  $('#dd').onclick = () => { const a = document.createElement('a'); a.href = url; a.download = p.name; a.click() };
-  if (isAdmin && $('#rp')) $('#rp').onclick = () => { close(); pend = {c, fy}; $('#fileIn').value = ''; $('#fileIn').click() };
-  if (isAdmin && $('#rm')) {
-    let armed = false;
-    $('#rm').onclick = async function() {
-      if (!armed) { armed = true; this.textContent = 'Click again to confirm'; return }
-      await idbDel('files', p.key);
-      delete c.records[fy].pdf; close(); render(); await persist();
-      toast('File removed');
-    };
-  }
+  $('#dd').onclick = () => dlPdf(c,fy);
+  if ($('#rp')) $('#rp').onclick = () => { close(); pendUpload={c,fy}; $('#fileIn').value=''; $('#fileIn').click() };
+  if ($('#rm')) { let armed=false; $('#rm').onclick = function(){ if(!armed){armed=true;this.textContent='Click again to confirm';return} delete c.records[fy].pdf; close(); render(); toast('File removed') } }
 }
 
-async function dlPdf(c, fy) {
-  const p = c.records[fy].pdf; if (!p) return;
-  const buf = await idbGet('files', p.key);
-  if (!buf) return toast('PDF not found in local storage.');
-  const blob = new Blob([buf], { type: 'application/pdf' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = p.name; a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 5000);
+function dlPdf(c, fy) {
+  const p = c.records[fy]&&c.records[fy].pdf; if (!p) return;
+  try {
+    const bin = atob(p.b64), bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+    const a = document.createElement('a'); a.href = url; a.download = p.name; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  } catch(e) { toast('Download failed.') }
 }
 
+// Export: generate a new HTML file with all data (including base64 PDFs) embedded
+$('#exportBtn').addEventListener('click', () => {
+  toast('Generating file…');
+  try {
+    const html = document.documentElement.outerHTML;
+    const dataJson = JSON.stringify({ companies: S.companies, years: S.years });
+    const escaped = dataJson.replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
+    const newHtml = html.replace(
+      /<!--EMBEDDED_DATA_START-->[\s\S]*?<!--EMBEDDED_DATA_END-->/,
+      '<!--EMBEDDED_DATA_START-->\n<script id="embeddedData" type="application/json">' + escaped + '<\/script>\n<!--EMBEDDED_DATA_END-->'
+    );
+    const blob = new Blob([newHtml], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'Imarat_Audit_Status.html'; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    toast('File downloaded! Share this file with your team.');
+  } catch(e) { toast('Export failed: ' + e.message) }
+});
+
+// Modals
 function layer(html) {
-  $('#layer').innerHTML = `<div class="ov"><div class="md" role="dialog" aria-modal="true">${html}</div></div>`;
-  const cl = () => { $('#layer').innerHTML = '' };
+  $('#layer').innerHTML = `<div class="ov"><div class="md" role="dialog">${html}</div></div>`;
+  const cl = () => { $('#layer').innerHTML='' };
   $('#layer .ov').addEventListener('mousedown', e => { if (e.target.classList.contains('ov')) cl() });
-  document.querySelectorAll('#layer [data-close]').forEach(b => b.onclick = cl);
+  document.querySelectorAll('#layer [data-close]').forEach(b => b.onclick=cl);
   return cl;
 }
 
@@ -507,83 +451,63 @@ function companyModal(c) {
     const r = c ? (c.records||{})[y] : { status: STATUSES[0], auditor: '' };
     const on = !!r;
     return `<div class="fyrow"><b>FY ${y}</b><label class="chk"><input type="checkbox" data-y="${y}" class="app" ${on?'checked':''}> Applies</label>
-    <input class="fld aud" data-y="${y}" placeholder="Auditor" value="${esc(r&&r.auditor||'')}" ${on?'':'disabled'} aria-label="Auditor FY ${y}"></div>`;
+    <input class="fld aud" data-y="${y}" placeholder="Auditor" value="${esc(r&&r.auditor||'')}" ${on?'':'disabled'}></div>`;
   }).join('');
-
-  const cl = layer(`<div class="mh"><h3>${isNew?'Add Company':'Edit Company'}</h3><button class="ib" data-close aria-label="Close">${ic('x')}</button></div>
-    <div class="mb-modal"><label class="f">Company Code *<input class="fld" id="mCode" value="${esc(c?c.code:'')}" placeholder="e.g. 1000"></label>
-    <label class="f">Company Name *<input class="fld" id="mName" value="${esc(c?c.name:'')}" placeholder="Registered company name"></label>
+  const cl = layer(`<div class="mh"><h3>${isNew?'Add Company':'Edit Company'}</h3><button class="ib" data-close>${ic('x')}</button></div>
+    <div class="mb-modal"><label class="f">Company Code *<input class="fld" id="mCode" value="${esc(c?c.code:'')}"></label>
+    <label class="f">Company Name *<input class="fld" id="mName" value="${esc(c?c.name:'')}"></label>
     <div style="display:grid;gap:8px"><span class="f" style="font-size:12px;font-weight:600;color:var(--muted)">Financial years and auditors</span>${rows}</div>
-    <div class="err" id="mErr" role="alert"></div></div>
+    <div class="err" id="mErr"></div></div>
     <div class="mf">${isNew?'':'<button class="btn danger" id="mDel">Delete company</button><span style="flex:1"></span>'}<button class="btn" data-close>Cancel</button><button class="btn primary" id="mSave">${isNew?'Add':'Save'}</button></div>`);
-
   document.querySelectorAll('.app').forEach(cb => cb.onchange = () => { document.querySelector(`.aud[data-y="${cb.dataset.y}"]`).disabled = !cb.checked });
   $('#mCode').focus();
-
-  if (!isNew) {
-    let armed = false;
-    $('#mDel').onclick = async function() {
-      if (!armed) { armed = true; this.textContent = 'Click again to delete'; return }
-      cl();
-      for (const y of Object.keys(c.records||{})) {
-        const r = c.records[y]; if (r && r.pdf && r.pdf.key) await idbDel('files', r.pdf.key);
-      }
-      S.companies = S.companies.filter(x => x.id !== c.id);
-      render(); await persist(); toast('Company deleted');
-    };
-  }
-
-  $('#mSave').onclick = async () => {
-    const code = $('#mCode').value.trim(), name = $('#mName').value.trim().replace(/\s+/g,' ');
-    const err = m => { $('#mErr').textContent = m };
-    if (!code) return err('Code is required.');
-    if (!name) return err('Name is required.');
-    const dupC = S.companies.find(x => x.id!==(c&&c.id) && x.code.toLowerCase()===code.toLowerCase() && !/^n\/a$/i.test(code));
-    if (dupC) return err(`Code ${code} is used by ${dupC.name}.`);
-    const rec = {};
+  if (!isNew) { let armed=false; $('#mDel').onclick=function(){ if(!armed){armed=true;this.textContent='Click again to delete';return} cl(); S.companies=S.companies.filter(x=>x.id!==c.id); render(); toast('Deleted') } }
+  $('#mSave').onclick = () => {
+    const code=$('#mCode').value.trim(), name=$('#mName').value.trim().replace(/\s+/g,' ');
+    if (!code) return $('#mErr').textContent='Code is required.';
+    if (!name) return $('#mErr').textContent='Name is required.';
+    const dup=S.companies.find(x=>x.id!==(c&&c.id)&&x.code.toLowerCase()===code.toLowerCase()&&!/^n\/a$/i.test(code));
+    if (dup) return $('#mErr').textContent=`Code ${code} used by ${dup.name}.`;
+    const rec={};
     for (const y of yrs) {
-      const on = document.querySelector(`.app[data-y="${y}"]`).checked;
-      const au = document.querySelector(`.aud[data-y="${y}"]`).value.trim();
-      const old = c && c.records[y];
-      if (!on) { if (old && old.pdf) return err(`FY ${y} has an uploaded file. Remove it first.`); rec[y] = null }
-      else rec[y] = old ? { ...old, auditor: au } : { status: STATUSES[0], auditor: au };
+      const on=document.querySelector(`.app[data-y="${y}"]`).checked, au=document.querySelector(`.aud[data-y="${y}"]`).value.trim(), old=c&&c.records[y];
+      if (!on) { if(old&&old.pdf) return $('#mErr').textContent=`FY ${y} has a file. Remove it first.`; rec[y]=null }
+      else rec[y]=old?{...old,auditor:au}:{status:STATUSES[0],auditor:au};
     }
-    if (isNew) { c = { id: 'c'+Date.now().toString(36), order: (S.companies.reduce((m,x)=>Math.max(m,x.order||0),0))+1, code, name, records: rec }; S.companies.push(c) }
-    else { c.code = code; c.name = name; c.records = rec }
-    cl(); render(); toast(isNew?'Company added':'Company updated'); persist();
+    if (isNew) { c={id:'c'+Date.now().toString(36),order:(S.companies.reduce((m,x)=>Math.max(m,x.order||0),0))+1,code,name,records:rec}; S.companies.push(c) }
+    else { c.code=code; c.name=name; c.records=rec }
+    cl(); render(); toast(isNew?'Company added':'Updated');
   };
 }
 
 function addYearModal() {
   if (!isAdmin) return;
-  const next = String((+S.years[S.years.length-1] || new Date().getFullYear()) + 1);
-  const cl = layer(`<div class="mh"><h3>Add Financial Year</h3><button class="ib" data-close aria-label="Close">${ic('x')}</button></div>
-    <div class="mb-modal"><label class="f">Financial year (e.g. 2027)<input class="fld" id="yIn" value="${next}" inputmode="numeric"></label>
+  const next = String((+S.years[S.years.length-1]||new Date().getFullYear())+1);
+  const cl = layer(`<div class="mh"><h3>Add Financial Year</h3><button class="ib" data-close>${ic('x')}</button></div>
+    <div class="mb-modal"><label class="f">Financial year<input class="fld" id="yIn" value="${next}" inputmode="numeric"></label>
     <div class="none">Companies with an audit in the latest year start as Audit Initiation Pending.</div><div class="err" id="yErr"></div></div>
     <div class="mf"><button class="btn" data-close>Cancel</button><button class="btn primary" id="ySave">Add year</button></div>`);
-  $('#ySave').onclick = async () => {
-    const y = $('#yIn').value.trim();
-    if (!/^\d{4}$/.test(y)) return $('#yErr').textContent = 'Enter a four-digit year.';
-    if (S.years.includes(y)) return $('#yErr').textContent = 'That year already exists.';
-    const last = S.years[S.years.length-1];
-    S.years = [...S.years, y].sort(); F.fy = y; saveF(); cl();
-    S.companies.forEach(c => { const p = c.records[last]; c.records[y] = p ? { status: STATUSES[0], auditor: p.auditor||'' } : null });
-    render(); await persist();
-    toast('FY '+y+' added');
+  $('#ySave').onclick = () => {
+    const y=$('#yIn').value.trim();
+    if (!/^\d{4}$/.test(y)) return $('#yErr').textContent='Enter a four-digit year.';
+    if (S.years.includes(y)) return $('#yErr').textContent='Already exists.';
+    const last=S.years[S.years.length-1];
+    S.years=[...S.years,y].sort(); F.fy=y; saveF(); cl();
+    S.companies.forEach(c => { const p=c.records[last]; c.records[y]=p?{status:STATUSES[0],auditor:p.auditor||''}:null });
+    render(); toast('FY '+y+' added');
   };
 }
 
 let tt;
 function toast(m) {
-  let el = $('.toast');
-  if (!el) { el = document.createElement('div'); el.className = 'toast'; el.setAttribute('role','status'); document.body.appendChild(el) }
-  el.textContent = m; el.hidden = false; clearTimeout(tt); tt = setTimeout(() => { el.hidden = true }, 2800);
+  let el=$('.toast');
+  if(!el){el=document.createElement('div');el.className='toast';el.setAttribute('role','status');document.body.appendChild(el)}
+  el.textContent=m;el.hidden=false;clearTimeout(tt);tt=setTimeout(()=>{el.hidden=true},3000);
 }
 
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => render());
-new MutationObserver(() => render()).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') $('#layer').innerHTML = '' });
-
 init();
 })();
 </script>
+</body>
+</html>
