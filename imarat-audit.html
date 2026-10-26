@@ -2,7 +2,6 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap">
 <style>
-/* Deep emerald corporate dashboard — masthead with gold accent, KPI strip, donut + bar charts, filterable audit table. Admin uploads PDFs; viewers browse and download. */
 :root {
   --bg: #F0F5EE; --surface: #FFFFFF; --surface-2: #E4EDE0; --line: #C5D5BC;
   --fg: #10281C; --muted: #5E7A68; --input: #FFFFFF;
@@ -36,15 +35,16 @@
 body {
   background: var(--bg); color: var(--fg); font-family: var(--f-body);
   font-size: 14px; line-height: 1.45;
-  padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 0 32px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 32px; margin: 0;
 }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--deep) }
 .wrap { max-width: 1360px; margin: 0 auto }
 button, input, select { font: inherit; color: inherit }
 :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px }
+[hidden] { display: none !important }
 
-/* masthead */
 .mast {
   margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px)));
   padding-inline: max(16px, env(safe-area-inset-left, 0px));
@@ -57,7 +57,12 @@ button, input, select { font: inherit; color: inherit }
 .brand h1 { font: 700 20px/1.15 var(--f-disp); margin: 0; letter-spacing: -.01em }
 .brand h1 b { color: #F3D77A; font-weight: 700 }
 .brand p { margin: 3px 0 0; font-size: 12px; color: rgba(255,255,255,.7) }
-.role-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(255,255,255,.15); border: 1px solid rgba(243,215,122,.4); border-radius: 6px; padding: 3px 10px; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: #F3D77A }
+.role-badge { display: inline-flex; align-items: center; gap: 5px; border-radius: 6px; padding: 3px 10px; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; cursor: pointer; user-select: none; transition: background .15s }
+.role-badge.admin { background: rgba(243,215,122,.25); border: 1px solid rgba(243,215,122,.6); color: #F3D77A }
+.role-badge.viewer { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.3); color: rgba(255,255,255,.8) }
+.role-badge:hover { background: rgba(255,255,255,.22) }
+.role-toggle { display: flex; gap: 6px; align-items: center }
+.role-toggle .sep { color: rgba(255,255,255,.3); font-size: 12px }
 .acts { display: flex; gap: 8px; flex-wrap: wrap }
 .btn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 8px 13px; font-weight: 600; cursor: pointer; display: inline-flex; gap: 7px; align-items: center; font-size: 13px }
 .btn:hover { border-color: var(--brand) }
@@ -68,10 +73,7 @@ button, input, select { font: inherit; color: inherit }
 .btn.primary { background: var(--brand); color: #fff; border-color: transparent }
 .btn.ghost { background: transparent }
 .btn.danger { color: var(--danger) }
-.btn[disabled] { opacity: .45; cursor: not-allowed }
-.btn[hidden] { display: none !important }
 
-/* KPI */
 main { display: grid; gap: 14px; padding-top: 16px }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); min-width: 0 }
 .card h2 { font: 600 14px/1.2 var(--f-disp); margin: 0; letter-spacing: -.005em }
@@ -87,7 +89,6 @@ main { display: grid; gap: 14px; padding-top: 16px }
 .bar-track { height: 6px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; margin-top: 6px }
 .bar-track span { display: block; height: 100%; background: linear-gradient(90deg, var(--radiant), var(--gold)); border-radius: 99px; transition: width .4s }
 
-/* filter bar */
 .filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; padding: 12px 16px }
 .fld { border: 1px solid var(--line); background: var(--input); border-radius: 8px; padding: 8px 10px; min-width: 0 }
 .search { flex: 1 1 200px; max-width: 320px }
@@ -98,7 +99,6 @@ main { display: grid; gap: 14px; padding-top: 16px }
 .fybar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; box-shadow: var(--shadow) }
 .fylab { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--muted) }
 
-/* table */
 .tw { overflow-x: auto; border-top: 1px solid var(--line) }
 table { width: 100%; border-collapse: collapse; min-width: 900px }
 th { position: sticky; top: 0; background: var(--surface-2); text-align: left; font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: nowrap }
@@ -119,12 +119,10 @@ td.fy { white-space: nowrap; color: var(--muted); font-variant-numeric: tabular-
 .none { color: var(--muted); font-size: 12.5px }
 .ib { border: 1px solid var(--line); background: var(--surface); border-radius: 7px; width: 30px; height: 30px; display: inline-grid; place-items: center; cursor: pointer; color: var(--fg); flex: none }
 .ib:hover { border-color: var(--brand); color: var(--brand) }
-.ib[disabled] { opacity: .4; cursor: not-allowed }
 .ib svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round }
 .empty { padding: 40px 16px; text-align: center; color: var(--muted) }
 .foot { color: var(--muted); font-size: 12px; display: flex; gap: 12px; flex-wrap: wrap; justify-content: space-between; padding: 4px 2px }
 
-/* charts */
 .charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px }
 .donut-wrap { display: grid; grid-template-columns: minmax(150px, 200px) 1fr; gap: 12px; align-items: center; padding: 8px 16px 16px }
 .cv { position: relative; height: 190px }
@@ -136,7 +134,6 @@ td.fy { white-space: nowrap; color: var(--muted); font-variant-numeric: tabular-
 .legend b { margin-left: auto; font-variant-numeric: tabular-nums }
 .fycv { position: relative; height: 250px; margin: 6px 12px 12px }
 
-/* modal + toast */
 .ov { position: fixed; inset: 0; background: rgba(4,22,14,.55); display: grid; place-items: center; padding: 16px; z-index: 50; overflow: auto }
 .md { background: var(--surface); border-radius: 14px; border: 1px solid var(--line); width: min(560px, 100%); box-shadow: 0 20px 60px rgba(0,0,0,.35); max-height: calc(100% - 8px); overflow: auto }
 .md.wide { width: min(960px, 100%) }
@@ -150,23 +147,21 @@ label.f input, label.f select { width: 100%; font-weight: 400; color: var(--fg) 
 .fyrow .chk { display: flex; gap: 7px; align-items: center; font-size: 12.5px; color: var(--fg) }
 .err { color: var(--danger); font-size: 12.5px; font-weight: 600 }
 .pdfbox { height: min(70vh, 640px); border: 1px solid var(--line); border-radius: 8px; width: 100%; background: var(--surface-2) }
-.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--deep); color: #fff;
+.toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--deep); color: #fff;
   border: 1px solid var(--gold); padding: 10px 16px; border-radius: 10px; z-index: 60; font-weight: 600; max-width: calc(100% - 32px) }
-
-/* loading */
-.loading { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 60px 16px; color: var(--muted) }
-.spinner { width: 20px; height: 20px; border: 2.5px solid var(--line); border-top-color: var(--brand); border-radius: 50%; animation: spin .7s linear infinite }
-@keyframes spin { to { transform: rotate(360deg) } }
 
 @media (max-width: 1040px) { .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)) } .charts { grid-template-columns: minmax(0, 1fr) } }
 @media (max-width: 620px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)) } .donut-wrap { grid-template-columns: 1fr } .cv { height: 170px }
   .fyrow { grid-template-columns: 1fr } .fcount { margin-left: 0; width: 100% } .brand h1 { font-size: 17px } .kpi .v { font-size: 24px } }
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important } }
 </style>
 
 <div class="mast"><div class="mast-in">
   <div class="brand">
-    <div><h1><b>Imarat</b> Group of Companies</h1><p>Audit Status Dashboard · <span id="asof"></span> · <span class="role-badge" id="roleBadge">Loading…</span></p></div>
+    <div><h1><b>Imarat</b> Group of Companies</h1><p>Audit Status Dashboard · <span id="asof"></span> · <span class="role-toggle">
+      <button class="role-badge admin" id="roleAdmin" title="Switch to Admin mode">ADMIN</button>
+      <span class="sep">|</span>
+      <button class="role-badge viewer" id="roleViewer" title="Switch to Viewer mode">VIEWER</button>
+    </span></p></div>
   </div>
   <div class="acts">
     <button class="btn" id="addBtn" hidden><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add Company</button>
@@ -218,7 +213,6 @@ const ICON = {
   dl:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/>',
   up:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/>',
   edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
-  plus:'<path d="M12 5v14M5 12h14"/>',
   x:'<path d="M18 6L6 18M6 6l12 12"/>'
 };
 const ic = n => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICON[n]}</svg>`;
@@ -226,49 +220,53 @@ const ic = n => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICON[n]}</svg>`;
 let S = { companies: [], years: [], ready: false };
 let F = { fy: '', q: '', st: '' };
 let isAdmin = false;
-let DB = null, ASSETS = null, DL = null, USER = null;
-let pend = null, canvasCharts = {};
+let pend = null, canvasCharts = {}, idb = null;
 
-try { const f = JSON.parse(localStorage.getItem('imarat-filters')||'{}'); F.fy = f.fy||''; F.q = f.q||''; F.st = f.st||'' } catch(e) {}
-const saveF = () => { try { localStorage.setItem('imarat-filters', JSON.stringify(F)) } catch(e) {} };
+const DB_NAME = 'imarat-audit-db', DB_VER = 1;
 
-async function init() {
-  DL = await cap('downloads');
-  ASSETS = await cap('assets');
-  DB = await cap('db');
-  USER = await cap('user');
-
-  if (USER) {
-    const canWrite = await USER.can('data.write');
-    const canEdit = await USER.canEdit();
-    isAdmin = canEdit || canWrite === true;
-  }
-  updateRoleBadge();
-
-  if (DB) {
-    let got = 0;
-    const done = () => { if (++got >= 2) { S.ready = true; boot() } };
+function openIDB() {
+  return new Promise((resolve, reject) => {
     try {
-      DB.collection('companies').onSnapshot(sn => {
-        S.companies = sn.docs.map(d => ({ id: d.id, ...structuredClone(d.data()) })).sort((a,b) => (a.order||0) - (b.order||0));
-        if (S.ready) boot(); else done();
-      }, e => { console.error(e); toLocal() });
-      DB.doc('meta/config').onSnapshot(sn => {
-        const d = sn.exists ? structuredClone(sn.data()) : {};
-        S.years = d.years || [];
-        if (S.ready) boot(); else done();
-      }, e => { console.error(e); toLocal() });
-    } catch(e) { toLocal() }
-  } else {
-    toLocal();
-  }
+      const req = indexedDB.open(DB_NAME, DB_VER);
+      req.onupgradeneeded = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('files')) db.createObjectStore('files');
+        if (!db.objectStoreNames.contains('state')) db.createObjectStore('state');
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => resolve(null);
+    } catch(e) { resolve(null) }
+  });
 }
 
-function toLocal() {
-  DB = null;
-  S.companies = JSON.parse(JSON.stringify(SEED));
-  S.years = ['2024','2025','2026'];
+function idbGet(store, key) {
+  if (!idb) return Promise.resolve(null);
+  return new Promise(r => { try { const tx = idb.transaction(store,'readonly'); const s = tx.objectStore(store); const req = s.get(key); req.onsuccess = () => r(req.result||null); req.onerror = () => r(null) } catch(e) { r(null) } });
+}
+function idbPut(store, key, val) {
+  if (!idb) return Promise.resolve();
+  return new Promise(r => { try { const tx = idb.transaction(store,'readwrite'); const s = tx.objectStore(store); s.put(val, key); tx.oncomplete = () => r(); tx.onerror = () => r() } catch(e) { r() } });
+}
+function idbDel(store, key) {
+  if (!idb) return Promise.resolve();
+  return new Promise(r => { try { const tx = idb.transaction(store,'readwrite'); const s = tx.objectStore(store); s.delete(key); tx.oncomplete = () => r(); tx.onerror = () => r() } catch(e) { r() } });
+}
+
+try { const f = JSON.parse(localStorage.getItem('imarat-filters')||'{}'); F.fy = f.fy||''; F.q = f.q||''; F.st = f.st||'' } catch(e) {}
+try { isAdmin = localStorage.getItem('imarat-role') === 'admin' } catch(e) {}
+const saveF = () => { try { localStorage.setItem('imarat-filters', JSON.stringify(F)) } catch(e) {} };
+const saveRole = () => { try { localStorage.setItem('imarat-role', isAdmin ? 'admin' : 'viewer') } catch(e) {} };
+
+const SEED = [{"id":"c01","order":1,"code":"1000","name":"Imarat Holding (Pvt) Ltd","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c02","order":2,"code":"1100","name":"Estate Agency 21","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Audit Completed","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c03","order":3,"code":"1200","name":"Graana (Pvt) Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c04","order":4,"code":"1300","name":"Propsure Digital Solutions","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c05","order":5,"code":"1400","name":"Agency 21 Services Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c06","order":6,"code":"1500","name":"Graana Services Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c07","order":7,"code":"1600","name":"Imarat Wealth + Pvt Ltd","records":{"2024":null,"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c08","order":8,"code":"1700","name":"Propmax.Ai Pvt Ltd","records":{"2024":null,"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c09","order":9,"code":"5100","name":"Amazon Mall 2","records":{"2024":null,"2025":null,"2026":null}},{"id":"c10","order":10,"code":"5200","name":"Amazon Mall Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Audit Completed","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c11","order":11,"code":"5300","name":"Imarat Developers Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c12","order":12,"code":"5400","name":"Imarat Residencies Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c13","order":13,"code":"5500","name":"Golf Floras(Aop)","records":{"2024":null,"2025":null,"2026":null}},{"id":"c14","order":14,"code":"5600","name":"Amazon Marketing Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c15","order":15,"code":"5700","name":"Imarat Bavylon Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c16","order":16,"code":"5800","name":"Hoon Adventures Farm House","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c17","order":17,"code":"5900","name":"Imarat IBM Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c18","order":18,"code":"6000","name":"Imarat Hospitality","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c19","order":19,"code":"6100","name":"Imarat Prestige Pvt Ltd","records":{"2024":null,"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c20","order":20,"code":"7000","name":"Imarat Rmc Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"BDO"},"2026":{"status":"Audit In Progress","auditor":"RSM"}}},{"id":"c21","order":21,"code":"N/A","name":"Golf Floras Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c22","order":22,"code":"N/A","name":"Imarat Institute Of Technical Training PVT LTD","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c23","order":23,"code":"N/A","name":"Imarat Cyber Tower Pvt Ltd","records":{"2024":null,"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c24","order":24,"code":"N/A","name":"Imarat Executive Club","records":{"2024":null,"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}}];
+
+async function init() {
+  idb = await openIDB();
+  const saved = await idbGet('state','companies');
+  if (saved && saved.length) { S.companies = saved } else { S.companies = JSON.parse(JSON.stringify(SEED)) }
+  const savedYears = await idbGet('state','years');
+  S.years = savedYears || ['2024','2025','2026'];
   S.ready = true;
+  updateRoleBadge();
   boot();
 }
 
@@ -279,39 +277,32 @@ function boot() {
 }
 
 function updateRoleBadge() {
-  const b = $('#roleBadge');
-  if (isAdmin) { b.textContent = 'Admin'; b.style.color = '#F3D77A' }
-  else { b.textContent = 'Viewer'; b.style.color = 'rgba(255,255,255,.75)' }
-
-  if (isAdmin) {
-    $('#addBtn').hidden = false;
-    $('#addBtn2').hidden = false;
-    $('#addYrBtn').hidden = false;
-    $('#actCol').textContent = '';
-  } else {
-    $('#addBtn').hidden = true;
-    $('#addBtn2').hidden = true;
-    $('#addYrBtn').hidden = true;
-    $('#actCol').textContent = '';
-  }
+  $('#roleAdmin').classList.toggle('admin', isAdmin);
+  $('#roleAdmin').classList.toggle('viewer', !isAdmin);
+  $('#roleViewer').classList.toggle('viewer', !isAdmin);
+  $('#roleViewer').classList.toggle('admin', isAdmin);
+  $('#roleAdmin').style.opacity = isAdmin ? '1' : '.45';
+  $('#roleViewer').style.opacity = isAdmin ? '.45' : '1';
+  $('#addBtn').hidden = !isAdmin;
+  $('#addBtn2').hidden = !isAdmin;
+  $('#addYrBtn').hidden = !isAdmin;
 }
 
-async function cap(n) { try { return window.claude && window.claude.use ? await window.claude.use(n) : null } catch(e) { return null } }
+function switchRole(admin) {
+  isAdmin = admin; saveRole(); updateRoleBadge(); render();
+  toast(isAdmin ? 'Switched to Admin mode' : 'Switched to Viewer mode');
+}
 
-async function persist(c) {
-  if (DB) { try { await DB.doc('companies/' + c.id).set(docOf(c)) } catch(e) { fail(e) } }
+$('#roleAdmin').onclick = () => switchRole(true);
+$('#roleViewer').onclick = () => switchRole(false);
+
+async function persist() {
+  await idbPut('state','companies', JSON.parse(JSON.stringify(S.companies)));
+  await idbPut('state','years', S.years);
 }
-async function persistMeta() {
-  if (DB) { try { await DB.doc('meta/config').set({ years: S.years }) } catch(e) { fail(e) } }
-}
-function docOf(c) { return { order: c.order, code: c.code, name: c.name, records: c.records } }
-function fail(e) { console.error(e); toast('Could not save. You may have view-only access.') }
 
 const yearsOf = () => { const y = new Set(S.years); S.companies.forEach(c => Object.keys(c.records||{}).forEach(k => y.add(k))); return [...y].sort() };
 
-const SEED = [{"id":"c01","order":1,"code":"1000","name":"Imarat Holding (Pvt) Ltd","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c02","order":2,"code":"1100","name":"Estate Agency 21","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Audit Completed","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c03","order":3,"code":"1200","name":"Graana (Pvt) Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c04","order":4,"code":"1300","name":"Propsure Digital Solutions","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c05","order":5,"code":"1400","name":"Agency 21 Services Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c06","order":6,"code":"1500","name":"Graana Services Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c07","order":7,"code":"1600","name":"Imarat Wealth + Pvt Ltd","records":{"2024":null,"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c08","order":8,"code":"1700","name":"Propmax.Ai Pvt Ltd","records":{"2024":null,"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c09","order":9,"code":"5100","name":"Amazon Mall 2","records":{"2024":null,"2025":null,"2026":null}},{"id":"c10","order":10,"code":"5200","name":"Amazon Mall Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Audit Completed","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c11","order":11,"code":"5300","name":"Imarat Developers Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c12","order":12,"code":"5400","name":"Imarat Residencies Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c13","order":13,"code":"5500","name":"Golf Floras(Aop)","records":{"2024":null,"2025":null,"2026":null}},{"id":"c14","order":14,"code":"5600","name":"Amazon Marketing Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c15","order":15,"code":"5700","name":"Imarat Bavylon Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c16","order":16,"code":"5800","name":"Hoon Adventures Farm House","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c17","order":17,"code":"5900","name":"Imarat IBM Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c18","order":18,"code":"6000","name":"Imarat Hospitality","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c19","order":19,"code":"6100","name":"Imarat Prestige Pvt Ltd","records":{"2024":null,"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c20","order":20,"code":"7000","name":"Imarat Rmc Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"BDO"},"2026":{"status":"Audit In Progress","auditor":"RSM"}}},{"id":"c21","order":21,"code":"N/A","name":"Golf Floras Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c22","order":22,"code":"N/A","name":"Imarat Institute Of Technical Training PVT LTD","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c23","order":23,"code":"N/A","name":"Imarat Cyber Tower Pvt Ltd","records":{"2024":null,"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c24","order":24,"code":"N/A","name":"Imarat Executive Club","records":{"2024":null,"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}}];
-
-/* derived data */
 function allRows() { const r = []; S.companies.forEach(c => S.years.forEach(fy => { const rec = (c.records||{})[fy]; r.push({ c, fy, rec: rec||null }) })); return r }
 const inFY = r => F.fy === 'all' || r.fy === F.fy;
 function matchQ(r) { const q = F.q.trim().toLowerCase(); if (!q) return true; return [r.c.code, r.c.name, r.rec&&r.rec.auditor, r.rec&&r.rec.status, r.fy].join(' ').toLowerCase().includes(q) }
@@ -320,12 +311,11 @@ function tableRows() { return allRows().filter(r => inFY(r) && matchQ(r) && (!F.
   .sort((a,b) => a.c.order - b.c.order || a.fy.localeCompare(b.fy)) }
 function counts(rows) { const n = [0,0,0,0,0]; rows.forEach(r => n[STATUSES.indexOf(r.rec.status)]++); return n }
 
-/* render */
 function render() {
   if (!S.ready) return;
   $('#asof').textContent = new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
   renderFilters(); renderKPIs(); renderTable(); renderCharts();
-  $('#store').textContent = DB ? 'Shared storage: data and attachments are shared with everyone who has access.' : 'Data loaded from defaults. Publish with sharing to enable persistent storage.';
+  $('#store').textContent = 'Data stored in browser. Uploaded PDFs are saved locally via IndexedDB.';
 }
 
 function renderFilters() {
@@ -389,7 +379,6 @@ function renderTable() {
     : `<tr><td colspan="7" class="empty">${S.companies.length ? 'No records match filters.' : 'No companies yet.'}</td></tr>`;
 }
 
-/* charts */
 function themeOpts() { const t = cssv('--fg'), m = cssv('--muted'), l = cssv('--line'); Chart.defaults.color = m; Chart.defaults.font.family = cssv('--f-body'); Chart.defaults.font.size = 12; return { t, m, l } }
 const sCol = () => [0,1,2,3,4].map(i => cssv('--s'+i));
 
@@ -435,7 +424,7 @@ document.addEventListener('change', async e => {
   if (t.dataset && t.dataset.act === 'status' && isAdmin) {
     const c = S.companies.find(x => x.id===t.dataset.id);
     c.records[t.dataset.fy] = { ...(c.records[t.dataset.fy]||{}), status: t.value };
-    render(); toast('Status updated'); persist(c);
+    render(); toast('Status updated'); persist();
   }
 });
 
@@ -450,43 +439,44 @@ $('#fileIn').addEventListener('change', async e => {
   const f = e.target.files[0]; if (!f || !pend) return;
   const {c, fy} = pend;
   if (!(f.type === 'application/pdf' || /\.pdf$/i.test(f.name))) return toast('Please choose a PDF file.');
-  if (f.size > 20*1024*1024) return toast('PDF must be under 20 MB.');
-  toast('Uploading…');
+  if (f.size > 50*1024*1024) return toast('PDF must be under 50 MB.');
+  toast('Saving…');
   const rec = c.records[fy], old = rec.pdf;
   try {
-    if (ASSETS) {
-      const r = await ASSETS.upload(f, { type: 'application/pdf' });
-      rec.pdf = { id: r.id, url: r.url, name: f.name, size: f.size, at: Date.now() };
-    } else {
-      toast('Asset uploads require editor access.'); return;
-    }
-    render(); await persist(c);
-    if (old && old.id && ASSETS) { try { await ASSETS.delete(old.id) } catch(x) {} }
+    const buf = await f.arrayBuffer();
+    const fKey = c.id + '_' + fy;
+    await idbPut('files', fKey, buf);
+    rec.pdf = { key: fKey, name: f.name, size: f.size, at: Date.now() };
+    if (old && old.key && old.key !== fKey) await idbDel('files', old.key);
+    render(); await persist();
     toast(old ? 'Statement replaced' : 'Statement uploaded');
-  } catch(err) { console.error(err); if (old) rec.pdf = old; else delete rec.pdf; render(); toast('Upload failed: ' + (err.message||'Please try again.')) }
+  } catch(err) { console.error(err); toast('Upload failed: ' + (err.message||'Please try again.')) }
 });
 
-/* PDF view/download */
 async function viewPdf(c, fy) {
   const p = c.records[fy].pdf; if (!p) return;
-  const src = p.url || ('/_blob/' + p.id);
-  const close = () => { $('#layer').innerHTML = '' };
+  toast('Loading PDF…');
+  const buf = await idbGet('files', p.key);
+  if (!buf) return toast('PDF not found in local storage.');
+  const blob = new Blob([buf], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  const close = () => { $('#layer').innerHTML = ''; URL.revokeObjectURL(url) };
   $('#layer').innerHTML = `<div class="ov"><div class="md wide"><div class="mh"><h3>${esc(c.name)} · FY ${fy}</h3><button class="ib" id="mx" aria-label="Close">${ic('x')}</button></div>
-    <div class="mb-modal"><iframe class="pdfbox" src="${esc(src)}" title="Financial statements"></iframe>
+    <div class="mb-modal"><iframe class="pdfbox" src="${url}" title="Financial statements"></iframe>
     <div class="none">${esc(p.name)} · ${(p.size/1048576).toFixed(2)} MB</div></div>
     <div class="mf">${isAdmin ? '<button class="btn danger" id="rm">Remove file</button><span style="flex:1"></span>' : '<span style="flex:1"></span>'}
     ${isAdmin ? `<button class="btn" id="rp">${ic('up')}Replace</button>` : ''}
     <button class="btn primary" id="dd">${ic('dl')}Download</button></div></div></div>`;
   $('#mx').onclick = close;
   $('.ov').onclick = ev => { if (ev.target.classList.contains('ov')) close() };
-  $('#dd').onclick = () => dlPdf(c, fy);
+  $('#dd').onclick = () => { const a = document.createElement('a'); a.href = url; a.download = p.name; a.click() };
   if (isAdmin && $('#rp')) $('#rp').onclick = () => { close(); pend = {c, fy}; $('#fileIn').value = ''; $('#fileIn').click() };
   if (isAdmin && $('#rm')) {
     let armed = false;
     $('#rm').onclick = async function() {
       if (!armed) { armed = true; this.textContent = 'Click again to confirm'; return }
-      const old = p; delete c.records[fy].pdf; close(); render(); await persist(c);
-      if (old.id && ASSETS) ASSETS.delete(old.id).catch(()=>{});
+      await idbDel('files', p.key);
+      delete c.records[fy].pdf; close(); render(); await persist();
       toast('File removed');
     };
   }
@@ -494,23 +484,14 @@ async function viewPdf(c, fy) {
 
 async function dlPdf(c, fy) {
   const p = c.records[fy].pdf; if (!p) return;
-  const src = p.url || ('/_blob/' + p.id);
-  if (DL) {
-    try {
-      const r = await fetch(src); if (!r.ok) throw new Error('fetch');
-      const blob = await r.blob();
-      await DL.save({ filename: p.name, data: blob });
-      toast('File saved');
-    } catch(e) {
-      if (e && e.code === 'declined') return;
-      toast('Download failed. Try the preview instead.');
-    }
-  } else {
-    toast('Downloads are not available in this view.');
-  }
+  const buf = await idbGet('files', p.key);
+  if (!buf) return toast('PDF not found in local storage.');
+  const blob = new Blob([buf], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = p.name; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
 }
 
-/* modals */
 function layer(html) {
   $('#layer').innerHTML = `<div class="ov"><div class="md" role="dialog" aria-modal="true">${html}</div></div>`;
   const cl = () => { $('#layer').innerHTML = '' };
@@ -543,10 +524,12 @@ function companyModal(c) {
     let armed = false;
     $('#mDel').onclick = async function() {
       if (!armed) { armed = true; this.textContent = 'Click again to delete'; return }
-      cl(); S.companies = S.companies.filter(x => x.id !== c.id);
-      if (DB) { try { await DB.doc('companies/'+c.id).delete() } catch(e) { fail(e) } }
-      Object.values(c.records).forEach(r => { if (r && r.pdf && r.pdf.id && ASSETS) ASSETS.delete(r.pdf.id).catch(()=>{}) });
-      render(); toast('Company deleted');
+      cl();
+      for (const y of Object.keys(c.records||{})) {
+        const r = c.records[y]; if (r && r.pdf && r.pdf.key) await idbDel('files', r.pdf.key);
+      }
+      S.companies = S.companies.filter(x => x.id !== c.id);
+      render(); await persist(); toast('Company deleted');
     };
   }
 
@@ -567,7 +550,7 @@ function companyModal(c) {
     }
     if (isNew) { c = { id: 'c'+Date.now().toString(36), order: (S.companies.reduce((m,x)=>Math.max(m,x.order||0),0))+1, code, name, records: rec }; S.companies.push(c) }
     else { c.code = code; c.name = name; c.records = rec }
-    cl(); render(); toast(isNew?'Company added':'Company updated'); persist(c);
+    cl(); render(); toast(isNew?'Company added':'Company updated'); persist();
   };
 }
 
@@ -584,15 +567,12 @@ function addYearModal() {
     if (S.years.includes(y)) return $('#yErr').textContent = 'That year already exists.';
     const last = S.years[S.years.length-1];
     S.years = [...S.years, y].sort(); F.fy = y; saveF(); cl();
-    const changed = [];
-    S.companies.forEach(c => { const p = c.records[last]; c.records[y] = p ? { status: STATUSES[0], auditor: p.auditor||'' } : null; changed.push(c) });
-    render(); await persistMeta();
-    for (const c of changed) await persist(c);
+    S.companies.forEach(c => { const p = c.records[last]; c.records[y] = p ? { status: STATUSES[0], auditor: p.auditor||'' } : null });
+    render(); await persist();
     toast('FY '+y+' added');
   };
 }
 
-/* toast */
 let tt;
 function toast(m) {
   let el = $('.toast');
