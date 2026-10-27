@@ -6,13 +6,12 @@
 <title>Imarat Group — Audit Status</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
 <style>
-:root{--bg:#f5f6f8;--fg:#1a1a2e;--card:#fff;--border:#e2e8f0;--emerald:#0b5d3f;--emeraldD:#083d2a;--emeraldL:#e8f5ee;--gold:#d4a93c;--goldL:#fdf6e3;--muted:#6b7280;--danger:#dc2626;--blue:#2563eb;--blueL:#eff6ff;--orange:#ea580c;--orangeL:#fff7ed;--purple:#7c3aed;--purpleL:#f5f3ff;--shadow:0 1px 4px rgba(0,0,0,.07);--radius:10px;font-family:'DM Sans',system-ui,sans-serif;color-scheme:light}
+:root{--bg:#f5f6f8;--fg:#1a1a2e;--card:#fff;--border:#e2e8f0;--emerald:#0b5d3f;--emeraldD:#083d2a;--emeraldL:#e8f5ee;--gold:#d4a93c;--goldL:#fdf6e3;--muted:#6b7280;--danger:#dc2626;--blue:#2563eb;--blueL:#eff6ff;--orange:#ea580c;--orangeL:#fff7ed;--purple:#7c3aed;--purpleL:#f5f3ff;--grey:#94a3b8;--greyL:#f1f5f9;--shadow:0 1px 4px rgba(0,0,0,.07);--radius:10px;font-family:'DM Sans',system-ui,sans-serif;color-scheme:light}
 *{margin:0;padding:0;box-sizing:border-box}
 [hidden]{display:none!important}
 body{background:var(--bg);color:var(--fg);line-height:1.5}
 h1,h2,h3{font-family:'Sora',system-ui,sans-serif}
 
-/* SETUP */
 .setup-overlay{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;overflow-y:auto}
 .setup-card{max-width:720px;width:100%;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2.5rem;box-shadow:var(--shadow)}
 .setup-card h1{font-size:1.5rem;margin-bottom:.25rem;color:var(--emerald)}
@@ -30,12 +29,10 @@ h1,h2,h3{font-family:'Sora',system-ui,sans-serif}
 .connect-row input{flex:1;padding:.65rem 1rem;border:1px solid var(--border);border-radius:var(--radius);font-size:.9rem;background:var(--card);color:var(--fg)}
 .err-msg{color:var(--danger);font-size:.8rem;margin-top:.5rem;display:none}
 
-/* LOADING */
 .loading-screen{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem}
 .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--emerald);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* BTN */
 .btn{padding:.5rem 1.1rem;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:.8rem;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
 .btn:hover{opacity:.88}
 .btn-primary{background:var(--emerald);color:#fff}
@@ -48,7 +45,6 @@ h1,h2,h3{font-family:'Sora',system-ui,sans-serif}
 .btn-icon{width:32px;height:32px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid var(--border);background:var(--card);cursor:pointer;color:var(--muted);font-size:.9rem}
 .btn-icon:hover{border-color:var(--emerald);color:var(--emerald)}
 
-/* HEADER */
 .header{background:linear-gradient(135deg,var(--emeraldD) 0%,var(--emerald) 100%);color:#fff;padding:1.5rem max(24px,env(safe-area-inset-left,0px)) 1.25rem max(24px,env(safe-area-inset-right,0px))}
 .header-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;margin-bottom:.25rem}
 .header-brand{display:flex;align-items:center;gap:1rem}
@@ -59,22 +55,18 @@ h1,h2,h3{font-family:'Sora',system-ui,sans-serif}
 .header-actions{display:flex;gap:.5rem;flex-wrap:wrap}
 .header-actions .btn-white{font-size:.78rem;padding:.4rem .9rem;border-radius:8px}
 
-/* ROLE TOGGLE */
 .role-toggle{display:flex;gap:0;background:rgba(255,255,255,.12);border-radius:20px;overflow:hidden;margin-top:.75rem;width:fit-content}
 .role-btn{padding:5px 18px;font-size:.75rem;font-weight:600;cursor:pointer;border:none;background:transparent;color:rgba(255,255,255,.7);transition:all .2s}
 .role-btn.on{background:#fff;color:var(--emeraldD);border-radius:20px}
 
-/* YEAR TABS */
 .year-bar{background:var(--card);border-bottom:1px solid var(--border);padding:.6rem max(24px,env(safe-area-inset-left,0px));display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;box-shadow:0 1px 2px rgba(0,0,0,.04)}
 .year-bar label{font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-right:.25rem}
 .yr-tab{padding:5px 16px;border-radius:20px;font-size:.8rem;font-weight:500;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--fg);transition:all .15s}
 .yr-tab:hover{border-color:var(--emerald);color:var(--emerald)}
 .yr-tab.on{background:var(--emerald);color:#fff;border-color:var(--emerald)}
 
-/* MAIN */
 .main{padding:1.25rem max(24px,env(safe-area-inset-left,0px)) 2rem max(24px,env(safe-area-inset-right,0px))}
 
-/* STATS */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem;margin-bottom:1.25rem}
 .stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.15rem;box-shadow:var(--shadow)}
 .stat-label{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);display:flex;align-items:center;gap:5px}
@@ -84,14 +76,12 @@ h1,h2,h3{font-family:'Sora',system-ui,sans-serif}
 .completion-bar{height:6px;border-radius:3px;background:var(--border);margin-top:.5rem;overflow:hidden}
 .completion-fill{height:100%;border-radius:3px;background:var(--emerald);transition:width .5s}
 
-/* TOOLBAR */
 .toolbar{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-bottom:1rem}
 .search-box{flex:1;min-width:200px;max-width:360px;padding:.5rem .9rem;border:1px solid var(--border);border-radius:8px;font-size:.85rem;background:var(--card);color:var(--fg)}
 .search-box:focus{outline:2px solid var(--emerald);border-color:transparent}
 .filter-select{padding:.5rem .7rem;border:1px solid var(--border);border-radius:8px;font-size:.82rem;background:var(--card);color:var(--fg)}
 .toolbar .count{margin-left:auto;font-size:.8rem;color:var(--muted)}
 
-/* TABLE */
 .table-wrap{overflow-x:auto;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
 table{width:100%;border-collapse:collapse;font-size:.82rem}
 th{background:#f9fafb;font-weight:600;text-align:left;padding:.65rem .75rem;white-space:nowrap;font-size:.7rem;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);border-bottom:1px solid var(--border)}
@@ -101,21 +91,19 @@ tr:hover td{background:#f9fbfc}
 .company-code{font-weight:700;color:var(--emerald);font-size:.82rem;font-family:'Sora',monospace}
 .company-name{font-weight:500;white-space:nowrap}
 
-/* STATUS BADGE */
 .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:6px;font-size:.73rem;font-weight:600;white-space:nowrap}
 .badge-completed{background:var(--emeraldL);color:var(--emerald)}
 .badge-inprogress{background:var(--blueL);color:var(--blue)}
-.badge-pending{background:var(--orangeL);color:var(--orange)}
-.badge-notstarted{background:var(--purpleL);color:var(--purple)}
+.badge-board{background:var(--orangeL);color:var(--orange)}
 .badge-initiation{background:var(--goldL);color:#96790e}
+.badge-na{background:var(--greyL);color:var(--grey)}
 
-/* STATUS SELECT (admin) */
 .status-select{padding:4px 8px;border-radius:6px;font-size:.78rem;font-weight:600;border:1px solid transparent;cursor:pointer;appearance:none;-webkit-appearance:none;background-repeat:no-repeat;background-position:right 6px center;background-size:10px;padding-right:22px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E")}
 .ss-completed{background-color:var(--emeraldL);color:var(--emerald)}
 .ss-inprogress{background-color:var(--blueL);color:var(--blue)}
-.ss-pending{background-color:var(--orangeL);color:var(--orange)}
-.ss-notstarted{background-color:var(--purpleL);color:var(--purple)}
+.ss-board{background-color:var(--orangeL);color:var(--orange)}
 .ss-initiation{background-color:var(--goldL);color:#96790e}
+.ss-na{background-color:var(--greyL);color:var(--grey)}
 
 .file-link{color:var(--blue);text-decoration:none;font-size:.78rem;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
 .file-link:hover{text-decoration:underline}
@@ -123,7 +111,6 @@ tr:hover td{background:#f9fbfc}
 .upload-btn{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border:1px dashed var(--border);border-radius:6px;font-size:.75rem;color:var(--muted);cursor:pointer;background:transparent;transition:all .15s}
 .upload-btn:hover{border-color:var(--emerald);color:var(--emerald)}
 
-/* MODAL */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;display:flex;align-items:center;justify-content:center;padding:1rem}
 .modal-content{background:var(--card);border-radius:16px;max-width:750px;width:100%;max-height:90vh;overflow:auto;position:relative}
 .modal-close{position:absolute;top:12px;right:12px;width:32px;height:32px;border:none;border-radius:50%;background:#f1f3f5;color:var(--fg);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1}
@@ -153,9 +140,9 @@ body.is-admin .admin-only{display:initial}
 <div class="setup-card">
   <h1>&#128193; Connect to Google Drive</h1>
   <p class="sub">One-time setup: deploy a small Google Apps Script to connect your Drive folder to this dashboard.</p>
-  <div class="step"><div class="step-num">1</div><div class="step-text">Go to <a href="https://script.google.com" target="_blank">script.google.com</a> → click <code>New Project</code></div></div>
+  <div class="step"><div class="step-num">1</div><div class="step-text">Go to <a href="https://script.google.com" target="_blank">script.google.com</a> &rarr; click <code>New Project</code></div></div>
   <div class="step"><div class="step-num">2</div><div class="step-text">Delete the default code, paste the code below (click <strong>Copy Code</strong>)</div></div>
-  <div class="step"><div class="step-num">3</div><div class="step-text">Click <code>Deploy</code> → <code>New deployment</code> → Type: <code>Web app</code><br>Execute as: <code>Me</code> | Who has access: <code>Anyone</code></div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-text">Click <code>Deploy</code> &rarr; <code>New deployment</code> &rarr; Type: <code>Web app</code><br>Execute as: <code>Me</code> | Who has access: <code>Anyone</code></div></div>
   <div class="step"><div class="step-num">4</div><div class="step-text"><strong>Authorize</strong> when prompted (allow Drive &amp; Sheets access)</div></div>
   <div class="step"><div class="step-num">5</div><div class="step-text">Copy the <strong>Web App URL</strong> and paste it below</div></div>
   <div class="code-wrap">
@@ -178,8 +165,6 @@ body.is-admin .admin-only{display:initial}
 
 <!-- DASHBOARD -->
 <div id="dashboard" hidden>
-
-  <!-- HEADER -->
   <div class="header">
     <div class="header-top">
       <div class="header-brand">
@@ -200,14 +185,9 @@ body.is-admin .admin-only{display:initial}
     </div>
   </div>
 
-  <!-- YEAR TABS -->
-  <div class="year-bar" id="yearBar">
-    <label>Financial Year</label>
-  </div>
+  <div class="year-bar" id="yearBar"><label>Financial Year</label></div>
 
-  <!-- MAIN -->
   <div class="main">
-    <!-- Settings -->
     <div id="settingsPanel" class="settings-panel admin-only" hidden>
       <h3 style="font-size:.9rem;margin-bottom:.75rem">Settings</h3>
       <label>Google Apps Script URL</label>
@@ -218,26 +198,23 @@ body.is-admin .admin-only{display:initial}
       </div>
     </div>
 
-    <!-- STATS -->
     <div class="stats" id="statsGrid"></div>
 
-    <!-- TOOLBAR -->
     <div class="toolbar">
       <input class="search-box" id="searchBox" placeholder="Search code, company, auditor..." oninput="render()">
       <select class="filter-select" id="statusFilter" onchange="render()">
         <option value="">All statuses</option>
-        <option>Completed</option>
+        <option>Audit Completed</option>
         <option>In Progress</option>
-        <option>Pending</option>
-        <option>Not Started</option>
+        <option>Board Approval Pending</option>
         <option>Audit Initiation Pending</option>
+        <option>N/A</option>
       </select>
       <button class="btn btn-outline btn-sm" onclick="document.getElementById('searchBox').value='';document.getElementById('statusFilter').value='';render()">Clear filters</button>
       <button class="btn btn-primary btn-sm admin-only" onclick="promptAddCompany()">+ Add Company</button>
       <span class="count" id="recCount"></span>
     </div>
 
-    <!-- TABLE -->
     <div class="table-wrap">
       <table><thead id="thead"></thead><tbody id="tbody"></tbody></table>
     </div>
@@ -257,7 +234,7 @@ body.is-admin .admin-only{display:initial}
 <div id="assignModal" class="modal" hidden onclick="if(event.target===this)closeModal('assignModal')">
   <div class="modal-content assign-modal">
     <button class="modal-close" onclick="closeModal('assignModal')">&times;</button>
-    <h3>Assign File — <span id="assignTarget"></span></h3>
+    <h3>Assign File &mdash; <span id="assignTarget"></span></h3>
     <div class="assign-list" id="assignList"></div>
     <button class="btn btn-outline btn-sm" onclick="closeModal('assignModal')">Cancel</button>
   </div>
@@ -265,18 +242,37 @@ body.is-admin .admin-only{display:initial}
 
 <div class="toast" id="toast" hidden></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
 let SCRIPT_URL='',isAdmin=true,activeYear='all';
 let S={files:[],statuses:[],companies:[],years:[]};
-const STATUSES=['Completed','In Progress','Pending','Not Started','Audit Initiation Pending'];
-const AUDITORS=['WACO','BDO','RSM','Not Assigned'];
-const STATUS_CLS={Completed:'completed','In Progress':'inprogress',Pending:'pending','Not Started':'notstarted','Audit Initiation Pending':'initiation'};
+const STATUSES=['Audit Completed','In Progress','Board Approval Pending','Audit Initiation Pending','N/A'];
+const AUDITORS=['WACO','BDO','RSM','N/A'];
+const STATUS_CLS={'Audit Completed':'completed','In Progress':'inprogress','Board Approval Pending':'board','Audit Initiation Pending':'initiation','N/A':'na'};
 
 const APPS_SCRIPT=`// ===== IMARAT AUDIT DASHBOARD Backend =====
 // Deploy as Web App: Execute as Me, Access = Anyone
 
 var FOLDER_ID = '18sRCVdTpcQ80igDSSOSDBF7lO3h8TyGv';
+
+// Special filename prefixes that map to companies without SAP codes
+var FILE_ALIASES = {
+  'IITT': 'Imarat Institute Of Technical Training PVT LTD',
+  'Golf floras': 'Golf Floras Pvt Ltd'
+};
+
+// SAP code to company name mapping for auto-assign
+var CODE_TO_COMPANY = {
+  '1000':'Imarat Holding (Pvt) Ltd','1100':'Estate Agency 21',
+  '1200':'Graana (Pvt) Ltd','1300':'Propsure Digital Solutions',
+  '1400':'Agency 21 Services Pvt Ltd','1500':'Graana Services Pvt Ltd',
+  '1600':'Imarat Wealth + Pvt Ltd','1700':'Propmax.Ai Pvt Ltd',
+  '5100':'Amazon Mall 2','5200':'Amazon Mall Pvt Ltd',
+  '5300':'Imarat Developers Pvt Ltd','5400':'Imarat Residencies Pvt Ltd',
+  '5500':'Golf Floras(Aop)','5600':'Amazon Marketing Pvt Ltd',
+  '5700':'Imarat Bavlon Pvt Ltd','5800':'Hoon Adventures Farm House',
+  '5900':'Imarat IBM Pvt Ltd','6000':'Imarat Hospitality',
+  '6100':'Imarat Prestige Pvt Ltd','7000':'Imarat Rmc Pvt Ltd'
+};
 
 function getSheet_() {
   var props = PropertiesService.getScriptProperties();
@@ -294,25 +290,83 @@ function getSheet_() {
 }
 
 function seedData_(sh) {
-  var C = [
-    'IMARAT HOLDING PVT LTD.','Agency21 International',
-    'Graana (Pvt) Ltd','Propsure',
-    'Agency21 Support Services','Graana Support Services',
-    'IMARAT Wealth+','PROPMAX.AI (PRIVATE) LTD',
-    "Imarat Builder's Mall",'Eetcetra Pvt. Ltd.',
-    'IR LAHORE (PVT) LTD.','Amazon Mall 2',
-    'Amazon Mall (Pvt) Ltd','Imarat Developments',
-    'Imarat Residencia','Golf Flora',
-    'Amazon Marketing','Imarat IBD SMC LTD.',
-    'Hoon Adventures Farm Pvt','IMARAT IBM (PVT) Ltd',
-    'IMARAT Hospitality (PVT)','IMARAT PRESTIGE (Pvt) Ltd',
-    'Imarat REIT Management Co','Imarat Group of Companies'
+  var D = [
+    ['Imarat Holding (Pvt) Ltd','FY2024','Audit Completed','WACO'],
+    ['Imarat Holding (Pvt) Ltd','FY2025','Board Approval Pending','WACO'],
+    ['Imarat Holding (Pvt) Ltd','FY2026','Audit Initiation Pending','WACO'],
+    ['Estate Agency 21','FY2024','Audit Completed','BDO'],
+    ['Estate Agency 21','FY2025','Audit Completed','RSM'],
+    ['Estate Agency 21','FY2026','Audit Initiation Pending','RSM'],
+    ['Graana (Pvt) Ltd','FY2024','Audit Completed','BDO'],
+    ['Graana (Pvt) Ltd','FY2025','Board Approval Pending','RSM'],
+    ['Graana (Pvt) Ltd','FY2026','Audit Initiation Pending','RSM'],
+    ['Propsure Digital Solutions','FY2024','Audit Completed','BDO'],
+    ['Propsure Digital Solutions','FY2025','Board Approval Pending','RSM'],
+    ['Propsure Digital Solutions','FY2026','Audit Initiation Pending','RSM'],
+    ['Agency 21 Services Pvt Ltd','FY2024','Audit Completed','WACO'],
+    ['Agency 21 Services Pvt Ltd','FY2025','Board Approval Pending','WACO'],
+    ['Agency 21 Services Pvt Ltd','FY2026','Audit Initiation Pending','WACO'],
+    ['Graana Services Pvt Ltd','FY2024','Audit Completed','WACO'],
+    ['Graana Services Pvt Ltd','FY2025','Board Approval Pending','WACO'],
+    ['Graana Services Pvt Ltd','FY2026','Audit Initiation Pending','WACO'],
+    ['Imarat Wealth + Pvt Ltd','FY2024','N/A','N/A'],
+    ['Imarat Wealth + Pvt Ltd','FY2025','Board Approval Pending','RSM'],
+    ['Imarat Wealth + Pvt Ltd','FY2026','Audit Initiation Pending','RSM'],
+    ['Propmax.Ai Pvt Ltd','FY2024','N/A','N/A'],
+    ['Propmax.Ai Pvt Ltd','FY2025','Board Approval Pending','RSM'],
+    ['Propmax.Ai Pvt Ltd','FY2026','Audit Initiation Pending','RSM'],
+    ['Amazon Mall 2','FY2024','N/A','N/A'],
+    ['Amazon Mall 2','FY2025','N/A','N/A'],
+    ['Amazon Mall 2','FY2026','N/A','N/A'],
+    ['Amazon Mall Pvt Ltd','FY2024','Audit Completed','BDO'],
+    ['Amazon Mall Pvt Ltd','FY2025','Audit Completed','RSM'],
+    ['Amazon Mall Pvt Ltd','FY2026','Audit Initiation Pending','RSM'],
+    ['Imarat Developers Pvt Ltd','FY2024','Audit Completed','BDO'],
+    ['Imarat Developers Pvt Ltd','FY2025','Board Approval Pending','RSM'],
+    ['Imarat Developers Pvt Ltd','FY2026','Audit Initiation Pending','RSM'],
+    ['Imarat Residencies Pvt Ltd','FY2024','Audit Completed','BDO'],
+    ['Imarat Residencies Pvt Ltd','FY2025','Board Approval Pending','RSM'],
+    ['Imarat Residencies Pvt Ltd','FY2026','Audit Initiation Pending','RSM'],
+    ['Golf Floras(Aop)','FY2024','N/A','N/A'],
+    ['Golf Floras(Aop)','FY2025','N/A','N/A'],
+    ['Golf Floras(Aop)','FY2026','N/A','N/A'],
+    ['Amazon Marketing Pvt Ltd','FY2024','Audit Completed','BDO'],
+    ['Amazon Marketing Pvt Ltd','FY2025','Board Approval Pending','RSM'],
+    ['Amazon Marketing Pvt Ltd','FY2026','Audit Initiation Pending','RSM'],
+    ['Imarat Bavlon Pvt Ltd','FY2024','Audit Completed','BDO'],
+    ['Imarat Bavlon Pvt Ltd','FY2025','Board Approval Pending','RSM'],
+    ['Imarat Bavlon Pvt Ltd','FY2026','Audit Initiation Pending','RSM'],
+    ['Hoon Adventures Farm House','FY2024','Audit Completed','WACO'],
+    ['Hoon Adventures Farm House','FY2025','Board Approval Pending','WACO'],
+    ['Hoon Adventures Farm House','FY2026','Audit Initiation Pending','WACO'],
+    ['Imarat IBM Pvt Ltd','FY2024','Audit Completed','BDO'],
+    ['Imarat IBM Pvt Ltd','FY2025','Board Approval Pending','RSM'],
+    ['Imarat IBM Pvt Ltd','FY2026','Audit Initiation Pending','RSM'],
+    ['Imarat Hospitality','FY2024','Audit Completed','WACO'],
+    ['Imarat Hospitality','FY2025','Board Approval Pending','WACO'],
+    ['Imarat Hospitality','FY2026','Audit Initiation Pending','WACO'],
+    ['Imarat Prestige Pvt Ltd','FY2024','N/A','N/A'],
+    ['Imarat Prestige Pvt Ltd','FY2025','Board Approval Pending','RSM'],
+    ['Imarat Prestige Pvt Ltd','FY2026','Audit Initiation Pending','RSM'],
+    ['Imarat Rmc Pvt Ltd','FY2024','Audit Completed','BDO'],
+    ['Imarat Rmc Pvt Ltd','FY2025','Board Approval Pending','BDO'],
+    ['Imarat Rmc Pvt Ltd','FY2026','In Progress','RSM'],
+    ['Golf Floras Pvt Ltd','FY2024','Audit Completed','WACO'],
+    ['Golf Floras Pvt Ltd','FY2025','Board Approval Pending','WACO'],
+    ['Golf Floras Pvt Ltd','FY2026','Audit Initiation Pending','WACO'],
+    ['Imarat Institute Of Technical Training PVT LTD','FY2024','Audit Completed','WACO'],
+    ['Imarat Institute Of Technical Training PVT LTD','FY2025','Board Approval Pending','WACO'],
+    ['Imarat Institute Of Technical Training PVT LTD','FY2026','Audit Initiation Pending','WACO'],
+    ['Imarat Cyber Tower Pvt Ltd','FY2024','N/A','N/A'],
+    ['Imarat Cyber Tower Pvt Ltd','FY2025','Board Approval Pending','RSM'],
+    ['Imarat Cyber Tower Pvt Ltd','FY2026','Audit Initiation Pending','RSM'],
+    ['Imarat Executive Club','FY2024','N/A','N/A'],
+    ['Imarat Executive Club','FY2025','Board Approval Pending','RSM'],
+    ['Imarat Executive Club','FY2026','Audit Initiation Pending','RSM']
   ];
   var rows = [];
-  for (var i = 0; i < C.length; i++) {
-    rows.push([C[i],'FY2024','Not Started','Not Assigned','','','']);
-    rows.push([C[i],'FY2025','Not Started','Not Assigned','','','']);
-    rows.push([C[i],'FY2026','Not Started','Not Assigned','','','']);
+  for (var i = 0; i < D.length; i++) {
+    rows.push([D[i][0], D[i][1], D[i][2], D[i][3], '', '', '']);
   }
   sh.getRange(2, 1, rows.length, 7).setValues(rows);
 }
@@ -331,6 +385,49 @@ function doGet(e) {
     var sh = getSheet_();
     var data = sh.getDataRange().getValues();
     var statuses = [];
+
+    // Build a set of already-assigned fileIds
+    var assignedIds = {};
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][4]) assignedIds[data[i][4]] = true;
+    }
+
+    // Auto-assign: match filenames like "{code}-FY {year}.pdf" or alias names
+    for (var fi = 0; fi < files.length; fi++) {
+      var fn = files[fi].name;
+      if (assignedIds[files[fi].id]) continue; // already assigned somewhere
+      var m = fn.match(/^(.+?)-FY\\s*(\\d{4})/i);
+      if (!m) continue;
+      var prefix = m[1].trim();
+      var year = 'FY' + m[2];
+      var targetCompany = '';
+      // Check if prefix is a SAP code
+      if (CODE_TO_COMPANY[prefix]) {
+        targetCompany = CODE_TO_COMPANY[prefix];
+      } else {
+        // Check aliases (e.g. IITT, Golf floras)
+        for (var alias in FILE_ALIASES) {
+          if (prefix.toLowerCase() === alias.toLowerCase()) {
+            targetCompany = FILE_ALIASES[alias];
+            break;
+          }
+        }
+      }
+      if (!targetCompany) continue;
+      // Find the row and assign
+      for (var ri = 1; ri < data.length; ri++) {
+        if (data[ri][0] === targetCompany && data[ri][1] === year && !data[ri][4]) {
+          sh.getRange(ri+1, 5).setValue(files[fi].id);
+          sh.getRange(ri+1, 6).setValue(fn);
+          sh.getRange(ri+1, 7).setValue(new Date().toISOString());
+          data[ri][4] = files[fi].id;
+          data[ri][5] = fn;
+          assignedIds[files[fi].id] = true;
+          break;
+        }
+      }
+    }
+
     for (var i = 1; i < data.length; i++) {
       statuses.push({company: data[i][0], fy: data[i][1], status: data[i][2],
         auditor: data[i][3], fileId: data[i][4] || '', fileName: data[i][5] || ''});
@@ -377,7 +474,7 @@ function doGet(e) {
       if (fys.indexOf(data[i][1]) === -1) fys.push(data[i][1]);
     }
     for (var j = 0; j < fys.length; j++) {
-      sh.appendRow([name, fys[j], 'Not Started', 'Not Assigned', '', '', '']);
+      sh.appendRow([name, fys[j], 'Audit Initiation Pending', 'N/A', '', '', '']);
     }
     return ok_({success: true});
   }
@@ -391,7 +488,7 @@ function doGet(e) {
       if (companies.indexOf(data[i][0]) === -1) companies.push(data[i][0]);
     }
     for (var j = 0; j < companies.length; j++) {
-      sh.appendRow([companies[j], fy, 'Not Started', 'Not Assigned', '', '', '']);
+      sh.appendRow([companies[j], fy, 'Audit Initiation Pending', 'N/A', '', '', '']);
     }
     return ok_({success: true});
   }
@@ -404,7 +501,35 @@ function ok_(obj) {
     .setMimeType(ContentService.MimeType.JSON);
 }`;
 
-// ---------- INIT ----------
+// SAP codes for display
+const SAP_CODES={
+'Imarat Holding (Pvt) Ltd':'1000',
+'Estate Agency 21':'1100',
+'Graana (Pvt) Ltd':'1200',
+'Propsure Digital Solutions':'1300',
+'Agency 21 Services Pvt Ltd':'1400',
+'Graana Services Pvt Ltd':'1500',
+'Imarat Wealth + Pvt Ltd':'1600',
+'Propmax.Ai Pvt Ltd':'1700',
+'Amazon Mall 2':'5100',
+'Amazon Mall Pvt Ltd':'5200',
+'Imarat Developers Pvt Ltd':'5300',
+'Imarat Residencies Pvt Ltd':'5400',
+'Golf Floras(Aop)':'5500',
+'Amazon Marketing Pvt Ltd':'5600',
+'Imarat Bavlon Pvt Ltd':'5700',
+'Hoon Adventures Farm House':'5800',
+'Imarat IBM Pvt Ltd':'5900',
+'Imarat Hospitality':'6000',
+'Imarat Prestige Pvt Ltd':'6100',
+'Imarat Rmc Pvt Ltd':'7000',
+'Golf Floras Pvt Ltd':'',
+'Imarat Institute Of Technical Training PVT LTD':'',
+'Imarat Cyber Tower Pvt Ltd':'',
+'Imarat Executive Club':''
+};
+function codeFor(c){return SAP_CODES[c]||''}
+
 function init(){
   try{SCRIPT_URL=localStorage.getItem('imarat_url')||''}catch(e){}
   try{isAdmin=localStorage.getItem('imarat_role')!=='viewer'}catch(e){}
@@ -413,7 +538,6 @@ function init(){
   if(!SCRIPT_URL)showSetup();else loadData();
 }
 
-// ---------- SETUP ----------
 function showSetup(){
   document.getElementById('setupScreen').hidden=false;
   document.getElementById('dashboard').hidden=true;
@@ -439,7 +563,6 @@ async function testConnection(){
   }catch(e){err.style.color='var(--danger)';err.textContent='Connection failed. Check URL and ensure script is deployed with access "Anyone".';err.style.display='block'}
 }
 
-// ---------- DATA ----------
 async function loadData(){
   document.getElementById('loadingScreen').hidden=false;
   document.getElementById('dashboard').hidden=true;
@@ -463,7 +586,6 @@ function showDashboard(){
   renderYearTabs();render();
 }
 
-// ---------- ROLE ----------
 function setRole(a){
   isAdmin=a;try{localStorage.setItem('imarat_role',a?'admin':'viewer')}catch(e){}
   document.getElementById('roleAdmin').className='role-btn'+(a?' on':'');
@@ -472,7 +594,6 @@ function setRole(a){
   if(S.companies.length)render();
 }
 
-// ---------- YEAR TABS ----------
 function renderYearTabs(){
   const bar=document.getElementById('yearBar');
   let h='<label>Financial Year</label>';
@@ -483,7 +604,6 @@ function renderYearTabs(){
 }
 function setYear(y){activeYear=y;renderYearTabs();render()}
 
-// ---------- FILTERED DATA ----------
 function filtered(){
   const q=(document.getElementById('searchBox').value||'').toLowerCase();
   const sf=document.getElementById('statusFilter').value;
@@ -493,48 +613,24 @@ function filtered(){
   if(q)rows=rows.filter(r=>(r.company+' '+r.auditor+' '+codeFor(r.company)).toLowerCase().includes(q));
   return rows;
 }
-const SAP_CODES={
-'IMARAT HOLDING PVT LTD.':'1000','Imarat Holding Pvt Ltd':'1000',
-'Agency21 International':'1100','Agency 21 International':'1100',
-'Graana (Pvt) Ltd':'1200','Graana Technology Ltd':'1200',
-'Propsure':'1300','Propsure Digital Solutions':'1300',
-'Agency21 Support Services':'1400','Agency 21 Services Pvt Ltd':'1400',
-'Graana Support Services':'1500',
-'IMARAT Wealth+':'1600','Imarat Wealth+':'1600',
-'PROPMAX.AI (PRIVATE) LTD':'1700','Propmax.AI (Pvt) Ltd':'1700',
-"Imarat Builder's Mall":'3100',"Imarat Builder's Mall (Pvt) Ltd":'3100',
-'Eetcetra Pvt. Ltd.':'3200','Eetcetra (Pvt) Ltd':'3200',
-'IR LAHORE (PVT) LTD.':'5000','IR Lahore (Pvt) Ltd':'5000',
-'Amazon Mall 2':'5100','Amazon Mall 2 (Pvt) Ltd':'5100',
-'Amazon Mall (Pvt) Ltd':'5200',
-'Imarat Developments':'5300','Imarat Developments (Pvt) Ltd':'5300',
-'Imarat Residencia':'5400',
-'Golf Flora':'5500','Golf Floras (Pvt) Ltd':'5500',
-'Amazon Marketing':'5600','Amazon Marketing (Pvt) Ltd':'5600',
-'Imarat IBD SMC LTD.':'5700','Imarat IBD SMC Ltd':'5700',
-'Hoon Adventures Farm Pvt':'5800','Hoon Adventures Farm (Pvt) Ltd':'5800',
-'IMARAT IBM (PVT) Ltd':'5900','Imarat IBM (Pvt) Ltd':'5900',
-'IMARAT Hospitality (PVT)':'6000','Imarat Hospitality (Pvt) Ltd':'6000','Imarat Hotels (Pvt) Ltd':'6000',
-'IMARAT PRESTIGE (Pvt) Ltd':'6100','Imarat Prestige (Pvt) Ltd':'6100',
-'Imarat REIT Management Co':'7000','Imarat REIT Management (Pvt) Ltd':'7000'
-};
-function codeFor(c){return SAP_CODES[c]||''}
 
-// ---------- RENDER ----------
 function render(){renderStats();renderTable()}
 
 function renderStats(){
   const rows=filtered();
   const total=rows.length;
-  const comp=rows.filter(r=>r.status==='Completed').length;
+  const comp=rows.filter(r=>r.status==='Audit Completed').length;
   const inp=rows.filter(r=>r.status==='In Progress').length;
-  const pend=total-comp-inp;
-  const pct=total?Math.round(comp/total*100):0;
+  const board=rows.filter(r=>r.status==='Board Approval Pending').length;
+  const init=rows.filter(r=>r.status==='Audit Initiation Pending').length;
+  const na=rows.filter(r=>r.status==='N/A').length;
+  const countable=total-na;
+  const pct=countable?Math.round(comp/countable*100):0;
   document.getElementById('statsGrid').innerHTML=`
-    <div class="stat"><div class="stat-label"><span class="dot" style="background:var(--emerald)"></span>Total Companies</div><div class="stat-val">${total}</div><div class="stat-sub">${total} audits &bull; ${S.companies.length} in master list</div></div>
-    <div class="stat"><div class="stat-label"><span class="dot" style="background:var(--emerald)"></span>Completed Audits</div><div class="stat-val" style="color:var(--emerald)">${comp}</div><div class="stat-sub">Audit Completed</div></div>
-    <div class="stat"><div class="stat-label"><span class="dot" style="background:var(--blue)"></span>In-Progress Audits</div><div class="stat-val" style="color:var(--blue)">${inp}</div><div class="stat-sub">Audit In Progress</div></div>
-    <div class="stat"><div class="stat-label"><span class="dot" style="background:var(--orange)"></span>Pending Audits</div><div class="stat-val" style="color:var(--orange)">${pend}</div><div class="stat-sub">Initiation ${rows.filter(r=>r.status==='Audit Initiation Pending').length} &bull; Pending ${rows.filter(r=>r.status==='Pending').length} &bull; Not Started ${rows.filter(r=>r.status==='Not Started').length}</div></div>
+    <div class="stat"><div class="stat-label"><span class="dot" style="background:var(--emerald)"></span>Total Companies</div><div class="stat-val">${total}</div><div class="stat-sub">${countable} auditable &bull; ${na} N/A</div></div>
+    <div class="stat"><div class="stat-label"><span class="dot" style="background:var(--emerald)"></span>Audit Completed</div><div class="stat-val" style="color:var(--emerald)">${comp}</div><div class="stat-sub">Audits completed</div></div>
+    <div class="stat"><div class="stat-label"><span class="dot" style="background:var(--orange)"></span>Board Approval Pending</div><div class="stat-val" style="color:var(--orange)">${board}</div><div class="stat-sub">Awaiting board approval</div></div>
+    <div class="stat"><div class="stat-label"><span class="dot" style="background:var(--gold)"></span>Initiation Pending</div><div class="stat-val" style="color:var(--gold)">${init}</div><div class="stat-sub">Audit yet to begin</div></div>
     <div class="stat"><div class="stat-label"><span class="dot" style="background:var(--emerald)"></span>Completion</div><div class="stat-val" style="color:var(--emerald)">${pct}%</div><div class="completion-bar"><div class="completion-fill" style="width:${pct}%"></div></div></div>`;
 }
 
@@ -545,13 +641,13 @@ function renderTable(){
   let tb='';
   rows.forEach(r=>{
     const code=codeFor(r.company);
-    const cls=STATUS_CLS[r.status]||'notstarted';
+    const cls=STATUS_CLS[r.status]||'na';
     tb+='<tr>';
-    tb+=`<td class="company-code">${code}</td>`;
+    tb+=`<td class="company-code">${code||'—'}</td>`;
     tb+=`<td class="company-name">${esc(r.company)}</td>`;
     tb+=`<td>${r.fy.replace('FY','FY ')}</td>`;
     if(isAdmin){
-      tb+=`<td><select class="status-select ss-${cls}" onchange="doUpdate('${e4(r.company)}','${r.fy}','status',this.value);this.className='status-select ss-'+SCL[this.value]">`;
+      tb+=`<td><select class="status-select ss-${cls}" onchange="doUpdate('${e4(r.company)}','${r.fy}','status',this.value);this.className='status-select ss-'+(STATUS_CLS[this.value]||'na')">`;
       STATUSES.forEach(s=>{tb+=`<option${r.status===s?' selected':''}>${s}</option>`});
       tb+=`</select></td>`;
       tb+=`<td><select class="status-select" style="background:var(--card);color:var(--fg);border:1px solid var(--border)" onchange="doUpdate('${e4(r.company)}','${r.fy}','auditor',this.value)">`;
@@ -567,7 +663,7 @@ function renderTable(){
       if(isAdmin)tb+=` <button class="btn-icon btn-sm" style="width:22px;height:22px;font-size:.7rem" onclick="doUnassign('${e4(r.company)}','${r.fy}')">&#10005;</button>`;
       tb+='</td>';
     }else if(isAdmin){
-      tb+=`<td><button class="upload-btn" onclick="openAssign('${e4(r.company)}','${r.fy}')">&#8593; Upload</button></td>`;
+      tb+=`<td><button class="upload-btn" onclick="openAssign('${e4(r.company)}','${r.fy}')">&#8593; Assign file</button></td>`;
     }else{
       tb+=`<td><span class="no-file">Not uploaded</span></td>`;
     }
@@ -577,9 +673,6 @@ function renderTable(){
   document.getElementById('tbody').innerHTML=tb;
 }
 
-const SCL={Completed:'completed','In Progress':'inprogress',Pending:'pending','Not Started':'notstarted','Audit Initiation Pending':'initiation'};
-
-// ---------- API ----------
 async function api(p){const u=new URL(SCRIPT_URL);Object.entries(p).forEach(([k,v])=>u.searchParams.set(k,String(v)));return(await fetch(u)).json()}
 async function doUpdate(c,fy,field,val){
   const p={action:'update',company:c,fy};p[field]=val;toast('Saving...');
@@ -597,7 +690,6 @@ async function doUnassign(c,fy){
   render();toast('Removed');
 }
 
-// ---------- MODALS ----------
 function previewFile(fid,fn){
   document.getElementById('previewTitle').textContent=decodeURIComponent(fn)||'Preview';
   document.getElementById('previewFrame').src='https://drive.google.com/file/d/'+fid+'/preview';
