@@ -12,6 +12,29 @@
 body{background:var(--bg);color:var(--fg);line-height:1.5}
 h1,h2,h3{font-family:'Sora',system-ui,sans-serif}
 
+/* LOGIN SCREEN */
+.login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,var(--emeraldD) 0%,var(--emerald) 60%,#10b981 100%);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem}
+.login-card{max-width:420px;width:100%;background:var(--card);border-radius:20px;padding:2.5rem;box-shadow:0 20px 60px rgba(0,0,0,.2);text-align:center}
+.login-logo{width:72px;height:72px;background:var(--emeraldL);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1rem}
+.login-card h1{font-size:1.4rem;margin-bottom:.25rem;color:var(--emeraldD)}
+.login-card h1 span{font-weight:400;color:var(--muted)}
+.login-sub{color:var(--muted);font-size:.85rem;margin-bottom:2rem}
+.login-roles{display:flex;flex-direction:column;gap:.75rem}
+.login-role{padding:1rem 1.25rem;border:2px solid var(--border);border-radius:14px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:1rem;text-align:left}
+.login-role:hover{border-color:var(--emerald);background:var(--emeraldL)}
+.login-role-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.login-role-icon.viewer-icon{background:var(--blueL)}
+.login-role-icon.admin-icon{background:var(--emeraldL)}
+.login-role h3{font-size:.95rem;margin-bottom:2px}
+.login-role p{font-size:.78rem;color:var(--muted);line-height:1.4}
+.login-pw{margin-top:1.25rem;display:none;text-align:left}
+.login-pw label{font-size:.8rem;color:var(--muted);display:block;margin-bottom:.35rem}
+.login-pw input{width:100%;padding:.6rem 1rem;border:1px solid var(--border);border-radius:10px;font-size:.9rem;background:var(--card);color:var(--fg)}
+.login-pw input:focus{outline:2px solid var(--emerald);border-color:transparent}
+.login-pw .pw-row{display:flex;gap:.5rem;margin-top:.5rem}
+.login-pw .pw-err{color:var(--danger);font-size:.78rem;margin-top:.35rem;display:none}
+
+/* SETUP (admin only) */
 .setup-overlay{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;overflow-y:auto}
 .setup-card{max-width:720px;width:100%;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2.5rem;box-shadow:var(--shadow)}
 .setup-card h1{font-size:1.5rem;margin-bottom:.25rem;color:var(--emerald)}
@@ -55,9 +78,8 @@ h1,h2,h3{font-family:'Sora',system-ui,sans-serif}
 .header-actions{display:flex;gap:.5rem;flex-wrap:wrap}
 .header-actions .btn-white{font-size:.78rem;padding:.4rem .9rem;border-radius:8px}
 
-.role-toggle{display:flex;gap:0;background:rgba(255,255,255,.12);border-radius:20px;overflow:hidden;margin-top:.75rem;width:fit-content}
-.role-btn{padding:5px 18px;font-size:.75rem;font-weight:600;cursor:pointer;border:none;background:transparent;color:rgba(255,255,255,.7);transition:all .2s}
-.role-btn.on{background:#fff;color:var(--emeraldD);border-radius:20px}
+.role-badge{padding:5px 14px;font-size:.75rem;font-weight:600;border-radius:20px;background:rgba(255,255,255,.15);color:#fff;margin-top:.75rem;display:inline-block}
+.role-badge.admin-badge{background:rgba(255,255,255,.25)}
 
 .year-bar{background:var(--card);border-bottom:1px solid var(--border);padding:.6rem max(24px,env(safe-area-inset-left,0px));display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;box-shadow:0 1px 2px rgba(0,0,0,.04)}
 .year-bar label{font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-right:.25rem}
@@ -133,9 +155,42 @@ tr:hover td{background:#f9fbfc}
 body.is-admin .admin-only{display:initial}
 </style>
 </head>
-<body class="is-admin">
+<body>
 
-<!-- SETUP -->
+<!-- LOGIN -->
+<div id="loginScreen" class="login-overlay">
+<div class="login-card">
+  <div class="login-logo">&#128202;</div>
+  <h1><span>Imarat</span> Group of Companies</h1>
+  <p class="login-sub">Audit Status Dashboard</p>
+  <div class="login-roles">
+    <div class="login-role" onclick="loginViewer()">
+      <div class="login-role-icon viewer-icon">&#128065;</div>
+      <div>
+        <h3>Viewer</h3>
+        <p>View audit statuses, documents and reports. Read-only access.</p>
+      </div>
+    </div>
+    <div class="login-role" id="adminRole" onclick="showAdminPw()">
+      <div class="login-role-icon admin-icon">&#128274;</div>
+      <div>
+        <h3>Admin</h3>
+        <p>Manage statuses, assign files, add companies. Requires password.</p>
+      </div>
+    </div>
+  </div>
+  <div class="login-pw" id="adminPwSection">
+    <label>Enter Admin Password</label>
+    <div class="pw-row">
+      <input type="password" id="adminPwInput" placeholder="Password..." onkeydown="if(event.key==='Enter')loginAdmin()">
+      <button class="btn btn-primary" onclick="loginAdmin()">Login</button>
+    </div>
+    <div class="pw-err" id="pwErr">Incorrect password. Try again.</div>
+  </div>
+</div>
+</div>
+
+<!-- SETUP (admin only, shown if no URL configured) -->
 <div id="setupScreen" class="setup-overlay" hidden>
 <div class="setup-card">
   <h1>&#128193; Connect to Google Drive</h1>
@@ -177,12 +232,10 @@ body.is-admin .admin-only{display:initial}
       <div class="header-actions">
         <button class="btn btn-white btn-sm" onclick="refreshData()">&#8635; Refresh</button>
         <button class="btn btn-white btn-sm admin-only" onclick="toggleSettings()">&#9881; Settings</button>
+        <button class="btn btn-white btn-sm" onclick="logout()">&#8592; Logout</button>
       </div>
     </div>
-    <div class="role-toggle">
-      <button id="roleAdmin" class="role-btn on" onclick="setRole(true)">Admin</button>
-      <button id="roleViewer" class="role-btn" onclick="setRole(false)">Viewer</button>
-    </div>
+    <span class="role-badge" id="roleBadge">Viewer</span>
   </div>
 
   <div class="year-bar" id="yearBar"><label>Financial Year</label></div>
@@ -243,7 +296,9 @@ body.is-admin .admin-only{display:initial}
 <div class="toast" id="toast" hidden></div>
 
 <script>
-let SCRIPT_URL='',isAdmin=true,activeYear='all';
+const ADMIN_PASSWORD = 'imarat@2024';
+
+let SCRIPT_URL='',isAdmin=false,activeYear='all';
 let S={files:[],statuses:[],companies:[],years:[]};
 const STATUSES=['Audit Completed','In Progress','Board Approval Pending','Audit Initiation Pending','N/A'];
 const AUDITORS=['WACO','BDO','RSM','N/A'];
@@ -254,13 +309,11 @@ const APPS_SCRIPT=`// ===== IMARAT AUDIT DASHBOARD Backend =====
 
 var FOLDER_ID = '18sRCVdTpcQ80igDSSOSDBF7lO3h8TyGv';
 
-// Special filename prefixes that map to companies without SAP codes
 var FILE_ALIASES = {
   'IITT': 'Imarat Institute Of Technical Training PVT LTD',
   'Golf floras': 'Golf Floras Pvt Ltd'
 };
 
-// SAP code to company name mapping for auto-assign
 var CODE_TO_COMPANY = {
   '1000':'Imarat Holding (Pvt) Ltd','1100':'Estate Agency 21',
   '1200':'Graana (Pvt) Ltd','1300':'Propsure Digital Solutions',
@@ -386,26 +439,22 @@ function doGet(e) {
     var data = sh.getDataRange().getValues();
     var statuses = [];
 
-    // Build a set of already-assigned fileIds
     var assignedIds = {};
     for (var i = 1; i < data.length; i++) {
       if (data[i][4]) assignedIds[data[i][4]] = true;
     }
 
-    // Auto-assign: match filenames like "{code}-FY {year}.pdf" or alias names
     for (var fi = 0; fi < files.length; fi++) {
       var fn = files[fi].name;
-      if (assignedIds[files[fi].id]) continue; // already assigned somewhere
+      if (assignedIds[files[fi].id]) continue;
       var m = fn.match(/^(.+?)-FY\\s*(\\d{4})/i);
       if (!m) continue;
       var prefix = m[1].trim();
       var year = 'FY' + m[2];
       var targetCompany = '';
-      // Check if prefix is a SAP code
       if (CODE_TO_COMPANY[prefix]) {
         targetCompany = CODE_TO_COMPANY[prefix];
       } else {
-        // Check aliases (e.g. IITT, Golf floras)
         for (var alias in FILE_ALIASES) {
           if (prefix.toLowerCase() === alias.toLowerCase()) {
             targetCompany = FILE_ALIASES[alias];
@@ -414,7 +463,6 @@ function doGet(e) {
         }
       }
       if (!targetCompany) continue;
-      // Find the row and assign
       for (var ri = 1; ri < data.length; ri++) {
         if (data[ri][0] === targetCompany && data[ri][1] === year && !data[ri][4]) {
           sh.getRange(ri+1, 5).setValue(files[fi].id);
@@ -501,7 +549,6 @@ function ok_(obj) {
     .setMimeType(ContentService.MimeType.JSON);
 }`;
 
-// SAP codes for display
 const SAP_CODES={
 'Imarat Holding (Pvt) Ltd':'1000',
 'Estate Agency 21':'1100',
@@ -530,14 +577,69 @@ const SAP_CODES={
 };
 function codeFor(c){return SAP_CODES[c]||''}
 
-function init(){
-  try{SCRIPT_URL=localStorage.getItem('imarat_url')||''}catch(e){}
-  try{isAdmin=localStorage.getItem('imarat_role')!=='viewer'}catch(e){}
-  document.getElementById('dateStr').textContent=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-  setRole(isAdmin);
-  if(!SCRIPT_URL)showSetup();else loadData();
+// ---------- LOGIN ----------
+function loginViewer(){
+  isAdmin=false;
+  try{localStorage.setItem('imarat_role','viewer')}catch(e){}
+  document.getElementById('loginScreen').hidden=true;
+  startDashboard();
+}
+function showAdminPw(){
+  document.getElementById('adminPwSection').style.display='block';
+  document.getElementById('adminPwInput').focus();
+}
+function loginAdmin(){
+  const pw=document.getElementById('adminPwInput').value;
+  if(pw===ADMIN_PASSWORD){
+    isAdmin=true;
+    try{localStorage.setItem('imarat_role','admin')}catch(e){}
+    document.getElementById('loginScreen').hidden=true;
+    startDashboard();
+  }else{
+    document.getElementById('pwErr').style.display='block';
+    document.getElementById('adminPwInput').value='';
+    document.getElementById('adminPwInput').focus();
+  }
+}
+function logout(){
+  try{localStorage.removeItem('imarat_role')}catch(e){}
+  isAdmin=false;
+  document.getElementById('dashboard').hidden=true;
+  document.getElementById('loginScreen').hidden=false;
+  document.getElementById('adminPwSection').style.display='none';
+  document.getElementById('adminPwInput').value='';
+  document.getElementById('pwErr').style.display='none';
+  document.body.classList.remove('is-admin');
 }
 
+function startDashboard(){
+  document.body.classList.toggle('is-admin',isAdmin);
+  document.getElementById('roleBadge').textContent=isAdmin?'Admin':'Viewer';
+  document.getElementById('roleBadge').className='role-badge'+(isAdmin?' admin-badge':'');
+  document.getElementById('dateStr').textContent=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  try{SCRIPT_URL=localStorage.getItem('imarat_url')||''}catch(e){}
+  if(!SCRIPT_URL&&isAdmin){showSetup();return}
+  if(!SCRIPT_URL&&!isAdmin){
+    document.getElementById('dashboard').hidden=false;
+    document.getElementById('statsGrid').innerHTML='<div class="stat" style="grid-column:1/-1;text-align:center;padding:2rem"><div class="stat-label" style="justify-content:center">Not Connected</div><div style="color:var(--muted);font-size:.85rem;margin-top:.5rem">Dashboard not yet configured. Please ask your admin to set up the connection.</div></div>';
+    return;
+  }
+  loadData();
+}
+
+// ---------- INIT ----------
+function init(){
+  let savedRole=null;
+  try{savedRole=localStorage.getItem('imarat_role')}catch(e){}
+  try{SCRIPT_URL=localStorage.getItem('imarat_url')||''}catch(e){}
+  if(savedRole==='admin'||savedRole==='viewer'){
+    isAdmin=savedRole==='admin';
+    document.getElementById('loginScreen').hidden=true;
+    startDashboard();
+  }
+}
+
+// ---------- SETUP ----------
 function showSetup(){
   document.getElementById('setupScreen').hidden=false;
   document.getElementById('dashboard').hidden=true;
@@ -563,13 +665,17 @@ async function testConnection(){
   }catch(e){err.style.color='var(--danger)';err.textContent='Connection failed. Check URL and ensure script is deployed with access "Anyone".';err.style.display='block'}
 }
 
+// ---------- DATA ----------
 async function loadData(){
   document.getElementById('loadingScreen').hidden=false;
   document.getElementById('dashboard').hidden=true;
   try{
     const r=await fetch(SCRIPT_URL+'?action=getData');const d=await r.json();
     processData(d);showDashboard();
-  }catch(e){showSetup();document.getElementById('urlInput').value=SCRIPT_URL}
+  }catch(e){
+    if(isAdmin){showSetup();document.getElementById('urlInput').value=SCRIPT_URL}
+    else{document.getElementById('loadingScreen').hidden=true;document.getElementById('dashboard').hidden=false}
+  }
 }
 function processData(d){
   S.files=d.files||[];S.statuses=d.statuses||[];
@@ -586,14 +692,7 @@ function showDashboard(){
   renderYearTabs();render();
 }
 
-function setRole(a){
-  isAdmin=a;try{localStorage.setItem('imarat_role',a?'admin':'viewer')}catch(e){}
-  document.getElementById('roleAdmin').className='role-btn'+(a?' on':'');
-  document.getElementById('roleViewer').className='role-btn'+(a?'':' on');
-  document.body.classList.toggle('is-admin',a);
-  if(S.companies.length)render();
-}
-
+// ---------- YEAR TABS ----------
 function renderYearTabs(){
   const bar=document.getElementById('yearBar');
   let h='<label>Financial Year</label>';
@@ -604,6 +703,7 @@ function renderYearTabs(){
 }
 function setYear(y){activeYear=y;renderYearTabs();render()}
 
+// ---------- FILTERED DATA ----------
 function filtered(){
   const q=(document.getElementById('searchBox').value||'').toLowerCase();
   const sf=document.getElementById('statusFilter').value;
@@ -622,7 +722,7 @@ function renderStats(){
   const comp=rows.filter(r=>r.status==='Audit Completed').length;
   const inp=rows.filter(r=>r.status==='In Progress').length;
   const board=rows.filter(r=>r.status==='Board Approval Pending').length;
-  const init=rows.filter(r=>r.status==='Audit Initiation Pending').length;
+  const initP=rows.filter(r=>r.status==='Audit Initiation Pending').length;
   const na=rows.filter(r=>r.status==='N/A').length;
   const countable=total-na;
   const pct=countable?Math.round(comp/countable*100):0;
@@ -630,7 +730,7 @@ function renderStats(){
     <div class="stat"><div class="stat-label"><span class="dot" style="background:var(--emerald)"></span>Total Companies</div><div class="stat-val">${total}</div><div class="stat-sub">${countable} auditable &bull; ${na} N/A</div></div>
     <div class="stat"><div class="stat-label"><span class="dot" style="background:var(--emerald)"></span>Audit Completed</div><div class="stat-val" style="color:var(--emerald)">${comp}</div><div class="stat-sub">Audits completed</div></div>
     <div class="stat"><div class="stat-label"><span class="dot" style="background:var(--orange)"></span>Board Approval Pending</div><div class="stat-val" style="color:var(--orange)">${board}</div><div class="stat-sub">Awaiting board approval</div></div>
-    <div class="stat"><div class="stat-label"><span class="dot" style="background:var(--gold)"></span>Initiation Pending</div><div class="stat-val" style="color:var(--gold)">${init}</div><div class="stat-sub">Audit yet to begin</div></div>
+    <div class="stat"><div class="stat-label"><span class="dot" style="background:var(--gold)"></span>Initiation Pending</div><div class="stat-val" style="color:var(--gold)">${initP}</div><div class="stat-sub">Audit yet to begin</div></div>
     <div class="stat"><div class="stat-label"><span class="dot" style="background:var(--emerald)"></span>Completion</div><div class="stat-val" style="color:var(--emerald)">${pct}%</div><div class="completion-bar"><div class="completion-fill" style="width:${pct}%"></div></div></div>`;
 }
 
@@ -673,6 +773,7 @@ function renderTable(){
   document.getElementById('tbody').innerHTML=tb;
 }
 
+// ---------- API ----------
 async function api(p){const u=new URL(SCRIPT_URL);Object.entries(p).forEach(([k,v])=>u.searchParams.set(k,String(v)));return(await fetch(u)).json()}
 async function doUpdate(c,fy,field,val){
   const p={action:'update',company:c,fy};p[field]=val;toast('Saving...');
@@ -690,6 +791,7 @@ async function doUnassign(c,fy){
   render();toast('Removed');
 }
 
+// ---------- MODALS ----------
 function previewFile(fid,fn){
   document.getElementById('previewTitle').textContent=decodeURIComponent(fn)||'Preview';
   document.getElementById('previewFrame').src='https://drive.google.com/file/d/'+fid+'/preview';
