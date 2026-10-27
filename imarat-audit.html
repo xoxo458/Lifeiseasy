@@ -750,7 +750,7 @@ function renderTable(){
       tb+=`<td>${esc(r.auditor)}</td>`;
     }
     if(r.fileId){
-      tb+=`<td><a class="file-link" onclick="previewFile('${r.fileId}','${e4(r.fileName||"")}')">&#128196; ${esc(r.fileName||'View')}</a>`;
+      tb+=`<td><a class="file-link" href="https://drive.google.com/uc?export=download&id=${r.fileId}" target="_blank">&#128196; ${esc(r.fileName||'View')} &#8681;</a>`;
       tb+=` <a class="file-link" href="https://drive.google.com/uc?export=download&id=${r.fileId}" target="_blank">&#11015;</a>`;
       if(isAdmin)tb+=` <button class="btn-icon btn-sm" style="width:22px;height:22px;font-size:.7rem" onclick="doUnassign('${e4(r.company)}','${r.fy}')">&#10005;</button>`;
       tb+='</td>';
