@@ -4,16 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Imarat Group — Audit Status</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
 <style>
-:root{--bg:#f8f9fa;--fg:#1a1a2e;--card:#fff;--border:#e2e8f0;--emerald:#0d6b4e;--emeraldL:#e6f4ef;--gold:#c8a23c;--goldL:#fdf6e3;--muted:#64748b;--danger:#dc2626;--blue:#2563eb;--blueL:#eff6ff;--orange:#ea580c;--orangeL:#fff7ed;--purple:#7c3aed;--purpleL:#f5f3ff;--shadow:0 1px 3px rgba(0,0,0,.08);--radius:10px;font-family:'DM Sans',system-ui,sans-serif}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1117;--fg:#e2e8f0;--card:#1a1d2e;--border:#2d3348;--emeraldL:#0d2d22;--goldL:#2d2510;--blueL:#101d2d;--orangeL:#2d1d10;--purpleL:#1d102d;--shadow:0 1px 3px rgba(0,0,0,.3);color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#0f1117;--fg:#e2e8f0;--card:#1a1d2e;--border:#2d3348;--emeraldL:#0d2d22;--goldL:#2d2510;--blueL:#101d2d;--orangeL:#2d1d10;--purpleL:#1d102d;--shadow:0 1px 3px rgba(0,0,0,.3);color-scheme:dark}
+:root{--bg:#f5f6f8;--fg:#1a1a2e;--card:#fff;--border:#e2e8f0;--emerald:#0b5d3f;--emeraldD:#083d2a;--emeraldL:#e8f5ee;--gold:#d4a93c;--goldL:#fdf6e3;--muted:#6b7280;--danger:#dc2626;--blue:#2563eb;--blueL:#eff6ff;--orange:#ea580c;--orangeL:#fff7ed;--purple:#7c3aed;--purpleL:#f5f3ff;--shadow:0 1px 4px rgba(0,0,0,.07);--radius:10px;font-family:'DM Sans',system-ui,sans-serif;color-scheme:light}
 *{margin:0;padding:0;box-sizing:border-box}
 [hidden]{display:none!important}
-body{background:var(--bg);color:var(--fg);line-height:1.5;padding:0 max(16px,env(safe-area-inset-left,0px)) 2rem max(16px,env(safe-area-inset-right,0px))}
+body{background:var(--bg);color:var(--fg);line-height:1.5}
 h1,h2,h3{font-family:'Sora',system-ui,sans-serif}
 
+/* SETUP */
 .setup-overlay{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;overflow-y:auto}
 .setup-card{max-width:720px;width:100%;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2.5rem;box-shadow:var(--shadow)}
 .setup-card h1{font-size:1.5rem;margin-bottom:.25rem;color:var(--emerald)}
@@ -24,91 +23,139 @@ h1,h2,h3{font-family:'Sora',system-ui,sans-serif}
 .step-text code{background:var(--emeraldL);padding:1px 6px;border-radius:4px;font-size:.8rem}
 .code-wrap{position:relative;margin:1.5rem 0;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
 .code-header{display:flex;justify-content:space-between;align-items:center;padding:.5rem 1rem;background:var(--emeraldL);border-bottom:1px solid var(--border);font-size:.8rem;font-weight:600;color:var(--emerald)}
-.code-block{max-height:300px;overflow:auto;padding:1rem;font-size:.72rem;line-height:1.5;font-family:monospace;white-space:pre;background:var(--card);tab-size:2}
+.code-block{max-height:280px;overflow:auto;padding:1rem;font-size:.72rem;line-height:1.5;font-family:monospace;white-space:pre;background:var(--card);tab-size:2}
 .copy-btn{padding:4px 12px;border:1px solid var(--emerald);border-radius:6px;background:transparent;color:var(--emerald);cursor:pointer;font-size:.75rem;font-weight:600}
 .copy-btn:hover{background:var(--emerald);color:#fff}
 .connect-row{display:flex;gap:.5rem;margin-top:1.5rem}
 .connect-row input{flex:1;padding:.65rem 1rem;border:1px solid var(--border);border-radius:var(--radius);font-size:.9rem;background:var(--card);color:var(--fg)}
-.connect-row input:focus{outline:2px solid var(--emerald);border-color:transparent}
-.btn{padding:.65rem 1.25rem;border:none;border-radius:var(--radius);font-weight:600;cursor:pointer;font-size:.85rem;transition:opacity .15s}
-.btn:hover{opacity:.85}
-.btn-primary{background:var(--emerald);color:#fff}
-.btn-sm{padding:.35rem .75rem;font-size:.75rem;border-radius:6px}
-.btn-outline{background:transparent;border:1px solid var(--border);color:var(--fg)}
 .err-msg{color:var(--danger);font-size:.8rem;margin-top:.5rem;display:none}
 
+/* LOADING */
 .loading-screen{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem}
 .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--emerald);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;padding:1.5rem 0 1rem}
-.brand h1{font-size:1.35rem;color:var(--emerald)}
-.brand span{font-size:.8rem;color:var(--muted)}
-.controls{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
-.role-btn{padding:6px 16px;border:2px solid var(--border);border-radius:20px;background:transparent;color:var(--muted);font-weight:600;font-size:.8rem;cursor:pointer;transition:all .2s}
-.role-btn.on{border-color:var(--emerald);background:var(--emerald);color:#fff}
+/* BTN */
+.btn{padding:.5rem 1.1rem;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:.8rem;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{opacity:.88}
+.btn-primary{background:var(--emerald);color:#fff}
+.btn-gold{background:var(--gold);color:#fff}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--fg)}
+.btn-outline:hover{border-color:var(--emerald);color:var(--emerald)}
+.btn-white{background:#fff;color:var(--emeraldD);border:none;font-weight:600}
+.btn-white:hover{background:#f0f0f0}
+.btn-sm{padding:.32rem .7rem;font-size:.73rem;border-radius:6px}
+.btn-icon{width:32px;height:32px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid var(--border);background:var(--card);cursor:pointer;color:var(--muted);font-size:.9rem}
+.btn-icon:hover{border-color:var(--emerald);color:var(--emerald)}
 
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem}
-.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.15rem;box-shadow:var(--shadow)}
-.stat-label{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
-.stat-val{font-size:1.6rem;font-weight:700;font-family:'Sora',sans-serif;margin-top:.15rem}
+/* HEADER */
+.header{background:linear-gradient(135deg,var(--emeraldD) 0%,var(--emerald) 100%);color:#fff;padding:1.5rem max(24px,env(safe-area-inset-left,0px)) 1.25rem max(24px,env(safe-area-inset-right,0px))}
+.header-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;margin-bottom:.25rem}
+.header-brand{display:flex;align-items:center;gap:1rem}
+.header-logo{width:52px;height:52px;background:rgba(255,255,255,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem}
+.header-brand h1{font-size:1.4rem;font-weight:700;letter-spacing:-.3px}
+.header-brand h1 span{font-weight:400;color:rgba(255,255,255,.85)}
+.header-brand .date{font-size:.78rem;color:rgba(255,255,255,.7);margin-top:2px}
+.header-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+.header-actions .btn-white{font-size:.78rem;padding:.4rem .9rem;border-radius:8px}
 
-.charts-grid{display:grid;grid-template-columns:1fr 1.5fr;gap:1rem;margin-bottom:1.5rem}
-@media(max-width:700px){.charts-grid{grid-template-columns:1fr}}
-.chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;box-shadow:var(--shadow)}
-.chart-card h3{font-size:.85rem;margin-bottom:.75rem;color:var(--muted)}
+/* ROLE TOGGLE */
+.role-toggle{display:flex;gap:0;background:rgba(255,255,255,.12);border-radius:20px;overflow:hidden;margin-top:.75rem;width:fit-content}
+.role-btn{padding:5px 18px;font-size:.75rem;font-weight:600;cursor:pointer;border:none;background:transparent;color:rgba(255,255,255,.7);transition:all .2s}
+.role-btn.on{background:#fff;color:var(--emeraldD);border-radius:20px}
 
-.drive-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.5rem;box-shadow:var(--shadow)}
-.drive-panel h3{font-size:.9rem;margin-bottom:.75rem}
-.file-chips{display:flex;flex-wrap:wrap;gap:.5rem}
-.file-chip{display:flex;align-items:center;gap:.4rem;padding:.3rem .7rem;border:1px solid var(--border);border-radius:20px;font-size:.75rem;background:var(--blueL)}
-.file-chip.assigned{background:var(--emeraldL);border-color:var(--emerald);opacity:.6}
+/* YEAR TABS */
+.year-bar{background:var(--card);border-bottom:1px solid var(--border);padding:.6rem max(24px,env(safe-area-inset-left,0px));display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.year-bar label{font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-right:.25rem}
+.yr-tab{padding:5px 16px;border-radius:20px;font-size:.8rem;font-weight:500;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--fg);transition:all .15s}
+.yr-tab:hover{border-color:var(--emerald);color:var(--emerald)}
+.yr-tab.on{background:var(--emerald);color:#fff;border-color:var(--emerald)}
 
+/* MAIN */
+.main{padding:1.25rem max(24px,env(safe-area-inset-left,0px)) 2rem max(24px,env(safe-area-inset-right,0px))}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem;margin-bottom:1.25rem}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.15rem;box-shadow:var(--shadow)}
+.stat-label{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.stat-label .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.stat-val{font-size:1.75rem;font-weight:700;font-family:'Sora',sans-serif;margin-top:.15rem}
+.stat-sub{font-size:.7rem;color:var(--muted);margin-top:2px}
+.completion-bar{height:6px;border-radius:3px;background:var(--border);margin-top:.5rem;overflow:hidden}
+.completion-fill{height:100%;border-radius:3px;background:var(--emerald);transition:width .5s}
+
+/* TOOLBAR */
+.toolbar{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-bottom:1rem}
+.search-box{flex:1;min-width:200px;max-width:360px;padding:.5rem .9rem;border:1px solid var(--border);border-radius:8px;font-size:.85rem;background:var(--card);color:var(--fg)}
+.search-box:focus{outline:2px solid var(--emerald);border-color:transparent}
+.filter-select{padding:.5rem .7rem;border:1px solid var(--border);border-radius:8px;font-size:.82rem;background:var(--card);color:var(--fg)}
+.toolbar .count{margin-left:auto;font-size:.8rem;color:var(--muted)}
+
+/* TABLE */
 .table-wrap{overflow-x:auto;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
-table{width:100%;border-collapse:collapse;font-size:.8rem}
-th{background:var(--emeraldL);color:var(--emerald);font-weight:600;text-align:left;padding:.7rem .6rem;white-space:nowrap;position:sticky;top:0;font-size:.75rem;text-transform:uppercase;letter-spacing:.3px}
-td{padding:.6rem;border-top:1px solid var(--border);vertical-align:middle}
-tr:hover td{background:color-mix(in srgb,var(--emerald) 3%,transparent)}
-.badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:.7rem;font-weight:600;white-space:nowrap}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th{background:#f9fafb;font-weight:600;text-align:left;padding:.65rem .75rem;white-space:nowrap;font-size:.7rem;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);border-bottom:1px solid var(--border)}
+td{padding:.6rem .75rem;border-bottom:1px solid #f1f3f5;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f9fbfc}
+.company-code{font-weight:700;color:var(--emerald);font-size:.82rem;font-family:'Sora',monospace}
+.company-name{font-weight:500;white-space:nowrap}
+
+/* STATUS BADGE */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:6px;font-size:.73rem;font-weight:600;white-space:nowrap}
 .badge-completed{background:var(--emeraldL);color:var(--emerald)}
 .badge-inprogress{background:var(--blueL);color:var(--blue)}
 .badge-pending{background:var(--orangeL);color:var(--orange)}
 .badge-notstarted{background:var(--purpleL);color:var(--purple)}
-.badge-initiation{background:var(--goldL);color:var(--gold)}
-.file-link{color:var(--blue);text-decoration:none;font-size:.75rem;cursor:pointer;display:inline-flex;align-items:center;gap:3px}
-.file-link:hover{text-decoration:underline}
-.no-file{color:var(--muted);font-size:.7rem;font-style:italic}
+.badge-initiation{background:var(--goldL);color:#96790e}
 
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;display:flex;align-items:center;justify-content:center;padding:1rem}
-.modal-content{background:var(--card);border-radius:16px;max-width:800px;width:100%;max-height:90vh;overflow:auto;position:relative}
-.modal-close{position:absolute;top:12px;right:12px;width:32px;height:32px;border:none;border-radius:50%;background:var(--border);color:var(--fg);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1}
+/* STATUS SELECT (admin) */
+.status-select{padding:4px 8px;border-radius:6px;font-size:.78rem;font-weight:600;border:1px solid transparent;cursor:pointer;appearance:none;-webkit-appearance:none;background-repeat:no-repeat;background-position:right 6px center;background-size:10px;padding-right:22px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E")}
+.ss-completed{background-color:var(--emeraldL);color:var(--emerald)}
+.ss-inprogress{background-color:var(--blueL);color:var(--blue)}
+.ss-pending{background-color:var(--orangeL);color:var(--orange)}
+.ss-notstarted{background-color:var(--purpleL);color:var(--purple)}
+.ss-initiation{background-color:var(--goldL);color:#96790e}
+
+.file-link{color:var(--blue);text-decoration:none;font-size:.78rem;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.file-link:hover{text-decoration:underline}
+.no-file{color:var(--muted);font-size:.75rem}
+.upload-btn{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border:1px dashed var(--border);border-radius:6px;font-size:.75rem;color:var(--muted);cursor:pointer;background:transparent;transition:all .15s}
+.upload-btn:hover{border-color:var(--emerald);color:var(--emerald)}
+
+/* MODAL */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;display:flex;align-items:center;justify-content:center;padding:1rem}
+.modal-content{background:var(--card);border-radius:16px;max-width:750px;width:100%;max-height:90vh;overflow:auto;position:relative}
+.modal-close{position:absolute;top:12px;right:12px;width:32px;height:32px;border:none;border-radius:50%;background:#f1f3f5;color:var(--fg);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1}
 .preview-modal{padding:0}
 .preview-modal iframe{width:100%;height:80vh;border:none;border-radius:0 0 16px 16px}
 .preview-modal .ph{padding:1rem 1.25rem;font-weight:600;font-size:.95rem;border-bottom:1px solid var(--border)}
 .assign-modal{padding:1.5rem}
-.assign-modal h3{margin-bottom:1rem}
+.assign-modal h3{margin-bottom:1rem;font-size:1rem}
 .assign-list{max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem}
-.assign-item{display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;border:1px solid var(--border);border-radius:8px;font-size:.8rem;cursor:pointer;transition:background .15s}
-.assign-item:hover{background:var(--emeraldL)}
-.assign-item.used{opacity:.4;pointer-events:none}
+.assign-item{display:flex;justify-content:space-between;align-items:center;padding:.55rem .85rem;border:1px solid var(--border);border-radius:8px;font-size:.82rem;cursor:pointer;transition:all .15s}
+.assign-item:hover{background:var(--emeraldL);border-color:var(--emerald)}
+.assign-item.used{opacity:.35;pointer-events:none}
 
-.settings-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1rem}
-.settings-panel label{font-size:.8rem;color:var(--muted);display:block;margin-bottom:.25rem}
+.settings-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1rem;box-shadow:var(--shadow)}
+.settings-panel label{font-size:.78rem;color:var(--muted);display:block;margin-bottom:.25rem}
 .settings-panel input{width:100%;padding:.5rem .75rem;border:1px solid var(--border);border-radius:8px;font-size:.85rem;background:var(--card);color:var(--fg);margin-bottom:.75rem}
-.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--emerald);color:#fff;padding:.6rem 1.5rem;border-radius:20px;font-size:.85rem;font-weight:500;z-index:3000;pointer-events:none}
+
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--emeraldD);color:#fff;padding:.55rem 1.4rem;border-radius:20px;font-size:.82rem;font-weight:500;z-index:3000;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.15)}
 .admin-only{display:none}
 body.is-admin .admin-only{display:initial}
 </style>
 </head>
 <body class="is-admin">
 
+<!-- SETUP -->
 <div id="setupScreen" class="setup-overlay" hidden>
 <div class="setup-card">
   <h1>&#128193; Connect to Google Drive</h1>
   <p class="sub">One-time setup: deploy a small Google Apps Script to connect your Drive folder to this dashboard.</p>
-  <div class="step"><div class="step-num">1</div><div class="step-text">Go to <a href="https://script.google.com" target="_blank">script.google.com</a> &rarr; click <code>New Project</code></div></div>
+  <div class="step"><div class="step-num">1</div><div class="step-text">Go to <a href="https://script.google.com" target="_blank">script.google.com</a> → click <code>New Project</code></div></div>
   <div class="step"><div class="step-num">2</div><div class="step-text">Delete the default code, paste the code below (click <strong>Copy Code</strong>)</div></div>
-  <div class="step"><div class="step-num">3</div><div class="step-text">Click <code>Deploy</code> &rarr; <code>New deployment</code> &rarr; Type: <code>Web app</code><br>Execute as: <code>Me</code> &nbsp;|&nbsp; Who has access: <code>Anyone</code></div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-text">Click <code>Deploy</code> → <code>New deployment</code> → Type: <code>Web app</code><br>Execute as: <code>Me</code> | Who has access: <code>Anyone</code></div></div>
   <div class="step"><div class="step-num">4</div><div class="step-text"><strong>Authorize</strong> when prompted (allow Drive &amp; Sheets access)</div></div>
   <div class="step"><div class="step-num">5</div><div class="step-text">Copy the <strong>Web App URL</strong> and paste it below</div></div>
   <div class="code-wrap">
@@ -123,51 +170,81 @@ body.is-admin .admin-only{display:initial}
 </div>
 </div>
 
+<!-- LOADING -->
 <div id="loadingScreen" class="loading-screen" hidden>
   <div class="spinner"></div>
   <p style="color:var(--muted);font-size:.9rem">Loading from Google Drive...</p>
 </div>
 
+<!-- DASHBOARD -->
 <div id="dashboard" hidden>
-  <header>
-    <div class="brand">
-      <h1>Imarat Group</h1>
-      <span>Audit Status Dashboard &bull; Connected to Google Drive</span>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <div class="header-brand">
+        <div class="header-logo">&#128202;</div>
+        <div>
+          <h1><span>Imarat</span> Group of Companies</h1>
+          <div class="date">Audit Status Dashboard &bull; <span id="dateStr"></span></div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-white btn-sm" onclick="refreshData()">&#8635; Refresh</button>
+        <button class="btn btn-white btn-sm admin-only" onclick="toggleSettings()">&#9881; Settings</button>
+      </div>
     </div>
-    <div class="controls">
-      <button id="roleAdmin" class="role-btn on" onclick="setRole(true)">&#128274; Admin</button>
-      <button id="roleViewer" class="role-btn" onclick="setRole(false)">&#128065; Viewer</button>
-      <button class="btn btn-outline btn-sm" onclick="refreshData()">&#8635; Refresh</button>
-      <button class="btn btn-outline btn-sm admin-only" onclick="toggleSettings()">&#9881;</button>
-    </div>
-  </header>
-  <div id="settingsPanel" class="settings-panel admin-only" hidden>
-    <h3 style="font-size:.9rem;margin-bottom:.75rem">Settings</h3>
-    <label>Google Apps Script URL</label>
-    <input id="settingsUrl">
-    <div style="display:flex;gap:.5rem">
-      <button class="btn btn-primary btn-sm" onclick="saveSettings()">Save</button>
-      <button class="btn btn-outline btn-sm" onclick="disconnectDrive()">Disconnect</button>
+    <div class="role-toggle">
+      <button id="roleAdmin" class="role-btn on" onclick="setRole(true)">Admin</button>
+      <button id="roleViewer" class="role-btn" onclick="setRole(false)">Viewer</button>
     </div>
   </div>
-  <div class="stats-grid" id="statsGrid"></div>
-  <div class="charts-grid">
-    <div class="chart-card"><h3>Status Distribution</h3><canvas id="donutChart"></canvas></div>
-    <div class="chart-card"><h3>Status by Year</h3><canvas id="barChart"></canvas></div>
+
+  <!-- YEAR TABS -->
+  <div class="year-bar" id="yearBar">
+    <label>Financial Year</label>
   </div>
-  <div class="drive-panel admin-only" id="drivePanel">
-    <h3>&#128193; Drive Files &mdash; <span id="fileCount">0</span> files (<span id="unassignedCount">0</span> unassigned)</h3>
-    <div class="file-chips" id="fileChips"></div>
-  </div>
-  <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap" class="admin-only">
-    <button class="btn btn-outline btn-sm" onclick="promptAddCompany()">+ Add Company</button>
-    <button class="btn btn-outline btn-sm" onclick="promptAddYear()">+ Add Year</button>
-  </div>
-  <div class="table-wrap">
-    <table><thead id="thead"></thead><tbody id="tbody"></tbody></table>
+
+  <!-- MAIN -->
+  <div class="main">
+    <!-- Settings -->
+    <div id="settingsPanel" class="settings-panel admin-only" hidden>
+      <h3 style="font-size:.9rem;margin-bottom:.75rem">Settings</h3>
+      <label>Google Apps Script URL</label>
+      <input id="settingsUrl">
+      <div style="display:flex;gap:.5rem">
+        <button class="btn btn-primary btn-sm" onclick="saveSettings()">Save</button>
+        <button class="btn btn-outline btn-sm" onclick="disconnectDrive()">Disconnect</button>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats" id="statsGrid"></div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <input class="search-box" id="searchBox" placeholder="Search code, company, auditor..." oninput="render()">
+      <select class="filter-select" id="statusFilter" onchange="render()">
+        <option value="">All statuses</option>
+        <option>Completed</option>
+        <option>In Progress</option>
+        <option>Pending</option>
+        <option>Not Started</option>
+        <option>Audit Initiation Pending</option>
+      </select>
+      <button class="btn btn-outline btn-sm" onclick="document.getElementById('searchBox').value='';document.getElementById('statusFilter').value='';render()">Clear filters</button>
+      <button class="btn btn-primary btn-sm admin-only" onclick="promptAddCompany()">+ Add Company</button>
+      <span class="count" id="recCount"></span>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-wrap">
+      <table><thead id="thead"></thead><tbody id="tbody"></tbody></table>
+    </div>
   </div>
 </div>
 
+<!-- PREVIEW MODAL -->
 <div id="previewModal" class="modal" hidden onclick="if(event.target===this)closeModal('previewModal')">
   <div class="modal-content preview-modal">
     <div class="ph" id="previewTitle">Preview</div>
@@ -176,10 +253,11 @@ body.is-admin .admin-only{display:initial}
   </div>
 </div>
 
+<!-- ASSIGN MODAL -->
 <div id="assignModal" class="modal" hidden onclick="if(event.target===this)closeModal('assignModal')">
   <div class="modal-content assign-modal">
     <button class="modal-close" onclick="closeModal('assignModal')">&times;</button>
-    <h3>Assign File &mdash; <span id="assignTarget"></span></h3>
+    <h3>Assign File — <span id="assignTarget"></span></h3>
     <div class="assign-list" id="assignList"></div>
     <button class="btn btn-outline btn-sm" onclick="closeModal('assignModal')">Cancel</button>
   </div>
@@ -189,13 +267,11 @@ body.is-admin .admin-only{display:initial}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
-let SCRIPT_URL='',isAdmin=true;
+let SCRIPT_URL='',isAdmin=true,activeYear='all';
 let S={files:[],statuses:[],companies:[],years:[]};
-let donutChart=null,barChart=null;
 const STATUSES=['Completed','In Progress','Pending','Not Started','Audit Initiation Pending'];
 const AUDITORS=['WACO','BDO','RSM','Not Assigned'];
 const STATUS_CLS={Completed:'completed','In Progress':'inprogress',Pending:'pending','Not Started':'notstarted','Audit Initiation Pending':'initiation'};
-const STATUS_COLORS={Completed:'#0d6b4e','In Progress':'#2563eb',Pending:'#ea580c','Not Started':'#7c3aed','Audit Initiation Pending':'#c8a23c'};
 
 const APPS_SCRIPT=`// ===== IMARAT AUDIT DASHBOARD Backend =====
 // Deploy as Web App: Execute as Me, Access = Anyone
@@ -328,13 +404,16 @@ function ok_(obj) {
     .setMimeType(ContentService.MimeType.JSON);
 }`;
 
+// ---------- INIT ----------
 function init(){
   try{SCRIPT_URL=localStorage.getItem('imarat_url')||''}catch(e){}
   try{isAdmin=localStorage.getItem('imarat_role')!=='viewer'}catch(e){}
+  document.getElementById('dateStr').textContent=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
   setRole(isAdmin);
-  if(!SCRIPT_URL){showSetup()}else{loadData()}
+  if(!SCRIPT_URL)showSetup();else loadData();
 }
 
+// ---------- SETUP ----------
 function showSetup(){
   document.getElementById('setupScreen').hidden=false;
   document.getElementById('dashboard').hidden=true;
@@ -342,8 +421,8 @@ function showSetup(){
   document.getElementById('scriptCode').textContent=APPS_SCRIPT;
 }
 function copyScript(){
-  navigator.clipboard.writeText(APPS_SCRIPT).then(()=>toast('Code copied to clipboard!')).catch(()=>{
-    const ta=document.createElement('textarea');ta.value=APPS_SCRIPT;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('Code copied!');
+  navigator.clipboard.writeText(APPS_SCRIPT).then(()=>toast('Code copied!')).catch(()=>{
+    const t=document.createElement('textarea');t.value=APPS_SCRIPT;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);toast('Copied!');
   });
 }
 async function testConnection(){
@@ -353,203 +432,174 @@ async function testConnection(){
   if(!url){err.textContent='Please paste the Web App URL.';err.style.display='block';return}
   try{
     err.textContent='Connecting...';err.style.display='block';err.style.color='var(--blue)';
-    const r=await fetch(url+'?action=getData');
-    const d=await r.json();
-    if(!d.statuses)throw new Error('bad');
-    SCRIPT_URL=url;
-    try{localStorage.setItem('imarat_url',url)}catch(e){}
-    processData(d);
-    document.getElementById('setupScreen').hidden=true;
-    showDashboard();
-    toast('Connected to Google Drive!');
-  }catch(e){
-    err.style.color='var(--danger)';
-    err.textContent='Connection failed. Check the URL and ensure the script is deployed as a Web App with access set to "Anyone".';
-    err.style.display='block';
-  }
+    const r=await fetch(url+'?action=getData');const d=await r.json();
+    if(!d.statuses)throw 0;
+    SCRIPT_URL=url;try{localStorage.setItem('imarat_url',url)}catch(e){}
+    processData(d);document.getElementById('setupScreen').hidden=true;showDashboard();toast('Connected!');
+  }catch(e){err.style.color='var(--danger)';err.textContent='Connection failed. Check URL and ensure script is deployed with access "Anyone".';err.style.display='block'}
 }
 
+// ---------- DATA ----------
 async function loadData(){
   document.getElementById('loadingScreen').hidden=false;
   document.getElementById('dashboard').hidden=true;
   try{
-    const r=await fetch(SCRIPT_URL+'?action=getData');
-    const d=await r.json();
-    processData(d);
-    showDashboard();
-  }catch(e){
-    showSetup();
-    document.getElementById('urlInput').value=SCRIPT_URL;
-    const err=document.getElementById('setupErr');
-    err.textContent='Could not reach backend. Check the URL or redeploy.';
-    err.style.display='block';
-  }
+    const r=await fetch(SCRIPT_URL+'?action=getData');const d=await r.json();
+    processData(d);showDashboard();
+  }catch(e){showSetup();document.getElementById('urlInput').value=SCRIPT_URL}
 }
 function processData(d){
-  S.files=d.files||[];
-  S.statuses=d.statuses||[];
-  const cSet=new Set(),ySet=new Set();
-  S.statuses.forEach(s=>{cSet.add(s.company);ySet.add(s.fy)});
-  S.companies=[...cSet];
-  S.years=[...ySet].sort();
+  S.files=d.files||[];S.statuses=d.statuses||[];
+  const cS=new Set(),yS=new Set();
+  S.statuses.forEach(s=>{cS.add(s.company);yS.add(s.fy)});
+  S.companies=[...cS];S.years=[...yS].sort();
 }
-async function refreshData(){toast('Refreshing...');await loadData();toast('Data refreshed from Drive')}
+async function refreshData(){toast('Refreshing...');await loadData();toast('Refreshed')}
 function showDashboard(){
   document.getElementById('setupScreen').hidden=true;
   document.getElementById('loadingScreen').hidden=true;
   document.getElementById('dashboard').hidden=false;
   document.getElementById('settingsUrl').value=SCRIPT_URL;
-  render();
+  renderYearTabs();render();
 }
 
-function setRole(admin){
-  isAdmin=admin;
-  try{localStorage.setItem('imarat_role',admin?'admin':'viewer')}catch(e){}
-  document.getElementById('roleAdmin').className='role-btn'+(admin?' on':'');
-  document.getElementById('roleViewer').className='role-btn'+(admin?'':' on');
-  document.body.classList.toggle('is-admin',admin);
+// ---------- ROLE ----------
+function setRole(a){
+  isAdmin=a;try{localStorage.setItem('imarat_role',a?'admin':'viewer')}catch(e){}
+  document.getElementById('roleAdmin').className='role-btn'+(a?' on':'');
+  document.getElementById('roleViewer').className='role-btn'+(a?'':' on');
+  document.body.classList.toggle('is-admin',a);
   if(S.companies.length)render();
 }
 
-function render(){renderStats();renderCharts();renderDriveFiles();renderTable()}
+// ---------- YEAR TABS ----------
+function renderYearTabs(){
+  const bar=document.getElementById('yearBar');
+  let h='<label>Financial Year</label>';
+  h+=`<button class="yr-tab${activeYear==='all'?' on':''}" onclick="setYear('all')">All years</button>`;
+  S.years.forEach(y=>{h+=`<button class="yr-tab${activeYear===y?' on':''}" onclick="setYear('${y}')">${y.replace('FY','FY ')}</button>`});
+  h+=`<button class="yr-tab admin-only" onclick="promptAddYear()">+ Add year</button>`;
+  bar.innerHTML=h;
+}
+function setYear(y){activeYear=y;renderYearTabs();render()}
 
-function rec(company,fy){return S.statuses.find(s=>s.company===company&&s.fy===fy)||{status:'Not Started',auditor:'Not Assigned',fileId:'',fileName:''}}
+// ---------- FILTERED DATA ----------
+function filtered(){
+  const q=(document.getElementById('searchBox').value||'').toLowerCase();
+  const sf=document.getElementById('statusFilter').value;
+  let rows=S.statuses;
+  if(activeYear!=='all')rows=rows.filter(r=>r.fy===activeYear);
+  if(sf)rows=rows.filter(r=>r.status===sf);
+  if(q)rows=rows.filter(r=>(r.company+' '+r.auditor+' '+codeFor(r.company)).toLowerCase().includes(q));
+  return rows;
+}
+function codeFor(c){const i=S.companies.indexOf(c);return i<0?'':(1000+i*100).toString()}
+
+// ---------- RENDER ----------
+function render(){renderStats();renderTable()}
 
 function renderStats(){
-  const counts={};STATUSES.forEach(s=>counts[s]=0);
-  S.statuses.forEach(r=>{if(counts[r.status]!==undefined)counts[r.status]++});
-  let h=`<div class="stat-card"><div class="stat-label">Total Records</div><div class="stat-val">${S.statuses.length}</div></div>`;
-  h+=`<div class="stat-card"><div class="stat-label">Completed</div><div class="stat-val" style="color:var(--emerald)">${counts.Completed}</div></div>`;
-  h+=`<div class="stat-card"><div class="stat-label">In Progress</div><div class="stat-val" style="color:var(--blue)">${counts['In Progress']}</div></div>`;
-  h+=`<div class="stat-card"><div class="stat-label">Pending / Not Started</div><div class="stat-val" style="color:var(--orange)">${counts.Pending+counts['Not Started']+(counts['Audit Initiation Pending']||0)}</div></div>`;
-  document.getElementById('statsGrid').innerHTML=h;
-}
-
-function renderCharts(){
-  const counts={};STATUSES.forEach(s=>counts[s]=0);
-  S.statuses.forEach(r=>{if(counts[r.status]!==undefined)counts[r.status]++});
-  const ctx1=document.getElementById('donutChart').getContext('2d');
-  if(donutChart)donutChart.destroy();
-  donutChart=new Chart(ctx1,{type:'doughnut',data:{labels:STATUSES,datasets:[{data:STATUSES.map(s=>counts[s]),backgroundColor:STATUSES.map(s=>STATUS_COLORS[s]),borderWidth:0}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}}}}});
-
-  const byCY={};S.years.forEach(y=>{byCY[y]={};STATUSES.forEach(s=>byCY[y][s]=0)});
-  S.statuses.forEach(r=>{if(byCY[r.fy])byCY[r.fy][r.status]=(byCY[r.fy][r.status]||0)+1});
-  const ctx2=document.getElementById('barChart').getContext('2d');
-  if(barChart)barChart.destroy();
-  barChart=new Chart(ctx2,{type:'bar',data:{labels:S.years,datasets:STATUSES.map(s=>({label:s,data:S.years.map(y=>byCY[y][s]||0),backgroundColor:STATUS_COLORS[s]}))},options:{responsive:true,scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true}},plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}}}}});
-}
-
-function renderDriveFiles(){
-  const assignedIds=new Set(S.statuses.filter(s=>s.fileId).map(s=>s.fileId));
-  const unassigned=S.files.filter(f=>!assignedIds.has(f.id));
-  document.getElementById('fileCount').textContent=S.files.length;
-  document.getElementById('unassignedCount').textContent=unassigned.length;
-  let h='';
-  S.files.forEach(f=>{
-    const used=assignedIds.has(f.id);
-    h+=`<div class="file-chip${used?' assigned':''}">&#128196; ${esc(f.name)}${used?' (assigned)':''}</div>`;
-  });
-  if(!S.files.length)h='<span style="color:var(--muted);font-size:.8rem">No files in Drive folder yet</span>';
-  document.getElementById('fileChips').innerHTML=h;
+  const rows=filtered();
+  const total=rows.length;
+  const comp=rows.filter(r=>r.status==='Completed').length;
+  const inp=rows.filter(r=>r.status==='In Progress').length;
+  const pend=total-comp-inp;
+  const pct=total?Math.round(comp/total*100):0;
+  document.getElementById('statsGrid').innerHTML=`
+    <div class="stat"><div class="stat-label"><span class="dot" style="background:var(--emerald)"></span>Total Companies</div><div class="stat-val">${total}</div><div class="stat-sub">${total} audits &bull; ${S.companies.length} in master list</div></div>
+    <div class="stat"><div class="stat-label"><span class="dot" style="background:var(--emerald)"></span>Completed Audits</div><div class="stat-val" style="color:var(--emerald)">${comp}</div><div class="stat-sub">Audit Completed</div></div>
+    <div class="stat"><div class="stat-label"><span class="dot" style="background:var(--blue)"></span>In-Progress Audits</div><div class="stat-val" style="color:var(--blue)">${inp}</div><div class="stat-sub">Audit In Progress</div></div>
+    <div class="stat"><div class="stat-label"><span class="dot" style="background:var(--orange)"></span>Pending Audits</div><div class="stat-val" style="color:var(--orange)">${pend}</div><div class="stat-sub">Initiation ${rows.filter(r=>r.status==='Audit Initiation Pending').length} &bull; Pending ${rows.filter(r=>r.status==='Pending').length} &bull; Not Started ${rows.filter(r=>r.status==='Not Started').length}</div></div>
+    <div class="stat"><div class="stat-label"><span class="dot" style="background:var(--emerald)"></span>Completion</div><div class="stat-val" style="color:var(--emerald)">${pct}%</div><div class="completion-bar"><div class="completion-fill" style="width:${pct}%"></div></div></div>`;
 }
 
 function renderTable(){
-  let th='<tr><th>#</th><th>Company</th>';
-  S.years.forEach(y=>{th+=`<th>${y} Status</th><th>${y} Auditor</th><th>${y} Document</th>`});
-  th+='</tr>';
-  document.getElementById('thead').innerHTML=th;
+  const rows=filtered();
+  document.getElementById('recCount').textContent=`Showing ${rows.length} of ${S.statuses.length} records`;
+  document.getElementById('thead').innerHTML=`<tr><th>Company Code</th><th>Company Name</th><th>Financial Year</th><th>Audit Status</th><th>Auditor</th><th>Audited Financial Statements</th>${isAdmin?'<th></th>':''}</tr>`;
   let tb='';
-  S.companies.forEach((c,i)=>{
-    tb+=`<tr><td>${i+1}</td><td style="white-space:nowrap;font-weight:500">${esc(c)}</td>`;
-    S.years.forEach(y=>{
-      const r=rec(c,y);
-      const cls=STATUS_CLS[r.status]||'notstarted';
-      if(isAdmin){
-        tb+=`<td><select onchange="doUpdate('${e4(c)}','${y}','status',this.value)" style="font-size:.74rem;padding:2px 4px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg)">`;
-        STATUSES.forEach(s=>{tb+=`<option${r.status===s?' selected':''}>${s}</option>`});
-        tb+=`</select></td>`;
-        tb+=`<td><select onchange="doUpdate('${e4(c)}','${y}','auditor',this.value)" style="font-size:.74rem;padding:2px 4px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg)">`;
-        AUDITORS.forEach(a=>{tb+=`<option${r.auditor===a?' selected':''}>${a}</option>`});
-        tb+=`</select></td>`;
-      }else{
-        tb+=`<td><span class="badge badge-${cls}">${r.status}</span></td>`;
-        tb+=`<td style="font-size:.78rem">${esc(r.auditor)}</td>`;
-      }
-      if(r.fileId){
-        tb+=`<td><a class="file-link" onclick="previewFile('${r.fileId}','${e4(r.fileName)}')">&#128196; ${esc(r.fileName||'View')}</a>`;
-        tb+=` <a class="file-link" href="https://drive.google.com/uc?export=download&id=${r.fileId}" target="_blank" title="Download">&#11015;</a>`;
-        if(isAdmin)tb+=` <button class="btn btn-outline btn-sm" style="font-size:.65rem;padding:1px 6px" onclick="doUnassign('${e4(c)}','${y}')">&#10005;</button>`;
-        tb+=`</td>`;
-      }else if(isAdmin){
-        tb+=`<td><button class="btn btn-outline btn-sm" style="font-size:.7rem" onclick="openAssign('${e4(c)}','${y}')">&#128206; Attach</button></td>`;
-      }else{
-        tb+=`<td><span class="no-file">Not uploaded</span></td>`;
-      }
-    });
+  rows.forEach(r=>{
+    const code=codeFor(r.company);
+    const cls=STATUS_CLS[r.status]||'notstarted';
+    tb+='<tr>';
+    tb+=`<td class="company-code">${code}</td>`;
+    tb+=`<td class="company-name">${esc(r.company)}</td>`;
+    tb+=`<td>${r.fy.replace('FY','FY ')}</td>`;
+    if(isAdmin){
+      tb+=`<td><select class="status-select ss-${cls}" onchange="doUpdate('${e4(r.company)}','${r.fy}','status',this.value);this.className='status-select ss-'+SCL[this.value]">`;
+      STATUSES.forEach(s=>{tb+=`<option${r.status===s?' selected':''}>${s}</option>`});
+      tb+=`</select></td>`;
+      tb+=`<td><select class="status-select" style="background:var(--card);color:var(--fg);border:1px solid var(--border)" onchange="doUpdate('${e4(r.company)}','${r.fy}','auditor',this.value)">`;
+      AUDITORS.forEach(a=>{tb+=`<option${r.auditor===a?' selected':''}>${a}</option>`});
+      tb+=`</select></td>`;
+    }else{
+      tb+=`<td><span class="badge badge-${cls}">${r.status}</span></td>`;
+      tb+=`<td>${esc(r.auditor)}</td>`;
+    }
+    if(r.fileId){
+      tb+=`<td><a class="file-link" onclick="previewFile('${r.fileId}','${e4(r.fileName||"")}')">&#128196; ${esc(r.fileName||'View')}</a>`;
+      tb+=` <a class="file-link" href="https://drive.google.com/uc?export=download&id=${r.fileId}" target="_blank">&#11015;</a>`;
+      if(isAdmin)tb+=` <button class="btn-icon btn-sm" style="width:22px;height:22px;font-size:.7rem" onclick="doUnassign('${e4(r.company)}','${r.fy}')">&#10005;</button>`;
+      tb+='</td>';
+    }else if(isAdmin){
+      tb+=`<td><button class="upload-btn" onclick="openAssign('${e4(r.company)}','${r.fy}')">&#8593; Upload</button></td>`;
+    }else{
+      tb+=`<td><span class="no-file">Not uploaded</span></td>`;
+    }
+    if(isAdmin)tb+=`<td><button class="btn-icon" title="Edit">&#9998;</button></td>`;
     tb+='</tr>';
   });
   document.getElementById('tbody').innerHTML=tb;
 }
 
-async function api(params){
-  const u=new URL(SCRIPT_URL);
-  Object.entries(params).forEach(([k,v])=>u.searchParams.set(k,String(v)));
-  const r=await fetch(u.toString());return r.json();
+const SCL={Completed:'completed','In Progress':'inprogress',Pending:'pending','Not Started':'notstarted','Audit Initiation Pending':'initiation'};
+
+// ---------- API ----------
+async function api(p){const u=new URL(SCRIPT_URL);Object.entries(p).forEach(([k,v])=>u.searchParams.set(k,String(v)));return(await fetch(u)).json()}
+async function doUpdate(c,fy,field,val){
+  const p={action:'update',company:c,fy};p[field]=val;toast('Saving...');
+  await api(p);const r=S.statuses.find(s=>s.company===c&&s.fy===fy);if(r)r[field]=val;
+  renderStats();toast('Saved');
 }
-async function doUpdate(company,fy,field,value){
-  const p={action:'update',company,fy};p[field]=value;
-  toast('Saving...');
-  await api(p);
-  const r=S.statuses.find(s=>s.company===company&&s.fy===fy);
-  if(r)r[field]=value;
-  renderStats();renderCharts();
-  toast('Saved');
-}
-async function doAssign(company,fy,fileId,fileName){
-  toast('Assigning...');
-  await api({action:'assign',company,fy,fileId,fileName});
-  const r=S.statuses.find(s=>s.company===company&&s.fy===fy);
-  if(r){r.fileId=fileId;r.fileName=fileName}
+async function doAssign(c,fy,fid,fn){
+  toast('Assigning...');await api({action:'assign',company:c,fy,fileId:fid,fileName:fn});
+  const r=S.statuses.find(s=>s.company===c&&s.fy===fy);if(r){r.fileId=fid;r.fileName=fn}
   closeModal('assignModal');render();toast('File assigned');
 }
-async function doUnassign(company,fy){
-  toast('Removing...');
-  await api({action:'assign',company,fy,fileId:'',fileName:''});
-  const r=S.statuses.find(s=>s.company===company&&s.fy===fy);
-  if(r){r.fileId='';r.fileName=''}
-  render();toast('File removed');
+async function doUnassign(c,fy){
+  toast('Removing...');await api({action:'assign',company:c,fy,fileId:'',fileName:''});
+  const r=S.statuses.find(s=>s.company===c&&s.fy===fy);if(r){r.fileId='';r.fileName=''}
+  render();toast('Removed');
 }
-async function doAddCompany(name){toast('Adding...');await api({action:'addCompany',name});await loadData();toast('Company added')}
-async function doAddYear(fy){toast('Adding...');await api({action:'addYear',fy});await loadData();toast('Year added')}
 
-function previewFile(fileId,fileName){
-  document.getElementById('previewTitle').textContent=decodeURIComponent(fileName)||'Preview';
-  document.getElementById('previewFrame').src='https://drive.google.com/file/d/'+fileId+'/preview';
+// ---------- MODALS ----------
+function previewFile(fid,fn){
+  document.getElementById('previewTitle').textContent=decodeURIComponent(fn)||'Preview';
+  document.getElementById('previewFrame').src='https://drive.google.com/file/d/'+fid+'/preview';
   document.getElementById('previewModal').hidden=false;
 }
-function openAssign(company,fy){
-  document.getElementById('assignTarget').textContent=company+' — '+fy;
-  const assignedIds=new Set(S.statuses.filter(s=>s.fileId).map(s=>s.fileId));
+function openAssign(c,fy){
+  document.getElementById('assignTarget').textContent=c+' — '+fy.replace('FY','FY ');
+  const used=new Set(S.statuses.filter(s=>s.fileId).map(s=>s.fileId));
   let h='';
   S.files.forEach(f=>{
-    const used=assignedIds.has(f.id);
-    h+=`<div class="assign-item${used?' used':''}" onclick="${used?'':`doAssign('${e4(company)}','${fy}','${f.id}','${e4(f.name)}')`}">
-      <span>&#128196; ${esc(f.name)}</span><span style="font-size:.7rem;color:var(--muted)">${used?'(assigned)':fmtSize(f.size)}</span></div>`;
+    const u=used.has(f.id);
+    h+=`<div class="assign-item${u?' used':''}" onclick="${u?'':`doAssign('${e4(c)}','${fy}','${f.id}','${e4(f.name)}')`}"><span>&#128196; ${esc(f.name)}</span><span style="font-size:.72rem;color:var(--muted)">${u?'(assigned)':fmtSz(f.size)}</span></div>`;
   });
-  if(!S.files.length)h='<p style="color:var(--muted);font-size:.85rem;padding:1rem 0">No files in Drive folder. Upload files to Google Drive first.</p>';
+  if(!S.files.length)h='<p style="color:var(--muted);padding:1rem 0">No files in Drive folder yet. Upload files to Google Drive first.</p>';
   document.getElementById('assignList').innerHTML=h;
   document.getElementById('assignModal').hidden=false;
 }
 function closeModal(id){document.getElementById(id).hidden=true;if(id==='previewModal')document.getElementById('previewFrame').src=''}
-function promptAddCompany(){const n=prompt('Enter company name:');if(n&&n.trim())doAddCompany(n.trim())}
-function promptAddYear(){const f=prompt('Enter fiscal year (e.g. FY2027):');if(f&&/^FY\d{4}$/i.test(f.trim()))doAddYear(f.trim().toUpperCase());else if(f)alert('Format: FY followed by 4 digits, e.g. FY2027')}
+function promptAddCompany(){const n=prompt('Enter company name:');if(n&&n.trim()){toast('Adding...');api({action:'addCompany',name:n.trim()}).then(()=>loadData()).then(()=>toast('Added'))}}
+function promptAddYear(){const f=prompt('Enter fiscal year (e.g. FY2027):');if(f&&/^FY\d{4}$/i.test(f.trim())){toast('Adding...');api({action:'addYear',fy:f.trim().toUpperCase()}).then(()=>loadData()).then(()=>toast('Added'))}else if(f)alert('Format: FY followed by 4 digits')}
 function toggleSettings(){const p=document.getElementById('settingsPanel');p.hidden=!p.hidden}
 function saveSettings(){const u=document.getElementById('settingsUrl').value.trim();if(u){SCRIPT_URL=u;try{localStorage.setItem('imarat_url',u)}catch(e){}toast('Saved');toggleSettings()}}
-function disconnectDrive(){if(!confirm('Disconnect from Google Drive?'))return;SCRIPT_URL='';try{localStorage.removeItem('imarat_url')}catch(e){}showSetup()}
+function disconnectDrive(){if(!confirm('Disconnect?'))return;SCRIPT_URL='';try{localStorage.removeItem('imarat_url')}catch(e){}showSetup()}
 
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function e4(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
-function fmtSize(b){if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(0)+'KB';return(b/1048576).toFixed(1)+'MB'}
+function fmtSz(b){if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(0)+'KB';return(b/1048576).toFixed(1)+'MB'}
 let tt;function toast(m){const el=document.getElementById('toast');el.textContent=m;el.hidden=false;clearTimeout(tt);tt=setTimeout(()=>{el.hidden=true},2500)}
 
 init();
