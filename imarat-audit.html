@@ -295,18 +295,18 @@ function getSheet_() {
 
 function seedData_(sh) {
   var C = [
-    'Imarat Group of Companies','Imarat Builders & Developers (Pvt) Ltd',
-    'Imarat Residences (Pvt) Ltd','Imarat Downtown (Pvt) Ltd',
-    'Imarat Developers & Builders (Pvt) Ltd','Imarat Group Holdings (Pvt) Ltd',
-    'Flagship Developers (Pvt) Ltd','Flagship Developers II (Pvt) Ltd',
-    'Country Club Apartments (Pvt) Ltd','Nyalkaran Developers (Pvt) Ltd',
-    'Al Zahra Developers (Pvt) Ltd','Zameen Developments (Pvt) Ltd',
-    'JS Group (Pvt) Ltd','Naya Nazimabad (Pvt) Ltd',
-    'Imarat Hotels (Pvt) Ltd','Graana Technology Ltd',
-    'SQR Technologies (Pvt) Ltd','Golf Floras (Pvt) Ltd',
-    'Mall of Imarat (Pvt) Ltd','Imarat Marketing (Pvt) Ltd',
-    'Imarat Healthcare (Pvt) Ltd','Imarat Education Foundation',
-    'Sierra Holdings (Pvt) Ltd','Sierra Developments (Pvt) Ltd'
+    'IMARAT HOLDING PVT LTD.','Agency21 International',
+    'Graana (Pvt) Ltd','Propsure',
+    'Agency21 Support Services','Graana Support Services',
+    'IMARAT Wealth+','PROPMAX.AI (PRIVATE) LTD',
+    "Imarat Builder's Mall",'Eetcetra Pvt. Ltd.',
+    'IR LAHORE (PVT) LTD.','Amazon Mall 2',
+    'Amazon Mall (Pvt) Ltd','Imarat Developments',
+    'Imarat Residencia','Golf Flora',
+    'Amazon Marketing','Imarat IBD SMC LTD.',
+    'Hoon Adventures Farm Pvt','IMARAT IBM (PVT) Ltd',
+    'IMARAT Hospitality (PVT)','IMARAT PRESTIGE (Pvt) Ltd',
+    'Imarat REIT Management Co','Imarat Group of Companies'
   ];
   var rows = [];
   for (var i = 0; i < C.length; i++) {
@@ -493,7 +493,32 @@ function filtered(){
   if(q)rows=rows.filter(r=>(r.company+' '+r.auditor+' '+codeFor(r.company)).toLowerCase().includes(q));
   return rows;
 }
-function codeFor(c){const i=S.companies.indexOf(c);return i<0?'':(1000+i*100).toString()}
+const SAP_CODES={
+'IMARAT HOLDING PVT LTD.':'1000','Imarat Holding Pvt Ltd':'1000',
+'Agency21 International':'1100','Agency 21 International':'1100',
+'Graana (Pvt) Ltd':'1200','Graana Technology Ltd':'1200',
+'Propsure':'1300','Propsure Digital Solutions':'1300',
+'Agency21 Support Services':'1400','Agency 21 Services Pvt Ltd':'1400',
+'Graana Support Services':'1500',
+'IMARAT Wealth+':'1600','Imarat Wealth+':'1600',
+'PROPMAX.AI (PRIVATE) LTD':'1700','Propmax.AI (Pvt) Ltd':'1700',
+"Imarat Builder's Mall":'3100',"Imarat Builder's Mall (Pvt) Ltd":'3100',
+'Eetcetra Pvt. Ltd.':'3200','Eetcetra (Pvt) Ltd':'3200',
+'IR LAHORE (PVT) LTD.':'5000','IR Lahore (Pvt) Ltd':'5000',
+'Amazon Mall 2':'5100','Amazon Mall 2 (Pvt) Ltd':'5100',
+'Amazon Mall (Pvt) Ltd':'5200',
+'Imarat Developments':'5300','Imarat Developments (Pvt) Ltd':'5300',
+'Imarat Residencia':'5400',
+'Golf Flora':'5500','Golf Floras (Pvt) Ltd':'5500',
+'Amazon Marketing':'5600','Amazon Marketing (Pvt) Ltd':'5600',
+'Imarat IBD SMC LTD.':'5700','Imarat IBD SMC Ltd':'5700',
+'Hoon Adventures Farm Pvt':'5800','Hoon Adventures Farm (Pvt) Ltd':'5800',
+'IMARAT IBM (PVT) Ltd':'5900','Imarat IBM (Pvt) Ltd':'5900',
+'IMARAT Hospitality (PVT)':'6000','Imarat Hospitality (Pvt) Ltd':'6000','Imarat Hotels (Pvt) Ltd':'6000',
+'IMARAT PRESTIGE (Pvt) Ltd':'6100','Imarat Prestige (Pvt) Ltd':'6100',
+'Imarat REIT Management Co':'7000','Imarat REIT Management (Pvt) Ltd':'7000'
+};
+function codeFor(c){return SAP_CODES[c]||''}
 
 // ---------- RENDER ----------
 function render(){renderStats();renderTable()}
