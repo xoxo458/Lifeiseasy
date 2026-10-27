@@ -298,7 +298,7 @@ body.is-admin .admin-only{display:initial}
 <script>
 const ADMIN_PASSWORD = 'imarat@2024';
 
-let SCRIPT_URL='',isAdmin=false,activeYear='all';
+let SCRIPT_URL='https://script.google.com/macros/s/AKfycbyYvv0rzUM6hxASC6co_PC51t43Y_NTDVJLUKMRttZLso_Ce-r7fMxYP7U89uPHZ8NhKA/exec',isAdmin=false,activeYear='all';
 let S={files:[],statuses:[],companies:[],years:[]};
 const STATUSES=['Audit Completed','In Progress','Board Approval Pending','Audit Initiation Pending','N/A'];
 const AUDITORS=['WACO','BDO','RSM','N/A'];
@@ -617,13 +617,6 @@ function startDashboard(){
   document.getElementById('roleBadge').textContent=isAdmin?'Admin':'Viewer';
   document.getElementById('roleBadge').className='role-badge'+(isAdmin?' admin-badge':'');
   document.getElementById('dateStr').textContent=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-  try{SCRIPT_URL=localStorage.getItem('imarat_url')||''}catch(e){}
-  if(!SCRIPT_URL&&isAdmin){showSetup();return}
-  if(!SCRIPT_URL&&!isAdmin){
-    document.getElementById('dashboard').hidden=false;
-    document.getElementById('statsGrid').innerHTML='<div class="stat" style="grid-column:1/-1;text-align:center;padding:2rem"><div class="stat-label" style="justify-content:center">Not Connected</div><div style="color:var(--muted);font-size:.85rem;margin-top:.5rem">Dashboard not yet configured. Please ask your admin to set up the connection.</div></div>';
-    return;
-  }
   loadData();
 }
 
@@ -631,7 +624,6 @@ function startDashboard(){
 function init(){
   let savedRole=null;
   try{savedRole=localStorage.getItem('imarat_role')}catch(e){}
-  try{SCRIPT_URL=localStorage.getItem('imarat_url')||''}catch(e){}
   if(savedRole==='admin'||savedRole==='viewer'){
     isAdmin=savedRole==='admin';
     document.getElementById('loginScreen').hidden=true;
