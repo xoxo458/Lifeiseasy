@@ -1,513 +1,557 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Imarat Audit Status</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Imarat Group — Audit Status</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap">
 <style>
-:root {
-  --bg: #F0F5EE; --surface: #FFFFFF; --surface-2: #E4EDE0; --line: #C5D5BC;
-  --fg: #10281C; --muted: #5E7A68; --input: #FFFFFF;
-  --brand: #0B7A44; --radiant: #14B866; --deep: #06392A; --deep-2: #0B5A3C;
-  --gold: #C9981F; --gold-soft: #FAF0D4; --on-gold: #2A1E00;
-  --s0: #94A3B0; --s1: #1F6FD0; --s2: #D4991A; --s3: #8B5CC9; --s4: #12A05C;
-  --danger: #B3261E;
-  --shadow: 0 1px 3px rgba(6,57,42,.07), 0 6px 20px rgba(6,57,42,.05);
-  --f-disp: 'Sora', 'DM Sans', system-ui, sans-serif;
-  --f-body: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
-}
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #08140E; --surface: #0F1F17; --surface-2: #132A1E; --line: #224332;
-  --fg: #E5F1E9; --muted: #94AC9D; --input: #0B1812;
-  --brand: #2FCB7E; --radiant: #34D58A;
-  --gold: #E2B54A; --gold-soft: #3A3010;
-  --s0: #8A97A3; --s1: #6BA6F2; --s2: #EDBB3E; --s3: #B792EE; --s4: #35CF85;
-  --danger: #FF8A80;
-  --shadow: 0 1px 3px rgba(0,0,0,.4); color-scheme: dark;
-}}
-:root[data-theme="dark"] {
-  --bg: #08140E; --surface: #0F1F17; --surface-2: #132A1E; --line: #224332;
-  --fg: #E5F1E9; --muted: #94AC9D; --input: #0B1812;
-  --brand: #2FCB7E; --radiant: #34D58A;
-  --gold: #E2B54A; --gold-soft: #3A3010;
-  --s0: #8A97A3; --s1: #6BA6F2; --s2: #EDBB3E; --s3: #B792EE; --s4: #35CF85;
-  --danger: #FF8A80;
-  --shadow: 0 1px 3px rgba(0,0,0,.4); color-scheme: dark;
-}
-* { box-sizing: border-box; margin: 0 }
-body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 14px; line-height: 1.45; padding: 0 16px 32px }
-[hidden] { display: none !important }
-button, input, select { font: inherit; color: inherit }
-:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px }
-.wrap { max-width: 1360px; margin: 0 auto }
+:root{--bg:#f8f9fa;--fg:#1a1a2e;--card:#fff;--border:#e2e8f0;--emerald:#0d6b4e;--emeraldL:#e6f4ef;--gold:#c8a23c;--goldL:#fdf6e3;--muted:#64748b;--danger:#dc2626;--blue:#2563eb;--blueL:#eff6ff;--orange:#ea580c;--orangeL:#fff7ed;--purple:#7c3aed;--purpleL:#f5f3ff;--shadow:0 1px 3px rgba(0,0,0,.08);--radius:10px;font-family:'DM Sans',system-ui,sans-serif}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1117;--fg:#e2e8f0;--card:#1a1d2e;--border:#2d3348;--emeraldL:#0d2d22;--goldL:#2d2510;--blueL:#101d2d;--orangeL:#2d1d10;--purpleL:#1d102d;--shadow:0 1px 3px rgba(0,0,0,.3);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1117;--fg:#e2e8f0;--card:#1a1d2e;--border:#2d3348;--emeraldL:#0d2d22;--goldL:#2d2510;--blueL:#101d2d;--orangeL:#2d1d10;--purpleL:#1d102d;--shadow:0 1px 3px rgba(0,0,0,.3);color-scheme:dark}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);line-height:1.5;padding:0 max(16px,env(safe-area-inset-left,0px)) 2rem max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:'Sora',system-ui,sans-serif}
 
-.mast { margin: 0 -16px; padding: 0 16px; background: linear-gradient(115deg, var(--deep) 0%, var(--deep-2) 62%, #0E7A4A 100%); border-bottom: 3px solid var(--gold); color: #fff; position: sticky; top: 0; z-index: 9 }
-.mast-in { max-width: 1360px; margin: 0 auto; display: flex; align-items: center; gap: 16px; padding: 14px 0; flex-wrap: wrap }
-.brand { display: flex; align-items: center; gap: 14px; min-width: 0; flex: 1 1 300px }
-.brand h1 { font: 700 20px/1.15 var(--f-disp); letter-spacing: -.01em }
-.brand h1 b { color: #F3D77A }
-.brand p { margin: 3px 0 0; font-size: 12px; color: rgba(255,255,255,.7) }
-.role-badge { display: inline-flex; align-items: center; border-radius: 6px; padding: 3px 10px; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; cursor: pointer; user-select: none; transition: all .15s }
-.role-badge.on { background: rgba(243,215,122,.25); border: 1.5px solid rgba(243,215,122,.7); color: #F3D77A }
-.role-badge.off { background: rgba(255,255,255,.08); border: 1.5px solid rgba(255,255,255,.2); color: rgba(255,255,255,.45) }
-.role-badge:hover { background: rgba(255,255,255,.18) }
-.acts { display: flex; gap: 8px; flex-wrap: wrap }
-.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 8px 13px; font-weight: 600; cursor: pointer; display: inline-flex; gap: 7px; align-items: center; font-size: 13px }
-.btn:hover { border-color: var(--brand) }
-.btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none }
-.mast .btn { background: transparent; color: #fff; border-color: rgba(247,235,198,.5) }
-.mast .btn:hover { background: rgba(255,255,255,.1) }
-.btn.primary { background: var(--brand); color: #fff; border-color: transparent }
-.btn.ghost { background: transparent }
-.btn.danger { color: var(--danger) }
-.btn.gold { background: linear-gradient(#EBC45A, #C9981F); color: var(--on-gold); border-color: transparent }
+.setup-overlay{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;overflow-y:auto}
+.setup-card{max-width:720px;width:100%;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2.5rem;box-shadow:var(--shadow)}
+.setup-card h1{font-size:1.5rem;margin-bottom:.25rem;color:var(--emerald)}
+.setup-card .sub{color:var(--muted);margin-bottom:2rem;font-size:.9rem}
+.step{display:flex;gap:.75rem;margin-bottom:1.25rem;align-items:flex-start}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--emerald);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:.8rem;flex-shrink:0;margin-top:2px}
+.step-text{font-size:.9rem;line-height:1.6}
+.step-text code{background:var(--emeraldL);padding:1px 6px;border-radius:4px;font-size:.8rem}
+.code-wrap{position:relative;margin:1.5rem 0;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.code-header{display:flex;justify-content:space-between;align-items:center;padding:.5rem 1rem;background:var(--emeraldL);border-bottom:1px solid var(--border);font-size:.8rem;font-weight:600;color:var(--emerald)}
+.code-block{max-height:300px;overflow:auto;padding:1rem;font-size:.72rem;line-height:1.5;font-family:monospace;white-space:pre;background:var(--card);tab-size:2}
+.copy-btn{padding:4px 12px;border:1px solid var(--emerald);border-radius:6px;background:transparent;color:var(--emerald);cursor:pointer;font-size:.75rem;font-weight:600}
+.copy-btn:hover{background:var(--emerald);color:#fff}
+.connect-row{display:flex;gap:.5rem;margin-top:1.5rem}
+.connect-row input{flex:1;padding:.65rem 1rem;border:1px solid var(--border);border-radius:var(--radius);font-size:.9rem;background:var(--card);color:var(--fg)}
+.connect-row input:focus{outline:2px solid var(--emerald);border-color:transparent}
+.btn{padding:.65rem 1.25rem;border:none;border-radius:var(--radius);font-weight:600;cursor:pointer;font-size:.85rem;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.btn-primary{background:var(--emerald);color:#fff}
+.btn-sm{padding:.35rem .75rem;font-size:.75rem;border-radius:6px}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--fg)}
+.err-msg{color:var(--danger);font-size:.8rem;margin-top:.5rem;display:none}
 
-main { display: grid; gap: 14px; padding-top: 16px }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); min-width: 0 }
-.card h2 { font: 600 14px/1.2 var(--f-disp); margin: 0 }
-.card .sub { color: var(--muted); font-size: 12px; margin-top: 3px }
-.ch { padding: 14px 16px 0 }
-.kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px }
-.kpi { padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; min-width: 0 }
-.kpi .l { font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 7px }
-.kpi .l i { width: 8px; height: 8px; border-radius: 50%; flex: none }
-.kpi .v { font: 700 30px/1.1 var(--f-disp); letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin-top: 4px }
-.kpi .n { font-size: 12px; color: var(--muted) }
-.kpi.pct .v { color: var(--brand) }
-.bar-track { height: 6px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; margin-top: 6px }
-.bar-track span { display: block; height: 100%; background: linear-gradient(90deg, var(--radiant), var(--gold)); border-radius: 99px; transition: width .4s }
+.loading-screen{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--emerald);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-.filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; padding: 12px 16px }
-.fld { border: 1px solid var(--line); background: var(--input); border-radius: 8px; padding: 8px 10px; min-width: 0 }
-.search { flex: 1 1 200px; max-width: 320px }
-.fcount { margin-left: auto; color: var(--muted); font-size: 12.5px }
-.chips { display: flex; gap: 4px; background: var(--input); border: 1px solid var(--line); border-radius: 10px; padding: 3px; flex-wrap: wrap }
-.chip { border: 0; background: transparent; border-radius: 7px; padding: 6px 12px; font-weight: 600; cursor: pointer; color: var(--muted); font-size: 13px }
-.chip[aria-pressed="true"] { background: var(--brand); color: #fff }
-.fybar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; box-shadow: var(--shadow) }
-.fylab { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--muted) }
+header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;padding:1.5rem 0 1rem}
+.brand h1{font-size:1.35rem;color:var(--emerald)}
+.brand span{font-size:.8rem;color:var(--muted)}
+.controls{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.role-btn{padding:6px 16px;border:2px solid var(--border);border-radius:20px;background:transparent;color:var(--muted);font-weight:600;font-size:.8rem;cursor:pointer;transition:all .2s}
+.role-btn.on{border-color:var(--emerald);background:var(--emerald);color:#fff}
 
-.tw { overflow-x: auto; border-top: 1px solid var(--line) }
-table { width: 100%; border-collapse: collapse; min-width: 900px }
-th { position: sticky; top: 0; background: var(--surface-2); text-align: left; font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: nowrap }
-td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: middle }
-tr:hover td { background: color-mix(in srgb, var(--gold-soft) 35%, transparent) }
-td.code { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap }
-td.code.na { color: var(--muted); font-weight: 500 }
-td.nm { font-weight: 600; min-width: 200px }
-td.fy { white-space: nowrap; color: var(--muted) }
-.sel { appearance: none; -webkit-appearance: none; border-radius: 99px; border: 1px solid color-mix(in srgb, var(--c) 45%, transparent);
-  background: color-mix(in srgb, var(--c) 13%, var(--surface)) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23778' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 10px center;
-  color: color-mix(in srgb, var(--c) 30%, var(--fg)); font-weight: 600; font-size: 12.5px; padding: 6px 28px 6px 12px; cursor: pointer; max-width: 100% }
-.sel[data-s="0"] { --c: var(--s0) } .sel[data-s="1"] { --c: var(--s1) } .sel[data-s="2"] { --c: var(--s2) } .sel[data-s="3"] { --c: var(--s3) } .sel[data-s="4"] { --c: var(--s4) }
-.sel[data-s="na"] { --c: var(--muted); font-weight: 500 }
-.fs { display: flex; align-items: center; gap: 6px; white-space: nowrap }
-.fname { max-width: 140px; overflow: hidden; text-overflow: ellipsis; font-size: 12.5px; color: var(--brand); font-weight: 600 }
-.none { color: var(--muted); font-size: 12.5px }
-.ib { border: 1px solid var(--line); background: var(--surface); border-radius: 7px; width: 30px; height: 30px; display: inline-grid; place-items: center; cursor: pointer; color: var(--fg); flex: none }
-.ib:hover { border-color: var(--brand); color: var(--brand) }
-.ib svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round }
-.empty { padding: 40px 16px; text-align: center; color: var(--muted) }
-.foot { color: var(--muted); font-size: 12px; display: flex; gap: 12px; flex-wrap: wrap; justify-content: space-between; padding: 4px 2px }
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.15rem;box-shadow:var(--shadow)}
+.stat-label{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.stat-val{font-size:1.6rem;font-weight:700;font-family:'Sora',sans-serif;margin-top:.15rem}
 
-.charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px }
-.donut-wrap { display: grid; grid-template-columns: minmax(150px, 200px) 1fr; gap: 12px; align-items: center; padding: 8px 16px 16px }
-.cv { position: relative; height: 190px }
-.legend { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none }
-.legend button { all: unset; box-sizing: border-box; width: 100%; display: flex; align-items: center; gap: 8px; padding: 5px 7px; border-radius: 7px; cursor: pointer; font-size: 12.5px }
-.legend button:hover { background: var(--surface-2) }
-.legend button[aria-pressed="true"] { background: var(--gold-soft); outline: 1px solid var(--gold) }
-.legend i { width: 10px; height: 10px; border-radius: 3px; flex: none }
-.legend b { margin-left: auto; font-variant-numeric: tabular-nums }
-.fycv { position: relative; height: 250px; margin: 6px 12px 12px }
+.charts-grid{display:grid;grid-template-columns:1fr 1.5fr;gap:1rem;margin-bottom:1.5rem}
+@media(max-width:700px){.charts-grid{grid-template-columns:1fr}}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;box-shadow:var(--shadow)}
+.chart-card h3{font-size:.85rem;margin-bottom:.75rem;color:var(--muted)}
 
-.ov { position: fixed; inset: 0; background: rgba(4,22,14,.55); display: grid; place-items: center; padding: 16px; z-index: 50; overflow: auto }
-.md { background: var(--surface); border-radius: 14px; border: 1px solid var(--line); width: min(560px, 100%); box-shadow: 0 20px 60px rgba(0,0,0,.35); max-height: calc(100% - 8px); overflow: auto }
-.md.wide { width: min(960px, 100%) }
-.mh { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 16px 18px; border-bottom: 1px solid var(--line); border-top: 3px solid var(--gold); border-radius: 14px 14px 0 0 }
-.mh h3 { margin: 0; font: 600 16px var(--f-disp) }
-.mb-modal { padding: 16px 18px; display: grid; gap: 12px }
-.mf { padding: 12px 18px 16px; display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; border-top: 1px solid var(--line) }
-label.f { display: grid; gap: 5px; font-size: 12px; font-weight: 600; color: var(--muted) }
-label.f input, label.f select { width: 100%; font-weight: 400; color: var(--fg) }
-.fyrow { display: grid; grid-template-columns: 80px 1fr 1.3fr; gap: 10px; align-items: center }
-.fyrow .chk { display: flex; gap: 7px; align-items: center; font-size: 12.5px }
-.err { color: var(--danger); font-size: 12.5px; font-weight: 600 }
-.pdfbox { height: min(70vh, 640px); border: 1px solid var(--line); border-radius: 8px; width: 100%; background: var(--surface-2) }
-.toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--deep); color: #fff; border: 1px solid var(--gold); padding: 10px 16px; border-radius: 10px; z-index: 60; font-weight: 600; max-width: calc(100% - 32px) }
+.drive-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.5rem;box-shadow:var(--shadow)}
+.drive-panel h3{font-size:.9rem;margin-bottom:.75rem}
+.file-chips{display:flex;flex-wrap:wrap;gap:.5rem}
+.file-chip{display:flex;align-items:center;gap:.4rem;padding:.3rem .7rem;border:1px solid var(--border);border-radius:20px;font-size:.75rem;background:var(--blueL)}
+.file-chip.assigned{background:var(--emeraldL);border-color:var(--emerald);opacity:.6}
 
-@media (max-width: 1040px) { .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)) } .charts { grid-template-columns: minmax(0, 1fr) } }
-@media (max-width: 620px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)) } .donut-wrap { grid-template-columns: 1fr } .cv { height: 170px }
-  .fyrow { grid-template-columns: 1fr } .fcount { margin-left: 0; width: 100% } .brand h1 { font-size: 17px } .kpi .v { font-size: 24px } }
+.table-wrap{overflow-x:auto;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+th{background:var(--emeraldL);color:var(--emerald);font-weight:600;text-align:left;padding:.7rem .6rem;white-space:nowrap;position:sticky;top:0;font-size:.75rem;text-transform:uppercase;letter-spacing:.3px}
+td{padding:.6rem;border-top:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:color-mix(in srgb,var(--emerald) 3%,transparent)}
+.badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:.7rem;font-weight:600;white-space:nowrap}
+.badge-completed{background:var(--emeraldL);color:var(--emerald)}
+.badge-inprogress{background:var(--blueL);color:var(--blue)}
+.badge-pending{background:var(--orangeL);color:var(--orange)}
+.badge-notstarted{background:var(--purpleL);color:var(--purple)}
+.badge-initiation{background:var(--goldL);color:var(--gold)}
+.file-link{color:var(--blue);text-decoration:none;font-size:.75rem;cursor:pointer;display:inline-flex;align-items:center;gap:3px}
+.file-link:hover{text-decoration:underline}
+.no-file{color:var(--muted);font-size:.7rem;font-style:italic}
+
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;display:flex;align-items:center;justify-content:center;padding:1rem}
+.modal-content{background:var(--card);border-radius:16px;max-width:800px;width:100%;max-height:90vh;overflow:auto;position:relative}
+.modal-close{position:absolute;top:12px;right:12px;width:32px;height:32px;border:none;border-radius:50%;background:var(--border);color:var(--fg);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1}
+.preview-modal{padding:0}
+.preview-modal iframe{width:100%;height:80vh;border:none;border-radius:0 0 16px 16px}
+.preview-modal .ph{padding:1rem 1.25rem;font-weight:600;font-size:.95rem;border-bottom:1px solid var(--border)}
+.assign-modal{padding:1.5rem}
+.assign-modal h3{margin-bottom:1rem}
+.assign-list{max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem}
+.assign-item{display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;border:1px solid var(--border);border-radius:8px;font-size:.8rem;cursor:pointer;transition:background .15s}
+.assign-item:hover{background:var(--emeraldL)}
+.assign-item.used{opacity:.4;pointer-events:none}
+
+.settings-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1rem}
+.settings-panel label{font-size:.8rem;color:var(--muted);display:block;margin-bottom:.25rem}
+.settings-panel input{width:100%;padding:.5rem .75rem;border:1px solid var(--border);border-radius:8px;font-size:.85rem;background:var(--card);color:var(--fg);margin-bottom:.75rem}
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--emerald);color:#fff;padding:.6rem 1.5rem;border-radius:20px;font-size:.85rem;font-weight:500;z-index:3000;pointer-events:none}
+.admin-only{display:none}
+body.is-admin .admin-only{display:initial}
 </style>
 </head>
-<body>
+<body class="is-admin">
 
-<div class="mast"><div class="mast-in">
-  <div class="brand">
-    <div><h1><b>Imarat</b> Group of Companies</h1><p>Audit Status Dashboard · <span id="asof"></span> · <span style="display:inline-flex;gap:6px;align-items:center">
-      <button class="role-badge on" id="roleAdmin">ADMIN</button>
-      <span style="color:rgba(255,255,255,.3);font-size:12px">|</span>
-      <button class="role-badge off" id="roleViewer">VIEWER</button>
-    </span></p></div>
+<div id="setupScreen" class="setup-overlay" hidden>
+<div class="setup-card">
+  <h1>&#128193; Connect to Google Drive</h1>
+  <p class="sub">One-time setup: deploy a small Google Apps Script to connect your Drive folder to this dashboard.</p>
+  <div class="step"><div class="step-num">1</div><div class="step-text">Go to <a href="https://script.google.com" target="_blank">script.google.com</a> &rarr; click <code>New Project</code></div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-text">Delete the default code, paste the code below (click <strong>Copy Code</strong>)</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-text">Click <code>Deploy</code> &rarr; <code>New deployment</code> &rarr; Type: <code>Web app</code><br>Execute as: <code>Me</code> &nbsp;|&nbsp; Who has access: <code>Anyone</code></div></div>
+  <div class="step"><div class="step-num">4</div><div class="step-text"><strong>Authorize</strong> when prompted (allow Drive &amp; Sheets access)</div></div>
+  <div class="step"><div class="step-num">5</div><div class="step-text">Copy the <strong>Web App URL</strong> and paste it below</div></div>
+  <div class="code-wrap">
+    <div class="code-header"><span>Code.gs</span><button class="copy-btn" onclick="copyScript()">Copy Code</button></div>
+    <pre class="code-block" id="scriptCode"></pre>
   </div>
-  <div class="acts">
-    <button class="btn" id="addBtn" hidden><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add Company</button>
-    <button class="btn" id="addYrBtn" hidden><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add Year</button>
-    <button class="btn gold" id="exportBtn" hidden><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Export &amp; Share</button>
+  <div class="connect-row">
+    <input id="urlInput" placeholder="Paste your Web App URL here...">
+    <button class="btn btn-primary" onclick="testConnection()">Connect</button>
   </div>
-</div></div>
+  <div class="err-msg" id="setupErr"></div>
+</div>
+</div>
 
-<div class="wrap"><main>
-  <section class="fybar" id="fyBar" role="group" aria-label="Financial year"></section>
-  <section class="kpis" id="kpis" aria-label="Key figures"></section>
-  <section class="card">
-    <div class="filters">
-      <input class="fld search" id="q" type="search" placeholder="Search code, company, auditor…" aria-label="Search">
-      <select class="fld" id="stF" aria-label="Filter by status"></select>
-      <button class="btn ghost" id="clr">Clear</button>
-      <button class="btn primary" id="addBtn2" hidden><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add Company</button>
-      <span class="fcount" id="fcount"></span>
+<div id="loadingScreen" class="loading-screen" hidden>
+  <div class="spinner"></div>
+  <p style="color:var(--muted);font-size:.9rem">Loading from Google Drive...</p>
+</div>
+
+<div id="dashboard" hidden>
+  <header>
+    <div class="brand">
+      <h1>Imarat Group</h1>
+      <span>Audit Status Dashboard &bull; Connected to Google Drive</span>
     </div>
-    <div class="tw"><table>
-      <thead><tr><th>Code</th><th>Company Name</th><th>FY</th><th>Audit Status</th><th>Auditor</th><th>Financial Statements</th><th id="actCol"></th></tr></thead>
-      <tbody id="tb"></tbody>
-    </table></div>
-  </section>
-  <section class="charts">
-    <div class="card"><div class="ch"><h2>Audit Status Distribution</h2><div class="sub" id="donutSub"></div></div>
-      <div class="donut-wrap"><div class="cv"><canvas id="cDonut"></canvas></div><ul class="legend" id="legend"></ul></div></div>
-    <div class="card"><div class="ch"><h2>Financial-Year Comparison</h2><div class="sub">All financial years</div></div>
-      <div class="fycv"><canvas id="cFY"></canvas></div></div>
-  </section>
-  <div class="foot"><span id="store"></span><span>Charts and KPIs follow the selected year and search filters.</span></div>
-</main></div>
+    <div class="controls">
+      <button id="roleAdmin" class="role-btn on" onclick="setRole(true)">&#128274; Admin</button>
+      <button id="roleViewer" class="role-btn" onclick="setRole(false)">&#128065; Viewer</button>
+      <button class="btn btn-outline btn-sm" onclick="refreshData()">&#8635; Refresh</button>
+      <button class="btn btn-outline btn-sm admin-only" onclick="toggleSettings()">&#9881;</button>
+    </div>
+  </header>
+  <div id="settingsPanel" class="settings-panel admin-only" hidden>
+    <h3 style="font-size:.9rem;margin-bottom:.75rem">Settings</h3>
+    <label>Google Apps Script URL</label>
+    <input id="settingsUrl">
+    <div style="display:flex;gap:.5rem">
+      <button class="btn btn-primary btn-sm" onclick="saveSettings()">Save</button>
+      <button class="btn btn-outline btn-sm" onclick="disconnectDrive()">Disconnect</button>
+    </div>
+  </div>
+  <div class="stats-grid" id="statsGrid"></div>
+  <div class="charts-grid">
+    <div class="chart-card"><h3>Status Distribution</h3><canvas id="donutChart"></canvas></div>
+    <div class="chart-card"><h3>Status by Year</h3><canvas id="barChart"></canvas></div>
+  </div>
+  <div class="drive-panel admin-only" id="drivePanel">
+    <h3>&#128193; Drive Files &mdash; <span id="fileCount">0</span> files (<span id="unassignedCount">0</span> unassigned)</h3>
+    <div class="file-chips" id="fileChips"></div>
+  </div>
+  <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap" class="admin-only">
+    <button class="btn btn-outline btn-sm" onclick="promptAddCompany()">+ Add Company</button>
+    <button class="btn btn-outline btn-sm" onclick="promptAddYear()">+ Add Year</button>
+  </div>
+  <div class="table-wrap">
+    <table><thead id="thead"></thead><tbody id="tbody"></tbody></table>
+  </div>
+</div>
 
-<input type="file" id="fileIn" accept="application/pdf,.pdf" hidden>
-<div id="layer"></div>
+<div id="previewModal" class="modal" hidden onclick="if(event.target===this)closeModal('previewModal')">
+  <div class="modal-content preview-modal">
+    <div class="ph" id="previewTitle">Preview</div>
+    <button class="modal-close" onclick="closeModal('previewModal')">&times;</button>
+    <iframe id="previewFrame" sandbox="allow-same-origin allow-scripts"></iframe>
+  </div>
+</div>
 
-<!--EMBEDDED_DATA_START-->
-<script id="embeddedData" type="application/json">null</script>
-<!--EMBEDDED_DATA_END-->
+<div id="assignModal" class="modal" hidden onclick="if(event.target===this)closeModal('assignModal')">
+  <div class="modal-content assign-modal">
+    <button class="modal-close" onclick="closeModal('assignModal')">&times;</button>
+    <h3>Assign File &mdash; <span id="assignTarget"></span></h3>
+    <div class="assign-list" id="assignList"></div>
+    <button class="btn btn-outline btn-sm" onclick="closeModal('assignModal')">Cancel</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
-(function(){
-'use strict';
-const STATUSES = ['Audit Initiation Pending','Audit In Progress','Auditors Initials Pending','Board Approval Pending','Audit Completed'];
-const $ = s => document.querySelector(s);
-const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-const ICON = {
-  eye:'<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>',
-  dl:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/>',
-  up:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/>',
-  edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
-  x:'<path d="M18 6L6 18M6 6l12 12"/>'
-};
-const ic = n => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICON[n]}</svg>`;
+let SCRIPT_URL='',isAdmin=true;
+let S={files:[],statuses:[],companies:[],years:[]};
+let donutChart=null,barChart=null;
+const STATUSES=['Completed','In Progress','Pending','Not Started','Audit Initiation Pending'];
+const AUDITORS=['WACO','BDO','RSM','Not Assigned'];
+const STATUS_CLS={Completed:'completed','In Progress':'inprogress',Pending:'pending','Not Started':'notstarted','Audit Initiation Pending':'initiation'};
+const STATUS_COLORS={Completed:'#0d6b4e','In Progress':'#2563eb',Pending:'#ea580c','Not Started':'#7c3aed','Audit Initiation Pending':'#c8a23c'};
 
-const SEED = [{"id":"c01","order":1,"code":"1000","name":"Imarat Holding (Pvt) Ltd","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c02","order":2,"code":"1100","name":"Estate Agency 21","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Audit Completed","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c03","order":3,"code":"1200","name":"Graana (Pvt) Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c04","order":4,"code":"1300","name":"Propsure Digital Solutions","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c05","order":5,"code":"1400","name":"Agency 21 Services Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c06","order":6,"code":"1500","name":"Graana Services Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c07","order":7,"code":"1600","name":"Imarat Wealth + Pvt Ltd","records":{"2024":null,"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c08","order":8,"code":"1700","name":"Propmax.Ai Pvt Ltd","records":{"2024":null,"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c09","order":9,"code":"5100","name":"Amazon Mall 2","records":{"2024":null,"2025":null,"2026":null}},{"id":"c10","order":10,"code":"5200","name":"Amazon Mall Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Audit Completed","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c11","order":11,"code":"5300","name":"Imarat Developers Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c12","order":12,"code":"5400","name":"Imarat Residencies Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c13","order":13,"code":"5500","name":"Golf Floras(Aop)","records":{"2024":null,"2025":null,"2026":null}},{"id":"c14","order":14,"code":"5600","name":"Amazon Marketing Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c15","order":15,"code":"5700","name":"Imarat Bavylon Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c16","order":16,"code":"5800","name":"Hoon Adventures Farm House","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c17","order":17,"code":"5900","name":"Imarat IBM Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c18","order":18,"code":"6000","name":"Imarat Hospitality","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c19","order":19,"code":"6100","name":"Imarat Prestige Pvt Ltd","records":{"2024":null,"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c20","order":20,"code":"7000","name":"Imarat Rmc Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"BDO"},"2025":{"status":"Board Approval Pending","auditor":"BDO"},"2026":{"status":"Audit In Progress","auditor":"RSM"}}},{"id":"c21","order":21,"code":"N/A","name":"Golf Floras Pvt Ltd","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c22","order":22,"code":"N/A","name":"Imarat Institute Of Technical Training PVT LTD","records":{"2024":{"status":"Audit Completed","auditor":"WACO"},"2025":{"status":"Board Approval Pending","auditor":"WACO"},"2026":{"status":"Audit Initiation Pending","auditor":"WACO"}}},{"id":"c23","order":23,"code":"N/A","name":"Imarat Cyber Tower Pvt Ltd","records":{"2024":null,"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}},{"id":"c24","order":24,"code":"N/A","name":"Imarat Executive Club","records":{"2024":null,"2025":{"status":"Board Approval Pending","auditor":"RSM"},"2026":{"status":"Audit Initiation Pending","auditor":"RSM"}}}];
+const APPS_SCRIPT=`// ===== IMARAT AUDIT DASHBOARD Backend =====
+// Deploy as Web App: Execute as Me, Access = Anyone
 
-let S, F = { fy: '', q: '', st: '' }, isAdmin = false, pendUpload = null, charts = {};
+var FOLDER_ID = '18sRCVdTpcQ80igDSSOSDBF7lO3h8TyGv';
 
-// Load embedded data if present, else use SEED
-function loadData() {
-  try {
-    const el = $('#embeddedData');
-    if (el) { const d = JSON.parse(el.textContent); if (d && d.companies) return d }
-  } catch(e) {}
-  return { companies: JSON.parse(JSON.stringify(SEED)), years: ['2024','2025','2026'] };
+function getSheet_() {
+  var props = PropertiesService.getScriptProperties();
+  var id = props.getProperty('SS_ID');
+  if (id) {
+    try { var sh = SpreadsheetApp.openById(id).getSheetByName('Status'); if (sh) return sh; } catch(e) {}
+  }
+  var ss = SpreadsheetApp.create('Imarat Audit Tracker');
+  props.setProperty('SS_ID', ss.getId());
+  var sh = ss.getActiveSheet();
+  sh.setName('Status');
+  sh.appendRow(['Company','FY','Status','Auditor','FileId','FileName','Updated']);
+  seedData_(sh);
+  return sh;
 }
 
-function init() {
-  S = loadData();
-  try { const f = JSON.parse(localStorage.getItem('imarat-f')||'{}'); F.fy=f.fy||''; F.q=f.q||''; F.st=f.st||'' } catch(e) {}
-  try { isAdmin = localStorage.getItem('imarat-role') === 'admin' } catch(e) {}
-  updateRole(); boot();
+function seedData_(sh) {
+  var C = [
+    'Imarat Group of Companies','Imarat Builders & Developers (Pvt) Ltd',
+    'Imarat Residences (Pvt) Ltd','Imarat Downtown (Pvt) Ltd',
+    'Imarat Developers & Builders (Pvt) Ltd','Imarat Group Holdings (Pvt) Ltd',
+    'Flagship Developers (Pvt) Ltd','Flagship Developers II (Pvt) Ltd',
+    'Country Club Apartments (Pvt) Ltd','Nyalkaran Developers (Pvt) Ltd',
+    'Al Zahra Developers (Pvt) Ltd','Zameen Developments (Pvt) Ltd',
+    'JS Group (Pvt) Ltd','Naya Nazimabad (Pvt) Ltd',
+    'Imarat Hotels (Pvt) Ltd','Graana Technology Ltd',
+    'SQR Technologies (Pvt) Ltd','Golf Floras (Pvt) Ltd',
+    'Mall of Imarat (Pvt) Ltd','Imarat Marketing (Pvt) Ltd',
+    'Imarat Healthcare (Pvt) Ltd','Imarat Education Foundation',
+    'Sierra Holdings (Pvt) Ltd','Sierra Developments (Pvt) Ltd'
+  ];
+  var rows = [];
+  for (var i = 0; i < C.length; i++) {
+    rows.push([C[i],'FY2024','Not Started','Not Assigned','','','']);
+    rows.push([C[i],'FY2025','Not Started','Not Assigned','','','']);
+    rows.push([C[i],'FY2026','Not Started','Not Assigned','','','']);
+  }
+  sh.getRange(2, 1, rows.length, 7).setValues(rows);
 }
 
-function boot() {
-  S.years = yearsOf();
-  if (!F.fy || (F.fy !== 'all' && !S.years.includes(F.fy))) F.fy = S.years[S.years.length-1] || 'all';
+function doGet(e) {
+  var action = (e && e.parameter && e.parameter.action) || 'getData';
+
+  if (action === 'getData') {
+    var folder = DriveApp.getFolderById(FOLDER_ID);
+    var iter = folder.getFiles();
+    var files = [];
+    while (iter.hasNext()) {
+      var f = iter.next();
+      files.push({id: f.getId(), name: f.getName(), size: f.getSize(), type: f.getMimeType()});
+    }
+    var sh = getSheet_();
+    var data = sh.getDataRange().getValues();
+    var statuses = [];
+    for (var i = 1; i < data.length; i++) {
+      statuses.push({company: data[i][0], fy: data[i][1], status: data[i][2],
+        auditor: data[i][3], fileId: data[i][4] || '', fileName: data[i][5] || ''});
+    }
+    return ok_({files: files, statuses: statuses});
+  }
+
+  if (action === 'update') {
+    var p = e.parameter;
+    var sh = getSheet_();
+    var data = sh.getDataRange().getValues();
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][0] === p.company && data[i][1] === p.fy) {
+        if (p.status) sh.getRange(i+1, 3).setValue(p.status);
+        if (p.auditor) sh.getRange(i+1, 4).setValue(p.auditor);
+        sh.getRange(i+1, 7).setValue(new Date().toISOString());
+        break;
+      }
+    }
+    return ok_({success: true});
+  }
+
+  if (action === 'assign') {
+    var p = e.parameter;
+    var sh = getSheet_();
+    var data = sh.getDataRange().getValues();
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][0] === p.company && data[i][1] === p.fy) {
+        sh.getRange(i+1, 5).setValue(p.fileId || '');
+        sh.getRange(i+1, 6).setValue(p.fileName || '');
+        sh.getRange(i+1, 7).setValue(new Date().toISOString());
+        break;
+      }
+    }
+    return ok_({success: true});
+  }
+
+  if (action === 'addCompany') {
+    var name = e.parameter.name;
+    var sh = getSheet_();
+    var data = sh.getDataRange().getValues();
+    var fys = [];
+    for (var i = 1; i < data.length; i++) {
+      if (fys.indexOf(data[i][1]) === -1) fys.push(data[i][1]);
+    }
+    for (var j = 0; j < fys.length; j++) {
+      sh.appendRow([name, fys[j], 'Not Started', 'Not Assigned', '', '', '']);
+    }
+    return ok_({success: true});
+  }
+
+  if (action === 'addYear') {
+    var fy = e.parameter.fy;
+    var sh = getSheet_();
+    var data = sh.getDataRange().getValues();
+    var companies = [];
+    for (var i = 1; i < data.length; i++) {
+      if (companies.indexOf(data[i][0]) === -1) companies.push(data[i][0]);
+    }
+    for (var j = 0; j < companies.length; j++) {
+      sh.appendRow([companies[j], fy, 'Not Started', 'Not Assigned', '', '', '']);
+    }
+    return ok_({success: true});
+  }
+
+  return ok_({error: 'Unknown action'});
+}
+
+function ok_(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}`;
+
+function init(){
+  try{SCRIPT_URL=localStorage.getItem('imarat_url')||''}catch(e){}
+  try{isAdmin=localStorage.getItem('imarat_role')!=='viewer'}catch(e){}
+  setRole(isAdmin);
+  if(!SCRIPT_URL){showSetup()}else{loadData()}
+}
+
+function showSetup(){
+  document.getElementById('setupScreen').hidden=false;
+  document.getElementById('dashboard').hidden=true;
+  document.getElementById('loadingScreen').hidden=true;
+  document.getElementById('scriptCode').textContent=APPS_SCRIPT;
+}
+function copyScript(){
+  navigator.clipboard.writeText(APPS_SCRIPT).then(()=>toast('Code copied to clipboard!')).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=APPS_SCRIPT;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('Code copied!');
+  });
+}
+async function testConnection(){
+  const url=document.getElementById('urlInput').value.trim();
+  const err=document.getElementById('setupErr');
+  err.style.display='none';
+  if(!url){err.textContent='Please paste the Web App URL.';err.style.display='block';return}
+  try{
+    err.textContent='Connecting...';err.style.display='block';err.style.color='var(--blue)';
+    const r=await fetch(url+'?action=getData');
+    const d=await r.json();
+    if(!d.statuses)throw new Error('bad');
+    SCRIPT_URL=url;
+    try{localStorage.setItem('imarat_url',url)}catch(e){}
+    processData(d);
+    document.getElementById('setupScreen').hidden=true;
+    showDashboard();
+    toast('Connected to Google Drive!');
+  }catch(e){
+    err.style.color='var(--danger)';
+    err.textContent='Connection failed. Check the URL and ensure the script is deployed as a Web App with access set to "Anyone".';
+    err.style.display='block';
+  }
+}
+
+async function loadData(){
+  document.getElementById('loadingScreen').hidden=false;
+  document.getElementById('dashboard').hidden=true;
+  try{
+    const r=await fetch(SCRIPT_URL+'?action=getData');
+    const d=await r.json();
+    processData(d);
+    showDashboard();
+  }catch(e){
+    showSetup();
+    document.getElementById('urlInput').value=SCRIPT_URL;
+    const err=document.getElementById('setupErr');
+    err.textContent='Could not reach backend. Check the URL or redeploy.';
+    err.style.display='block';
+  }
+}
+function processData(d){
+  S.files=d.files||[];
+  S.statuses=d.statuses||[];
+  const cSet=new Set(),ySet=new Set();
+  S.statuses.forEach(s=>{cSet.add(s.company);ySet.add(s.fy)});
+  S.companies=[...cSet];
+  S.years=[...ySet].sort();
+}
+async function refreshData(){toast('Refreshing...');await loadData();toast('Data refreshed from Drive')}
+function showDashboard(){
+  document.getElementById('setupScreen').hidden=true;
+  document.getElementById('loadingScreen').hidden=true;
+  document.getElementById('dashboard').hidden=false;
+  document.getElementById('settingsUrl').value=SCRIPT_URL;
   render();
 }
 
-const saveF = () => { try { localStorage.setItem('imarat-f', JSON.stringify(F)) } catch(e) {} };
-
-function updateRole() {
-  try { localStorage.setItem('imarat-role', isAdmin?'admin':'viewer') } catch(e) {}
-  $('#roleAdmin').className = 'role-badge ' + (isAdmin?'on':'off');
-  $('#roleViewer').className = 'role-badge ' + (!isAdmin?'on':'off');
-  $('#addBtn').hidden = !isAdmin;
-  $('#addBtn2').hidden = !isAdmin;
-  $('#addYrBtn').hidden = !isAdmin;
-  $('#exportBtn').hidden = !isAdmin;
+function setRole(admin){
+  isAdmin=admin;
+  try{localStorage.setItem('imarat_role',admin?'admin':'viewer')}catch(e){}
+  document.getElementById('roleAdmin').className='role-btn'+(admin?' on':'');
+  document.getElementById('roleViewer').className='role-btn'+(admin?'':' on');
+  document.body.classList.toggle('is-admin',admin);
+  if(S.companies.length)render();
 }
 
-$('#roleAdmin').onclick = () => { isAdmin = true; updateRole(); render(); toast('Switched to Admin') };
-$('#roleViewer').onclick = () => { isAdmin = false; updateRole(); render(); toast('Switched to Viewer') };
+function render(){renderStats();renderCharts();renderDriveFiles();renderTable()}
 
-const yearsOf = () => { const y = new Set(S.years); S.companies.forEach(c => Object.keys(c.records||{}).forEach(k => y.add(k))); return [...y].sort() };
-function allRows() { const r = []; S.companies.forEach(c => S.years.forEach(fy => { const rec = (c.records||{})[fy]; r.push({ c, fy, rec: rec||null }) })); return r }
-const inFY = r => F.fy === 'all' || r.fy === F.fy;
-function matchQ(r) { const q = F.q.trim().toLowerCase(); if (!q) return true; return [r.c.code, r.c.name, r.rec&&r.rec.auditor, r.rec&&r.rec.status, r.fy].join(' ').toLowerCase().includes(q) }
-const scope = () => allRows().filter(r => inFY(r) && matchQ(r) && r.rec);
-function tableRows() { return allRows().filter(r => inFY(r) && matchQ(r) && (!F.st || (F.st==='NA' ? !r.rec : r.rec && r.rec.status === F.st))).sort((a,b) => a.c.order - b.c.order || a.fy.localeCompare(b.fy)) }
-function counts(rows) { const n = [0,0,0,0,0]; rows.forEach(r => n[STATUSES.indexOf(r.rec.status)]++); return n }
+function rec(company,fy){return S.statuses.find(s=>s.company===company&&s.fy===fy)||{status:'Not Started',auditor:'Not Assigned',fileId:'',fileName:''}}
 
-function render() {
-  $('#asof').textContent = new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
-  renderFilters(); renderKPIs(); renderTable(); renderCharts();
-  const pdfCount = S.companies.reduce((n,c) => n + Object.values(c.records||{}).filter(r => r && r.pdf).length, 0);
-  $('#store').textContent = pdfCount ? `${pdfCount} PDF(s) embedded. Use "Export & Share" to generate a shareable file.` : 'No PDFs attached yet. Admin can upload financial statements.';
+function renderStats(){
+  const counts={};STATUSES.forEach(s=>counts[s]=0);
+  S.statuses.forEach(r=>{if(counts[r.status]!==undefined)counts[r.status]++});
+  let h=`<div class="stat-card"><div class="stat-label">Total Records</div><div class="stat-val">${S.statuses.length}</div></div>`;
+  h+=`<div class="stat-card"><div class="stat-label">Completed</div><div class="stat-val" style="color:var(--emerald)">${counts.Completed}</div></div>`;
+  h+=`<div class="stat-card"><div class="stat-label">In Progress</div><div class="stat-val" style="color:var(--blue)">${counts['In Progress']}</div></div>`;
+  h+=`<div class="stat-card"><div class="stat-label">Pending / Not Started</div><div class="stat-val" style="color:var(--orange)">${counts.Pending+counts['Not Started']+(counts['Audit Initiation Pending']||0)}</div></div>`;
+  document.getElementById('statsGrid').innerHTML=h;
 }
 
-function renderFilters() {
-  $('#fyBar').innerHTML = '<span class="fylab">Financial year</span><div class="chips">' +
-    ['all', ...S.years].map(y => `<button class="chip" data-fy="${y}" aria-pressed="${F.fy===y}">${y==='all'?'All years':'FY '+y}</button>`).join('') + '</div>';
-  $('#stF').innerHTML = '<option value="">All statuses</option>' + STATUSES.map(s => `<option ${F.st===s?'selected':''}>${s}</option>`).join('') + `<option value="NA" ${F.st==='NA'?'selected':''}>N/A</option>`;
-  if ($('#q').value !== F.q) $('#q').value = F.q;
+function renderCharts(){
+  const counts={};STATUSES.forEach(s=>counts[s]=0);
+  S.statuses.forEach(r=>{if(counts[r.status]!==undefined)counts[r.status]++});
+  const ctx1=document.getElementById('donutChart').getContext('2d');
+  if(donutChart)donutChart.destroy();
+  donutChart=new Chart(ctx1,{type:'doughnut',data:{labels:STATUSES,datasets:[{data:STATUSES.map(s=>counts[s]),backgroundColor:STATUSES.map(s=>STATUS_COLORS[s]),borderWidth:0}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}}}}});
+
+  const byCY={};S.years.forEach(y=>{byCY[y]={};STATUSES.forEach(s=>byCY[y][s]=0)});
+  S.statuses.forEach(r=>{if(byCY[r.fy])byCY[r.fy][r.status]=(byCY[r.fy][r.status]||0)+1});
+  const ctx2=document.getElementById('barChart').getContext('2d');
+  if(barChart)barChart.destroy();
+  barChart=new Chart(ctx2,{type:'bar',data:{labels:S.years,datasets:STATUSES.map(s=>({label:s,data:S.years.map(y=>byCY[y][s]||0),backgroundColor:STATUS_COLORS[s]}))},options:{responsive:true,scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true}},plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}}}}});
 }
 
-function renderKPIs() {
-  const sc = scope(), n = sc.length, c = counts(sc);
-  const cos = new Set(sc.map(r => r.c.id)).size;
-  const done = c[4], prog = c[1], pend = c[0]+c[2]+c[3], pct = n ? Math.round(done/n*100) : 0;
-  const k = [['Total Companies',cos,`${n} audit records`,'var(--brand)'],['Completed',done,'Audit Completed','var(--s4)'],['In Progress',prog,'Audit In Progress','var(--s1)'],['Pending',pend,`Init ${c[0]} · Initials ${c[2]} · Board ${c[3]}`,'var(--s2)']];
-  $('#kpis').innerHTML = k.map(x => `<div class="card kpi"><div class="l"><i style="background:${x[3]}"></i>${x[0]}</div><div class="v">${x[1]}</div><div class="n">${x[2]}</div></div>`).join('') +
-    `<div class="card kpi pct"><div class="l"><i style="background:var(--gold)"></i>Completion</div><div class="v">${pct}%</div><div class="bar-track"><span style="width:${pct}%"></span></div></div>`;
+function renderDriveFiles(){
+  const assignedIds=new Set(S.statuses.filter(s=>s.fileId).map(s=>s.fileId));
+  const unassigned=S.files.filter(f=>!assignedIds.has(f.id));
+  document.getElementById('fileCount').textContent=S.files.length;
+  document.getElementById('unassignedCount').textContent=unassigned.length;
+  let h='';
+  S.files.forEach(f=>{
+    const used=assignedIds.has(f.id);
+    h+=`<div class="file-chip${used?' assigned':''}">&#128196; ${esc(f.name)}${used?' (assigned)':''}</div>`;
+  });
+  if(!S.files.length)h='<span style="color:var(--muted);font-size:.8rem">No files in Drive folder yet</span>';
+  document.getElementById('fileChips').innerHTML=h;
 }
 
-function statusSel(r) {
-  const s = r.rec ? STATUSES.indexOf(r.rec.status) : 'na';
-  if (!isAdmin) return r.rec ? `<span class="sel" style="cursor:default;pointer-events:none" data-s="${s}">${esc(r.rec.status)}</span>` : '<span class="none">N/A</span>';
-  return `<select class="sel" data-act="status" data-id="${r.c.id}" data-fy="${r.fy}" data-s="${s}">` +
-    (r.rec ? '' : '<option value="" selected disabled hidden>N/A</option>') +
-    STATUSES.map(x => `<option ${r.rec&&r.rec.status===x?'selected':''}>${x}</option>`).join('') + '</select>';
+function renderTable(){
+  let th='<tr><th>#</th><th>Company</th>';
+  S.years.forEach(y=>{th+=`<th>${y} Status</th><th>${y} Auditor</th><th>${y} Document</th>`});
+  th+='</tr>';
+  document.getElementById('thead').innerHTML=th;
+  let tb='';
+  S.companies.forEach((c,i)=>{
+    tb+=`<tr><td>${i+1}</td><td style="white-space:nowrap;font-weight:500">${esc(c)}</td>`;
+    S.years.forEach(y=>{
+      const r=rec(c,y);
+      const cls=STATUS_CLS[r.status]||'notstarted';
+      if(isAdmin){
+        tb+=`<td><select onchange="doUpdate('${e4(c)}','${y}','status',this.value)" style="font-size:.74rem;padding:2px 4px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg)">`;
+        STATUSES.forEach(s=>{tb+=`<option${r.status===s?' selected':''}>${s}</option>`});
+        tb+=`</select></td>`;
+        tb+=`<td><select onchange="doUpdate('${e4(c)}','${y}','auditor',this.value)" style="font-size:.74rem;padding:2px 4px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg)">`;
+        AUDITORS.forEach(a=>{tb+=`<option${r.auditor===a?' selected':''}>${a}</option>`});
+        tb+=`</select></td>`;
+      }else{
+        tb+=`<td><span class="badge badge-${cls}">${r.status}</span></td>`;
+        tb+=`<td style="font-size:.78rem">${esc(r.auditor)}</td>`;
+      }
+      if(r.fileId){
+        tb+=`<td><a class="file-link" onclick="previewFile('${r.fileId}','${e4(r.fileName)}')">&#128196; ${esc(r.fileName||'View')}</a>`;
+        tb+=` <a class="file-link" href="https://drive.google.com/uc?export=download&id=${r.fileId}" target="_blank" title="Download">&#11015;</a>`;
+        if(isAdmin)tb+=` <button class="btn btn-outline btn-sm" style="font-size:.65rem;padding:1px 6px" onclick="doUnassign('${e4(c)}','${y}')">&#10005;</button>`;
+        tb+=`</td>`;
+      }else if(isAdmin){
+        tb+=`<td><button class="btn btn-outline btn-sm" style="font-size:.7rem" onclick="openAssign('${e4(c)}','${y}')">&#128206; Attach</button></td>`;
+      }else{
+        tb+=`<td><span class="no-file">Not uploaded</span></td>`;
+      }
+    });
+    tb+='</tr>';
+  });
+  document.getElementById('tbody').innerHTML=tb;
 }
 
-function fsCell(r) {
-  const k = `data-id="${r.c.id}" data-fy="${r.fy}"`;
-  if (!r.rec) return '<span class="none">N/A</span>';
-  const p = r.rec.pdf;
-  if (p) {
-    let h = `<div class="fs"><span class="fname" title="${esc(p.name)}">${esc(p.name)}</span>`;
-    h += `<button class="ib" data-act="view" ${k} title="Preview">${ic('eye')}</button>`;
-    h += `<button class="ib" data-act="dl" ${k} title="Download">${ic('dl')}</button>`;
-    if (isAdmin) h += `<button class="ib" data-act="up" ${k} title="Replace">${ic('up')}</button>`;
-    return h + '</div>';
-  }
-  if (isAdmin) return `<div class="fs"><span class="none">Not uploaded</span><button class="btn" data-act="up" ${k}>${ic('up')}Upload</button></div>`;
-  return '<span class="none">Not uploaded</span>';
+async function api(params){
+  const u=new URL(SCRIPT_URL);
+  Object.entries(params).forEach(([k,v])=>u.searchParams.set(k,String(v)));
+  const r=await fetch(u.toString());return r.json();
 }
-
-function renderTable() {
-  const rows = tableRows();
-  $('#fcount').textContent = `Showing ${rows.length} of ${allRows().filter(inFY).length} records`;
-  $('#tb').innerHTML = rows.length ? rows.map(r => `<tr>
-    <td class="code ${/^n\/a$/i.test(r.c.code)?'na':''}">${esc(r.c.code)}</td>
-    <td class="nm">${esc(r.c.name)}</td><td class="fy">FY ${r.fy}</td>
-    <td>${statusSel(r)}</td><td>${esc((r.rec&&r.rec.auditor)||'—')}</td>
-    <td>${fsCell(r)}</td>
-    <td>${isAdmin?`<button class="ib" data-act="edit" data-id="${r.c.id}" title="Edit">${ic('edit')}</button>`:''}</td></tr>`).join('')
-    : '<tr><td colspan="7" class="empty">No records match filters.</td></tr>';
+async function doUpdate(company,fy,field,value){
+  const p={action:'update',company,fy};p[field]=value;
+  toast('Saving...');
+  await api(p);
+  const r=S.statuses.find(s=>s.company===company&&s.fy===fy);
+  if(r)r[field]=value;
+  renderStats();renderCharts();
+  toast('Saved');
 }
-
-function renderCharts() {
-  if (typeof Chart === 'undefined') return;
-  const m = cssv('--muted'), l = cssv('--line'), surf = cssv('--surface');
-  Chart.defaults.color = m; Chart.defaults.font.family = cssv('--f-body'); Chart.defaults.font.size = 12;
-  const cols = [0,1,2,3,4].map(i => cssv('--s'+i)), sc = scope(), cn = counts(sc);
-  const total = cn.reduce((a,b)=>a+b,0), pct = total ? Math.round(cn[4]/total*100) : 0;
-  $('#donutSub').textContent = (F.fy==='all'?'All years':'FY '+F.fy)+' · '+total+(total===1?' audit':' audits');
-  $('#legend').innerHTML = STATUSES.map((s,i) => `<li><button data-st="${s}" aria-pressed="${F.st===s}"><i style="background:${cols[i]}"></i>${s}<b>${cn[i]}</b></button></li>`).join('');
-
-  const centre = { id:'centre', afterDraw(ch) { const{ctx,chartArea:a}=ch,x=(a.left+a.right)/2,y=(a.top+a.bottom)/2; ctx.save(); ctx.textAlign='center'; ctx.fillStyle=cssv('--fg');
-    ctx.font='700 26px '+cssv('--f-disp'); ctx.fillText(pct+'%',x,y+4); ctx.fillStyle=m; ctx.font='500 11px '+cssv('--f-body'); ctx.fillText('completed',x,y+22); ctx.restore() } };
-  upc('donut','cDonut',{type:'doughnut',data:{labels:STATUSES,datasets:[{data:cn,backgroundColor:cols,borderColor:surf,borderWidth:2,hoverOffset:4}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{display:false}},onClick:(e,els)=>{if(els.length){const s=STATUSES[els[0].index];F.st=F.st===s?'':s;saveF();render()}}},plugins:[centre]});
-
-  const yrs = S.years, qr = allRows().filter(r => r.rec && matchQ(r));
-  const per = yrs.map(y => counts(qr.filter(r => r.fy===y)));
-  const labels = yrs.map((y,i) => { const n=per[i].reduce((a,b)=>a+b,0); return ['FY '+y,(n?Math.round(per[i][4]/n*100):0)+'% complete'] });
-  upc('fy','cFY',{type:'bar',data:{labels,datasets:[4,3,2,1,0].map(i=>({label:STATUSES[i],data:per.map(p=>p[i]),backgroundColor:cols[i],borderColor:surf,borderWidth:2,borderRadius:3,borderSkipped:false,maxBarThickness:56}))},
-    options:{responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true,grid:{display:false},border:{color:l}},y:{stacked:true,beginAtZero:true,ticks:{precision:0},grid:{color:l},border:{display:false}}},
-      plugins:{legend:{position:'bottom',labels:{boxWidth:10,boxHeight:10,usePointStyle:true,pointStyle:'rectRounded',color:m,padding:10,font:{size:11}}},tooltip:{mode:'index'}}}});
+async function doAssign(company,fy,fileId,fileName){
+  toast('Assigning...');
+  await api({action:'assign',company,fy,fileId,fileName});
+  const r=S.statuses.find(s=>s.company===company&&s.fy===fy);
+  if(r){r.fileId=fileId;r.fileName=fileName}
+  closeModal('assignModal');render();toast('File assigned');
 }
-function upc(k,id,cfg) { if(charts[k]) charts[k].destroy(); charts[k]=new Chart($('#'+id),cfg) }
-
-// Events
-document.addEventListener('click', e => {
-  const t = e.target.closest('[data-fy],[data-act],[data-st]'); if (!t) return;
-  if (t.dataset.fy && t.classList.contains('chip')) { F.fy=t.dataset.fy; saveF(); render(); return }
-  if (t.dataset.st && t.closest('#legend')) { F.st=F.st===t.dataset.st?'':t.dataset.st; saveF(); render(); return }
-  const a = t.dataset.act; if (!a||a==='status') return;
-  const c = S.companies.find(x => x.id===t.dataset.id), fy = t.dataset.fy;
-  if (a==='edit'&&isAdmin) companyModal(c);
-  if (a==='up'&&isAdmin) { pendUpload={c,fy}; $('#fileIn').value=''; $('#fileIn').click() }
-  if (a==='view') viewPdf(c,fy);
-  if (a==='dl') dlPdf(c,fy);
-});
-document.addEventListener('change', e => {
-  const t = e.target;
-  if (t.dataset&&t.dataset.act==='status'&&isAdmin) {
-    const c = S.companies.find(x => x.id===t.dataset.id);
-    c.records[t.dataset.fy] = { ...(c.records[t.dataset.fy]||{}), status: t.value };
-    render(); toast('Status updated');
-  }
-});
-$('#q').addEventListener('input', e => { F.q=e.target.value; saveF(); renderKPIs(); renderTable(); renderCharts() });
-$('#stF').addEventListener('change', e => { F.st=e.target.value; saveF(); render() });
-$('#clr').addEventListener('click', () => { F.q=''; F.st=''; F.fy=S.years[S.years.length-1]||'all'; saveF(); render() });
-$('#addBtn').addEventListener('click', () => isAdmin&&companyModal(null));
-$('#addBtn2').addEventListener('click', () => isAdmin&&companyModal(null));
-$('#addYrBtn').addEventListener('click', () => isAdmin&&addYearModal());
-document.addEventListener('keydown', e => { if (e.key==='Escape') $('#layer').innerHTML='' });
-
-// PDF upload — convert to base64 and store in data
-$('#fileIn').addEventListener('change', async e => {
-  const f = e.target.files[0]; if (!f||!pendUpload) return;
-  const {c,fy} = pendUpload;
-  if (!(f.type==='application/pdf'||/\.pdf$/i.test(f.name))) return toast('Please choose a PDF.');
-  if (f.size > 50*1024*1024) return toast('PDF must be under 50 MB.');
-  toast('Reading file…');
-  try {
-    const buf = await f.arrayBuffer();
-    const bytes = new Uint8Array(buf);
-    let bin = ''; for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-    const b64 = btoa(bin);
-    c.records[fy].pdf = { name: f.name, size: f.size, b64 };
-    render(); toast('Statement attached — use Export & Share to save the file.');
-  } catch(err) { toast('Failed to read file.') }
-});
-
-// View PDF from base64
-function viewPdf(c, fy) {
-  const p = c.records[fy]&&c.records[fy].pdf; if (!p) return;
-  let url;
-  try {
-    const bin = atob(p.b64), bytes = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-    url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
-  } catch(e) { return toast('Could not load PDF.') }
-  const close = () => { $('#layer').innerHTML=''; URL.revokeObjectURL(url) };
-  $('#layer').innerHTML = `<div class="ov"><div class="md wide"><div class="mh"><h3>${esc(c.name)} · FY ${fy}</h3><button class="ib" id="mx">${ic('x')}</button></div>
-    <div class="mb-modal"><iframe class="pdfbox" src="${url}"></iframe><div class="none">${esc(p.name)} · ${(p.size/1048576).toFixed(2)} MB</div></div>
-    <div class="mf">${isAdmin?'<button class="btn danger" id="rm">Remove file</button><span style="flex:1"></span>':'<span style="flex:1"></span>'}
-    ${isAdmin?`<button class="btn" id="rp">${ic('up')}Replace</button>`:''}
-    <button class="btn primary" id="dd">${ic('dl')}Download</button></div></div></div>`;
-  $('#mx').onclick = close;
-  $('.ov').onclick = ev => { if (ev.target.classList.contains('ov')) close() };
-  $('#dd').onclick = () => dlPdf(c,fy);
-  if ($('#rp')) $('#rp').onclick = () => { close(); pendUpload={c,fy}; $('#fileIn').value=''; $('#fileIn').click() };
-  if ($('#rm')) { let armed=false; $('#rm').onclick = function(){ if(!armed){armed=true;this.textContent='Click again to confirm';return} delete c.records[fy].pdf; close(); render(); toast('File removed') } }
+async function doUnassign(company,fy){
+  toast('Removing...');
+  await api({action:'assign',company,fy,fileId:'',fileName:''});
+  const r=S.statuses.find(s=>s.company===company&&s.fy===fy);
+  if(r){r.fileId='';r.fileName=''}
+  render();toast('File removed');
 }
+async function doAddCompany(name){toast('Adding...');await api({action:'addCompany',name});await loadData();toast('Company added')}
+async function doAddYear(fy){toast('Adding...');await api({action:'addYear',fy});await loadData();toast('Year added')}
 
-function dlPdf(c, fy) {
-  const p = c.records[fy]&&c.records[fy].pdf; if (!p) return;
-  try {
-    const bin = atob(p.b64), bytes = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-    const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
-    const a = document.createElement('a'); a.href = url; a.download = p.name; a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
-  } catch(e) { toast('Download failed.') }
+function previewFile(fileId,fileName){
+  document.getElementById('previewTitle').textContent=decodeURIComponent(fileName)||'Preview';
+  document.getElementById('previewFrame').src='https://drive.google.com/file/d/'+fileId+'/preview';
+  document.getElementById('previewModal').hidden=false;
 }
-
-// Export: generate a new HTML file with all data (including base64 PDFs) embedded
-$('#exportBtn').addEventListener('click', () => {
-  toast('Generating file…');
-  try {
-    const html = document.documentElement.outerHTML;
-    const dataJson = JSON.stringify({ companies: S.companies, years: S.years });
-    const escaped = dataJson.replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
-    const newHtml = html.replace(
-      /<!--EMBEDDED_DATA_START-->[\s\S]*?<!--EMBEDDED_DATA_END-->/,
-      '<!--EMBEDDED_DATA_START-->\n<script id="embeddedData" type="application/json">' + escaped + '<\/script>\n<!--EMBEDDED_DATA_END-->'
-    );
-    const blob = new Blob([newHtml], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'Imarat_Audit_Status.html'; a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
-    toast('File downloaded! Share this file with your team.');
-  } catch(e) { toast('Export failed: ' + e.message) }
-});
-
-// Modals
-function layer(html) {
-  $('#layer').innerHTML = `<div class="ov"><div class="md" role="dialog">${html}</div></div>`;
-  const cl = () => { $('#layer').innerHTML='' };
-  $('#layer .ov').addEventListener('mousedown', e => { if (e.target.classList.contains('ov')) cl() });
-  document.querySelectorAll('#layer [data-close]').forEach(b => b.onclick=cl);
-  return cl;
+function openAssign(company,fy){
+  document.getElementById('assignTarget').textContent=company+' — '+fy;
+  const assignedIds=new Set(S.statuses.filter(s=>s.fileId).map(s=>s.fileId));
+  let h='';
+  S.files.forEach(f=>{
+    const used=assignedIds.has(f.id);
+    h+=`<div class="assign-item${used?' used':''}" onclick="${used?'':`doAssign('${e4(company)}','${fy}','${f.id}','${e4(f.name)}')`}">
+      <span>&#128196; ${esc(f.name)}</span><span style="font-size:.7rem;color:var(--muted)">${used?'(assigned)':fmtSize(f.size)}</span></div>`;
+  });
+  if(!S.files.length)h='<p style="color:var(--muted);font-size:.85rem;padding:1rem 0">No files in Drive folder. Upload files to Google Drive first.</p>';
+  document.getElementById('assignList').innerHTML=h;
+  document.getElementById('assignModal').hidden=false;
 }
+function closeModal(id){document.getElementById(id).hidden=true;if(id==='previewModal')document.getElementById('previewFrame').src=''}
+function promptAddCompany(){const n=prompt('Enter company name:');if(n&&n.trim())doAddCompany(n.trim())}
+function promptAddYear(){const f=prompt('Enter fiscal year (e.g. FY2027):');if(f&&/^FY\d{4}$/i.test(f.trim()))doAddYear(f.trim().toUpperCase());else if(f)alert('Format: FY followed by 4 digits, e.g. FY2027')}
+function toggleSettings(){const p=document.getElementById('settingsPanel');p.hidden=!p.hidden}
+function saveSettings(){const u=document.getElementById('settingsUrl').value.trim();if(u){SCRIPT_URL=u;try{localStorage.setItem('imarat_url',u)}catch(e){}toast('Saved');toggleSettings()}}
+function disconnectDrive(){if(!confirm('Disconnect from Google Drive?'))return;SCRIPT_URL='';try{localStorage.removeItem('imarat_url')}catch(e){}showSetup()}
 
-function companyModal(c) {
-  if (!isAdmin) return;
-  const isNew = !c, yrs = S.years.length ? S.years : [String(new Date().getFullYear())];
-  const rows = yrs.map(y => {
-    const r = c ? (c.records||{})[y] : { status: STATUSES[0], auditor: '' };
-    const on = !!r;
-    return `<div class="fyrow"><b>FY ${y}</b><label class="chk"><input type="checkbox" data-y="${y}" class="app" ${on?'checked':''}> Applies</label>
-    <input class="fld aud" data-y="${y}" placeholder="Auditor" value="${esc(r&&r.auditor||'')}" ${on?'':'disabled'}></div>`;
-  }).join('');
-  const cl = layer(`<div class="mh"><h3>${isNew?'Add Company':'Edit Company'}</h3><button class="ib" data-close>${ic('x')}</button></div>
-    <div class="mb-modal"><label class="f">Company Code *<input class="fld" id="mCode" value="${esc(c?c.code:'')}"></label>
-    <label class="f">Company Name *<input class="fld" id="mName" value="${esc(c?c.name:'')}"></label>
-    <div style="display:grid;gap:8px"><span class="f" style="font-size:12px;font-weight:600;color:var(--muted)">Financial years and auditors</span>${rows}</div>
-    <div class="err" id="mErr"></div></div>
-    <div class="mf">${isNew?'':'<button class="btn danger" id="mDel">Delete company</button><span style="flex:1"></span>'}<button class="btn" data-close>Cancel</button><button class="btn primary" id="mSave">${isNew?'Add':'Save'}</button></div>`);
-  document.querySelectorAll('.app').forEach(cb => cb.onchange = () => { document.querySelector(`.aud[data-y="${cb.dataset.y}"]`).disabled = !cb.checked });
-  $('#mCode').focus();
-  if (!isNew) { let armed=false; $('#mDel').onclick=function(){ if(!armed){armed=true;this.textContent='Click again to delete';return} cl(); S.companies=S.companies.filter(x=>x.id!==c.id); render(); toast('Deleted') } }
-  $('#mSave').onclick = () => {
-    const code=$('#mCode').value.trim(), name=$('#mName').value.trim().replace(/\s+/g,' ');
-    if (!code) return $('#mErr').textContent='Code is required.';
-    if (!name) return $('#mErr').textContent='Name is required.';
-    const dup=S.companies.find(x=>x.id!==(c&&c.id)&&x.code.toLowerCase()===code.toLowerCase()&&!/^n\/a$/i.test(code));
-    if (dup) return $('#mErr').textContent=`Code ${code} used by ${dup.name}.`;
-    const rec={};
-    for (const y of yrs) {
-      const on=document.querySelector(`.app[data-y="${y}"]`).checked, au=document.querySelector(`.aud[data-y="${y}"]`).value.trim(), old=c&&c.records[y];
-      if (!on) { if(old&&old.pdf) return $('#mErr').textContent=`FY ${y} has a file. Remove it first.`; rec[y]=null }
-      else rec[y]=old?{...old,auditor:au}:{status:STATUSES[0],auditor:au};
-    }
-    if (isNew) { c={id:'c'+Date.now().toString(36),order:(S.companies.reduce((m,x)=>Math.max(m,x.order||0),0))+1,code,name,records:rec}; S.companies.push(c) }
-    else { c.code=code; c.name=name; c.records=rec }
-    cl(); render(); toast(isNew?'Company added':'Updated');
-  };
-}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function e4(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
+function fmtSize(b){if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(0)+'KB';return(b/1048576).toFixed(1)+'MB'}
+let tt;function toast(m){const el=document.getElementById('toast');el.textContent=m;el.hidden=false;clearTimeout(tt);tt=setTimeout(()=>{el.hidden=true},2500)}
 
-function addYearModal() {
-  if (!isAdmin) return;
-  const next = String((+S.years[S.years.length-1]||new Date().getFullYear())+1);
-  const cl = layer(`<div class="mh"><h3>Add Financial Year</h3><button class="ib" data-close>${ic('x')}</button></div>
-    <div class="mb-modal"><label class="f">Financial year<input class="fld" id="yIn" value="${next}" inputmode="numeric"></label>
-    <div class="none">Companies with an audit in the latest year start as Audit Initiation Pending.</div><div class="err" id="yErr"></div></div>
-    <div class="mf"><button class="btn" data-close>Cancel</button><button class="btn primary" id="ySave">Add year</button></div>`);
-  $('#ySave').onclick = () => {
-    const y=$('#yIn').value.trim();
-    if (!/^\d{4}$/.test(y)) return $('#yErr').textContent='Enter a four-digit year.';
-    if (S.years.includes(y)) return $('#yErr').textContent='Already exists.';
-    const last=S.years[S.years.length-1];
-    S.years=[...S.years,y].sort(); F.fy=y; saveF(); cl();
-    S.companies.forEach(c => { const p=c.records[last]; c.records[y]=p?{status:STATUSES[0],auditor:p.auditor||''}:null });
-    render(); toast('FY '+y+' added');
-  };
-}
-
-let tt;
-function toast(m) {
-  let el=$('.toast');
-  if(!el){el=document.createElement('div');el.className='toast';el.setAttribute('role','status');document.body.appendChild(el)}
-  el.textContent=m;el.hidden=false;clearTimeout(tt);tt=setTimeout(()=>{el.hidden=true},3000);
-}
-
-matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => render());
 init();
-})();
 </script>
 </body>
 </html>
