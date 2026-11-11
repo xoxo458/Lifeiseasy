@@ -336,31 +336,33 @@ function fmtTime(ms){ if(!ms) return ""; const d=new Date(ms); const same=new Da
 /* Saved copy of the sheet, used when this view cannot reach Google Sheets. Overwritten by live data. */
 const EMBED={"pl":[["Imarat Group"],["RE Sales P&L Summary"],["","","","FY 2025","FY 2025","FY 2025","FY 2025","FY 2025","FY 2025","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2027","FY 2027","FY 2027"],["","Description","Paid / Received From","Jan-25","Feb-25","Mar-25","Apr-25","May-25","Jun-25","Jul-25","Aug-25","Sep-25","Oct-25","Nov-25","Dec-25","Jan-26","Feb-26","Mar-26","Apr-26","May-26","Jun-26","Jul-26","Aug-26","Sep-26"],["","Gross Sales","RE Sales Business","146,120","600,060","584,820","1,072,290","992,160","1,307,818","1,210,950","2,937,320","2,850,319","2,300,900","1,361,000","1,175,670","1,307,000","3,086,325","1,234,500","2,170,983","2,108,675","3,555,870","2,030,612","1,804,524","2,461,232"],["","Less: Fuel","RE Sales Business","0","0","0","0","0","0","0","0","0","0","0","0","200,000","200,000","200,000","200,000","200,000","200,000","200,000","200,000","200,000"],["","Net Sales","","146,120","600,060","584,820","1,072,290","992,160","1,307,818","1,210,950","2,937,320","2,850,319","2,300,900","1,361,000","1,175,670","1,107,000","2,886,325","1,034,500","1,970,983","1,908,675","3,355,870","1,830,612","1,604,524","2,261,232"],[],["","Cost of Sales"],["","Business Related Expense","RE Sales Business","0","0","10,000","0","35,160","0","0","0","10,000","124,390","6,000","0","0","88,990","0","7,860","0","0","259,200","27,668","0"],["","Zameen payment (amortized in 12 months)","RE Sales Business","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","194,944","194,944","194,944"],["","Zameen Expense","RE Sales Business","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","585,750"],["","Salaries","Imarat","0","2,088,539","2,165,000","2,125,000","2,010,000","1,919,193","2,081,695","2,056,659","2,215,659","2,205,659","1,842,019","1,756,175","1,653,595","1,824,237","1,691,659","821,659","1,711,659","1,827,909","1,991,033","1,881,659","1,948,303"],["","Payroll other benefits","Imarat","0","0","0","0","0","0","0","0","0","0","0","0","64,944","69,761","61,393","62,544","64,187","103,735","91,438","78,806","85,698"],["","Office Rent","Imarat","0","0","0","0","0","0","0","0","0","0","0","0","25,000","75,000","25,000","0","55,000","55,000","55,000","55,000","50,000"],["","Utilities","Imarat","0","0","0","0","0","0","0","0","0","0","0","0","59,488","6,831","4,995","998","21,134","22,738","26,067","34,408","37,416"],["","Internet","Imarat","0","0","0","0","0","0","0","0","0","0","0","0","2,779","2,779","2,779","10,335","3,340","12,130","10,677","4,002","10,371"],["","Internet (UAN Billing)","Imarat","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","18,630","18,630","18,630"],["","Office Supplies","Imarat","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","3,900"],["","Repair and Maintenance","Imarat","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","5,000"],["","Total Expenses","","0","2,088,539","2,175,000","2,125,000","2,045,160","1,919,193","2,081,695","2,056,659","2,225,659","2,330,049","1,848,019","1,756,175","1,805,806","2,067,598","1,785,826","903,396","1,855,320","2,021,512","2,646,989","2,295,117","2,940,012"],[],["","EBITDA","","146,120","1,488,479","1,590,180","1,052,710","1,053,000","611,375","870,745","880,661","624,660","29,149","487,019","580,505","698,806","818,727","751,326","1,067,587","53,355","1,334,358","816,377","690,593","678,780"],[],["","Interest Expense","20%","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0"],[],["","Net Profit","","146,120","-1,488,479","-1,590,180","-1,052,710","-1,053,000","-611,375","-870,745","880,661","624,660","-29,149","-487,019","-580,505","-698,806","818,727","-751,326","1,067,587","53,355","1,334,358","-816,377","-690,593","-678,780"]],"cf":[["Imarat Group"],["RE Sales P&L Summary"],[],["","","","FY 2025","FY 2025","FY 2025","FY 2025","FY 2025","FY 2025","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2027","FY 2027","FY 2027"],[],["","Description","Paid / Received From","Jan-25","Feb-25","Mar-25","Apr-25","May-25","Jun-25","Jul-25","Aug-25","Sep-25","Oct-25","Nov-25","Dec-25","Jan-26","Feb-26","Mar-26","Apr-26","May-26","Jun-26","Jul-26","Aug-26","Sep-26"],["","Monthly Sales","RE Sales Business","146,120","600,060","584,820","1,072,290","992,160","1,307,818","1,210,950","2,937,320","2,850,319","2,300,900","1,361,000","1,175,670","1,307,000","3,086,325","1,234,500","2,170,983","2,108,675","3,555,870","2,030,612","1,804,524","2,461,232"],["","Less: Fuel","RE Sales Business","0","0","0","0","0","0","0","0","0","0","0","0","200,000","200,000","200,000","200,000","200,000","200,000","200,000","200,000","200,000"],["","Net Sales","RE Sales Business","146,120","600,060","584,820","1,072,290","992,160","1,307,818","1,210,950","2,937,320","2,850,319","2,300,900","1,361,000","1,175,670","1,107,000","2,886,325","1,034,500","1,970,983","1,908,675","3,355,870","1,830,612","1,604,524","2,261,232"],[],["","Outflow:"],["","Business Related Expense","RE Sales Business","0","0","(10,000)","0","(35,160)","0","0","0","(10,000)","(124,390)","(6,000)","0","0","(88,990)","0","(7,860)","0","0","(259,200)","(27,668)","0"],["","Zameen payment (amortized in 12 months)","RE Sales Business","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","(2,339,331)","0","0"],["","Zameen Expense","RE Sales Business","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","(585,750)"],["","Paid to Imarat","RE Sales Business","0","0","0","0","0","0","(5,800,000)","(1,566,720)","(1,701,319)","0","0","0","0","0","0","0","0","(800,000)","0","(13,900,000)","0"],["","Total Outflow","","0","0","(10,000)","0","(35,160)","0","(5,800,000)","(1,566,720)","(1,711,319)","(124,390)","(6,000)","0","0","(88,990)","0","(7,860)","0","(800,000)","(2,598,531)","(13,927,668)","(585,750)"],[],["","Monthly Cashflow","","146,120","600,060","574,820","1,072,290","957,000","1,307,818","(4,589,050)","1,370,600","1,139,000","2,176,510","1,355,000","1,175,670","1,107,000","2,797,335","1,034,500","1,963,123","1,908,675","2,555,870","(767,919)","(12,323,144)","1,675,482"],["","Accumulated Cashflow","","146,120","746,180","1,321,000","2,393,290","3,350,290","4,658,108","69,058","1,439,658","2,578,658","4,755,168","6,110,168","7,285,838","8,392,838","11,190,173","12,224,673","14,187,796","16,096,471","18,652,341","17,884,422","5,561,278","7,236,760"]],"syncedAt":"2026-11-11T06:36:22.876Z"};
 
-/* ---------- sync (direct public Google Sheets fetch) ---------- */
-function gvizToMatrix(text){
-  const m=text.match(/google\.visualization\.Query\.setResponse\(([\s\S]+)\);?\s*$/);
-  if(!m) return null;
-  try{
-    const j=JSON.parse(m[1]), t=j&&j.table; if(!t) return null;
-    return t.rows.map(r=>r.c.map(c=>{
-      if(!c) return "";
-      if(c.f) return c.f;
-      return c.v!=null?String(c.v):"";
-    }));
-  }catch(e){ return null; }
-}
-async function fetchSheet(name){
-  const url=GVIZ_BASE+name+"&_t="+Date.now();
-  const r=await fetch(url);
-  if(!r.ok) throw {code:"fetch_error",status:r.status};
-  return gvizToMatrix(await r.text());
+/* ---------- sync (JSONP to bypass CORS on public Google Sheets) ---------- */
+let _gvizQ=0;
+function gvizLoad(sheetName){
+  return new Promise((resolve,reject)=>{
+    const cb="_gviz"+(++_gvizQ)+"_"+Date.now();
+    const timeout=setTimeout(()=>{ cleanup(); reject({code:"timeout"}); },15000);
+    function cleanup(){ clearTimeout(timeout); delete window[cb]; const s=document.getElementById(cb); if(s) s.remove(); }
+    window[cb]=function(resp){
+      cleanup();
+      try{
+        const t=resp&&resp.table; if(!t){ reject({code:"bad_shape"}); return; }
+        resolve(t.rows.map(r=>r.c.map(c=>{ if(!c) return ""; if(c.f) return c.f; return c.v!=null?String(c.v):""; })));
+      }catch(e){ reject({code:"bad_shape"}); }
+    };
+    const s=document.createElement("script");
+    s.id=cb;
+    s.src=GVIZ_BASE+sheetName+"&tqx=responseHandler:"+cb;
+    s.onerror=()=>{ cleanup(); reject({code:"network"}); };
+    document.head.appendChild(s);
+  });
 }
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function syncNow(retried){
   if(S.syncing) return;
   S.syncing=true; setBusy(true);
   try{
-    const [m1,m2]=await Promise.all([fetchSheet(SHEETS.pl),fetchSheet(SHEETS.cf)]);
+    const [m1,m2]=await Promise.all([gvizLoad(SHEETS.pl),gvizLoad(SHEETS.cf)]);
     const pl=m1&&parseSheet(m1), cf=m2&&parseSheet(m2);
     if(!pl||!cf) throw {code:"bad_shape"};
     S.pl=pl; S.cf=cf; S.src="live"; S.syncedAt=Date.now(); S.err=null;
@@ -374,7 +376,7 @@ function setBusy(b){ const s=$("sync"); s.disabled=b; s.classList.toggle("busy",
 function errText(e){
   const c=e&&e.code;
   if(c==="bad_shape") return "The sheet came back in a layout this dashboard does not recognise. Check the Description and month header rows.";
-  if(c==="fetch_error") return "Could not reach Google Sheets (HTTP "+((e&&e.status)||"?")+"). The sheet must be shared as 'Anyone with the link'. Press Sync to retry.";
+  if(c==="network"||c==="timeout") return "Could not reach Google Sheets. Check the sheet is shared as 'Anyone with the link'. Press Sync to retry.";
   return "Sync did not complete. Press Sync to try again.";
 }
 
