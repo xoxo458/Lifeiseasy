@@ -657,15 +657,37 @@ if(window.ResizeObserver){ new ResizeObserver(()=>{ const w=document.body.client
   }catch(e){}
 })();
 renderAll();
-(function boot(){
-  const c=window.claude;
+(async function boot(){
+  /* window.claude may not appear until after first paint — poll up to 12s */
+  let c=window.claude;
+  if(!c||!c.use){
+    for(let i=0;i<24;i++){
+      await new Promise(r=>setTimeout(r,500));
+      c=window.claude;
+      if(c&&c.use) break;
+    }
+  }
   if(!c||!c.use){ S.err={code:"no_mcp"}; renderChrome(); return; }
-  c.use("mcp").then(m=>{
-    S.mcp=m;
-    if(m){ renderChrome(); syncNow(false); }
-    else { S.err={code:"no_mcp"}; renderAll(); }
-  }).catch(()=>{ S.err={code:"no_mcp"}; renderAll(); });
-  setInterval(()=>{ if(!document.hidden&&S.mcp&&S.src==="live") syncNow(false); },120000);
+  let mcp;
+  try{ mcp=await c.use("mcp"); }catch(e){ mcp=null; }
+  if(!mcp){ S.err={code:"no_mcp"}; renderAll(); return; }
+  S.mcp=mcp;
+  renderChrome();
+  /* Use watchTool for live data display with auto-refresh */
+  function handleWatch(key,ev){
+    if(ev.type==="error"){ console.error("[Dashboard] watch error ("+key+"):",ev.error); S.err=ev.error; renderChrome(); return; }
+    const m=toMatrix(ev.result);
+    console.log("[Dashboard] watch data ("+key+"):",m?m.length+" rows":"null");
+    if(!m) return;
+    const parsed=parseSheet(m);
+    if(!parsed) return;
+    S[key]=parsed; S.src="live"; S.syncedAt=Date.now(); S.err=null;
+    renderAll();
+  }
+  mcp.watchTool("Google Sheets","get_values",{spreadsheetId:SHEET_ID,range:"'P&L Detail'"},function(ev){handleWatch("pl",ev);},{refetchInterval:120000});
+  mcp.watchTool("Google Sheets","get_values",{spreadsheetId:SHEET_ID,range:"'Cash Flow'"},function(ev){handleWatch("cf",ev);},{refetchInterval:120000});
+  /* Keep manual sync button working */
+  S.mcp=mcp;
 })();
 </script>
 
