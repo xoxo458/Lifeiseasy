@@ -6,14 +6,14 @@
 <title>Imarat Group — Audit Status</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
 <style>
-:root{--bg:#f5f6f8;--fg:#1a1a2e;--card:#fff;--border:#e2e8f0;--emerald:#0b5d3f;--emeraldD:#083d2a;--emeraldL:#e8f5ee;--gold:#d4a93c;--goldL:#fdf6e3;--muted:#6b7280;--danger:#dc2626;--blue:#2563eb;--blueL:#eff6ff;--orange:#ea580c;--orangeL:#fff7ed;--purple:#7c3aed;--purpleL:#f5f3ff;--grey:#94a3b8;--greyL:#f1f5f9;--shadow:0 1px 4px rgba(0,0,0,.07);--radius:10px;font-family:'DM Sans',system-ui,sans-serif;color-scheme:light}
+:root{--bg:#fff;--fg:#1a1a2e;--card:#fff;--border:#e2e8f0;--emerald:#0b5d3f;--emeraldD:#083d2a;--emeraldL:#e8f5ee;--gold:#d4a93c;--goldL:#fdf6e3;--muted:#6b7280;--danger:#dc2626;--blue:#2563eb;--blueL:#eff6ff;--orange:#ea580c;--orangeL:#fff7ed;--purple:#7c3aed;--purpleL:#f5f3ff;--grey:#94a3b8;--greyL:#f1f5f9;--shadow:0 1px 4px rgba(0,0,0,.07);--radius:10px;font-family:'DM Sans',system-ui,sans-serif;color-scheme:light}
 *{margin:0;padding:0;box-sizing:border-box}
 [hidden]{display:none!important}
 body{background:var(--bg);color:var(--fg);line-height:1.5}
 h1,h2,h3{font-family:'Sora',system-ui,sans-serif}
 
 /* LOGIN SCREEN */
-.login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,var(--emeraldD) 0%,var(--emerald) 60%,#10b981 100%);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem}
+.login-overlay{position:fixed;inset:0;background:#fff;z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem}
 .login-card{max-width:420px;width:100%;background:var(--card);border-radius:20px;padding:2.5rem;box-shadow:0 20px 60px rgba(0,0,0,.2);text-align:center}
 .login-logo{width:72px;height:72px;background:var(--emeraldL);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1rem}
 .login-card h1{font-size:1.4rem;margin-bottom:.25rem;color:var(--emeraldD)}
@@ -62,26 +62,26 @@ h1,h2,h3{font-family:'Sora',system-ui,sans-serif}
 .btn-gold{background:var(--gold);color:#fff}
 .btn-outline{background:transparent;border:1px solid var(--border);color:var(--fg)}
 .btn-outline:hover{border-color:var(--emerald);color:var(--emerald)}
-.btn-white{background:#fff;color:var(--emeraldD);border:none;font-weight:600}
-.btn-white:hover{background:#f0f0f0}
+.btn-white{background:var(--emeraldL);color:var(--emeraldD);border:1px solid var(--border);font-weight:600}
+.btn-white:hover{background:var(--emerald);color:#fff}
 .btn-sm{padding:.32rem .7rem;font-size:.73rem;border-radius:6px}
 .btn-icon{width:32px;height:32px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid var(--border);background:var(--card);cursor:pointer;color:var(--muted);font-size:.9rem}
 .btn-icon:hover{border-color:var(--emerald);color:var(--emerald)}
 
-.header{background:linear-gradient(135deg,var(--emeraldD) 0%,var(--emerald) 100%);color:#fff;padding:1.5rem max(24px,env(safe-area-inset-left,0px)) 1.25rem max(24px,env(safe-area-inset-right,0px))}
+.header{background:none;color:var(--fg);padding:1.5rem max(24px,env(safe-area-inset-left,0px)) 1.25rem max(24px,env(safe-area-inset-right,0px))}
 .header-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;margin-bottom:.25rem}
 .header-brand{display:flex;align-items:center;gap:1rem}
-.header-logo{width:52px;height:52px;background:rgba(255,255,255,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem}
+.header-logo{width:52px;height:52px;background:var(--emeraldL);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem}
 .header-brand h1{font-size:1.4rem;font-weight:700;letter-spacing:-.3px}
-.header-brand h1 span{font-weight:400;color:rgba(255,255,255,.85)}
-.header-brand .date{font-size:.78rem;color:rgba(255,255,255,.7);margin-top:2px}
+.header-brand h1 span{font-weight:400;color:var(--muted)}
+.header-brand .date{font-size:.78rem;color:var(--muted);margin-top:2px}
 .header-actions{display:flex;gap:.5rem;flex-wrap:wrap}
 .header-actions .btn-white{font-size:.78rem;padding:.4rem .9rem;border-radius:8px}
 
-.role-badge{padding:5px 14px;font-size:.75rem;font-weight:600;border-radius:20px;background:rgba(255,255,255,.15);color:#fff;margin-top:.75rem;display:inline-block}
-.role-badge.admin-badge{background:rgba(255,255,255,.25)}
+.role-badge{padding:5px 14px;font-size:.75rem;font-weight:600;border-radius:20px;background:var(--emeraldL);color:var(--emerald);margin-top:.75rem;display:inline-block}
+.role-badge.admin-badge{background:var(--emerald);color:#fff}
 
-.year-bar{background:var(--card);border-bottom:1px solid var(--border);padding:.6rem max(24px,env(safe-area-inset-left,0px));display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.year-bar{background:none;border-bottom:1px solid var(--border);padding:.6rem max(24px,env(safe-area-inset-left,0px));display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
 .year-bar label{font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-right:.25rem}
 .yr-tab{padding:5px 16px;border-radius:20px;font-size:.8rem;font-weight:500;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--fg);transition:all .15s}
 .yr-tab:hover{border-color:var(--emerald);color:var(--emerald)}
@@ -90,7 +90,7 @@ h1,h2,h3{font-family:'Sora',system-ui,sans-serif}
 .main{padding:1.25rem max(24px,env(safe-area-inset-left,0px)) 2rem max(24px,env(safe-area-inset-right,0px))}
 
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem;margin-bottom:1.25rem}
-.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.15rem;box-shadow:var(--shadow)}
+.stat{background:none;border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.15rem}
 .stat-label{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);display:flex;align-items:center;gap:5px}
 .stat-label .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .stat-val{font-size:1.75rem;font-weight:700;font-family:'Sora',sans-serif;margin-top:.15rem}
