@@ -338,14 +338,17 @@ const EMBED={"pl":[["Imarat Group"],["RE Sales P&L Summary"],["","","","FY 2025"
 
 /* ---------- sync (via Claude MCP Google Sheets connector) ---------- */
 function toMatrix(res){
-  let p=res&&res.payload;
+  if(!res) return null;
+  if(Array.isArray(res.values)) return res.values;
+  let p=res.payload;
   if(typeof p==="string"){ try{p=JSON.parse(p);}catch(e){} }
   if(p&&Array.isArray(p.values)) return p.values;
   if(p&&p.valueRange&&Array.isArray(p.valueRange.values)) return p.valueRange.values;
   if(Array.isArray(p)) return p;
-  const sc=res&&res.structuredContent; if(sc&&Array.isArray(sc.values)) return sc.values;
-  const t=res&&Array.isArray(res.content)?res.content.find(c=>c&&c.type==="text"):null;
+  if(res.structuredContent&&Array.isArray(res.structuredContent.values)) return res.structuredContent.values;
+  const t=Array.isArray(res.content)?res.content.find(c=>c&&c.type==="text"):null;
   if(t){ try{ const j=JSON.parse(t.text); if(j&&Array.isArray(j.values)) return j.values; }catch(e){} }
+  if(res.result){ const r=res.result; if(Array.isArray(r.values)) return r.values; if(r.payload&&Array.isArray(r.payload.values)) return r.payload.values; }
   return null;
 }
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -354,12 +357,16 @@ async function syncNow(retried){
   S.syncing=true; setBusy(true);
   try{
     const a=await S.mcp.callTool("Google Sheets","get_values",{spreadsheetId:SHEET_ID,range:"'P&L Detail'"},{cache:false});
+    console.log("[Dashboard] PL response:",JSON.stringify(a).slice(0,500));
     const b=await S.mcp.callTool("Google Sheets","get_values",{spreadsheetId:SHEET_ID,range:"'Cash Flow'"},{cache:false});
+    console.log("[Dashboard] CF response:",JSON.stringify(b).slice(0,500));
     const m1=toMatrix(a), m2=toMatrix(b);
+    if(!m1||!m2){ console.error("[Dashboard] toMatrix failed. m1:",!!m1,"m2:",!!m2); throw {code:"bad_shape",detail:"PL rows:"+!!(m1)+" CF rows:"+!!(m2)}; }
     const pl=m1&&parseSheet(m1), cf=m2&&parseSheet(m2);
     if(!pl||!cf) throw {code:"bad_shape"};
     S.pl=pl; S.cf=cf; S.src="live"; S.syncedAt=Date.now(); S.err=null;
   }catch(e){
+    console.error("[Dashboard] sync error:",e);
     if(e&&e.retryable&&!retried){ S.syncing=false; await sleep((e.retryAfterMs||1500)+Math.random()*600); return syncNow(true); }
     S.err=e||{code:"unknown"};
   }
@@ -372,7 +379,7 @@ function errText(e){
   if(c==="server_not_connected"||c==="selection_required") return "Google Sheets is not connected. Add it in Claude Settings → Connectors, then press Sync.";
   if(c==="bad_shape") return "The sheet came back in a layout this dashboard does not recognise. Check the Description and month header rows.";
   if(c==="not_in_manifest"||c==="approval_required"||c==="consent_required") return "Access to Google Sheets was not allowed for this page. Press Sync to be asked again.";
-  return "Sync did not complete. Press Sync to try again.";
+  const m=e&&(e.message||e.detail||""); return "Sync error"+(c?" ("+c+")":"")+(m?": "+m:"")+". Press Sync to retry.";
 }
 
 /* ---------- filters ---------- */
