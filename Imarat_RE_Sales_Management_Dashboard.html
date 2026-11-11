@@ -1,0 +1,691 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Imarat RE Sales Management Dashboard</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: green/gold masthead, dark filter bar, two tabs of summary cards over a sheet-shaped table and charts. */
+:root{
+  --bg:#eef4ef; --surface:#ffffff; --ink:#14231b; --ink2:#4b5d52; --muted:#6a7b71;
+  --line:#d9e6dc; --grid:#e7eee9; --head:#e8f2ea; --goldsoft:#f7f0d6;
+  --b900:#0a3d24; --b700:#0f5c36; --b500:#1a8a52; --gold:#d4af37;
+  --good:#0f7a43; --bad:#c23b2b; --warnbg:#fff4d6; --warnink:#5a4309; --warnline:#ecd48a;
+  --s1:#146b40; --s2:#eb6834; --s3:#2a78d6;
+  --p1:#2a78d6; --p2:#eb6834; --p3:#1baf7a; --p4:#eda100; --p5:#e87ba4; --p6:#008300; --pO:#9aa89f;
+  --font-body:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  --font-head:'Space Grotesk','Inter',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1611; --surface:#15231b; --ink:#e8f0ea; --ink2:#aebfb4; --muted:#8a9c91;
+    --line:#26382d; --grid:#1f2f25; --head:#1b2d22; --goldsoft:#2b2711;
+    --good:#4cc38a; --bad:#ef7b6f; --warnbg:#2e2711; --warnink:#f0dc9c; --warnline:#5b4a17;
+    --s1:#3fa876; --s2:#d95926; --s3:#3987e5;
+    --p1:#3987e5; --p2:#d95926; --p3:#199e70; --p4:#c98500; --p5:#d55181; --p6:#008300; --pO:#6f8076;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1611; --surface:#15231b; --ink:#e8f0ea; --ink2:#aebfb4; --muted:#8a9c91;
+  --line:#26382d; --grid:#1f2f25; --head:#1b2d22; --goldsoft:#2b2711;
+  --good:#4cc38a; --bad:#ef7b6f; --warnbg:#2e2711; --warnink:#f0dc9c; --warnline:#5b4a17;
+  --s1:#3fa876; --s2:#d95926; --s3:#3987e5;
+  --p1:#3987e5; --p2:#d95926; --p3:#199e70; --p4:#c98500; --p5:#d55181; --p6:#008300; --pO:#6f8076;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:14px;line-height:1.45;font-variant-numeric:tabular-nums}
+button,select{font:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.inner{max-width:1360px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* masthead */
+.head{background:linear-gradient(100deg,#083521 0%,#0f5c36 52%,#b8921f 135%);color:#fff;padding-block:14px}
+.head-row{display:flex;align-items:center;justify-content:space-between;gap:12px 20px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#f0d77a,#d4af37);color:#0a3d24;font:700 16px var(--font-head);display:flex;align-items:center;justify-content:center;flex:none;letter-spacing:.5px}
+.brand h1{margin:0;font:600 18px/1.15 var(--font-head)}
+.brand p{margin:2px 0 0;font-size:12px;opacity:.85}
+.head-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.seg{display:inline-flex;background:#fff;border-radius:999px;padding:3px;gap:2px;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.seg button{border:0;background:transparent;color:#0a3d24;font-weight:700;font-size:12px;padding:6px 14px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:#0f5c36;color:#fff}
+.pill{background:rgba(6,40,26,.6);color:#fff;font-size:11.5px;padding:6px 12px;border-radius:999px;display:inline-flex;align-items:center;gap:7px;max-width:100%}
+.dot{width:8px;height:8px;border-radius:50%;background:#9aa89f;flex:none}
+.pill[data-s="live"] .dot{background:#4cd08a}
+.pill[data-s="cache"] .dot{background:#f0d77a}
+.pill[data-s="error"] .dot{background:#ff8a7a}
+.sync{border:0;background:#f0d77a;color:#0a3d24;font-weight:700;font-size:12.5px;padding:8px 14px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+.sync:disabled{opacity:.6;cursor:default}
+.sync svg{width:15px;height:15px}
+@media (prefers-reduced-motion:no-preference){ .sync.busy svg{animation:spin 0.9s linear infinite} }
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* filters */
+.filt{background:#0a3d24;color:#fff;padding-block:10px}
+.filt-row{display:flex;align-items:center;gap:10px 18px;flex-wrap:wrap}
+.filt label{display:flex;align-items:center;gap:8px;font-size:12px;color:#bfe0cc}
+.filt select{background:#0e4d2e;color:#fff;border:1px solid #2f6e4b;border-radius:8px;padding:7px 10px;font-size:13px;min-width:120px}
+.filt option:disabled{color:#7f9a8b}
+.reset{margin-left:auto;background:transparent;color:#f0d77a;border:1px solid #8c7a2e;border-radius:8px;padding:7px 14px;font-weight:600;font-size:12.5px;cursor:pointer}
+.banner{background:var(--warnbg);color:var(--warnink);border-bottom:1px solid var(--warnline);padding-block:9px;font-size:12.5px}
+
+/* tabs */
+.tabs{display:flex;gap:6px;padding-top:16px;flex-wrap:wrap}
+.tab{background:transparent;border:1px solid var(--line);border-bottom:0;color:var(--ink2);padding:9px 18px;border-radius:10px 10px 0 0;font-weight:600;font-size:13px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:inset 0 -3px 0 var(--gold)}
+.pane{background:transparent;padding-block:18px 40px;display:flex;flex-direction:column;gap:18px}
+
+/* kpis */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+.kpi{border-radius:12px;padding:16px 18px;color:#fff;min-width:0}
+.k-label{font-size:11.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;opacity:.92}
+.k-val{font:600 26px/1.15 var(--font-head);margin-top:8px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.k-unit{font:500 12px var(--font-body);opacity:.85}
+.k-sub{font-size:12px;margin-top:6px;opacity:.9}
+.kpi.rev{background:linear-gradient(135deg,#0f5c36,#1a8a52)}
+.kpi.exp{background:linear-gradient(135deg,#7a3a1a,#b4561f)}
+.kpi.pl{background:linear-gradient(135deg,#0a3d24,#2a7a4c)}
+.kpi.pl.loss{background:linear-gradient(135deg,#6b1f1f,#a63a3a)}
+.kpi.rec{background:linear-gradient(135deg,#5a440c,#96741a)}
+.kpi.tot{background:linear-gradient(135deg,#0f5c36,#1a8a52)}
+.kpi.got{background:linear-gradient(135deg,#0a3d24,#2a7a4c)}
+
+/* panels */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
+.panel h2{margin:0;font:600 15px/1.3 var(--font-head)}
+.sub{margin:2px 0 12px;font-size:12px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:18px}
+.grid2.even{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+@media (max-width:900px){ .grid2,.grid2.even{grid-template-columns:minmax(0,1fr)} }
+
+/* tables */
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px}
+th,td{padding:6px 11px;white-space:nowrap;text-align:right;border-bottom:1px solid var(--grid);background:var(--surface)}
+thead th{background:var(--head);font-weight:600}
+th.fy{text-align:center;color:var(--b700);border-bottom:1px solid var(--line)}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) th.fy{color:var(--gold)} }
+:root[data-theme="dark"] th.fy{color:var(--gold)}
+.c1{text-align:left;position:sticky;left:0;z-index:1;min-width:210px}
+thead th.c1{z-index:2}
+td.src,th.src{text-align:left;color:var(--muted);font-size:12px}
+th.src{color:var(--ink)}
+tr.sec td{font-weight:600;background:var(--head);color:var(--b700)}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) tr.sec td{color:var(--gold)} }
+:root[data-theme="dark"] tr.sec td{color:var(--gold)}
+tr.tot td{font-weight:700;border-top:1.5px solid var(--ink2)}
+tr.net td{font-weight:700;background:var(--goldsoft);border-top:1.5px solid var(--ink2)}
+tr.gap td{padding:3px;background:var(--surface)}
+td.neg{color:var(--bad)}
+.note{font-size:12px;color:var(--muted);margin:10px 0 0}
+.empty{padding:28px 12px;text-align:center;color:var(--muted);font-size:13px}
+.rec td:last-child,.rec th:last-child{min-width:140px}
+
+/* charts */
+.chart{position:relative;width:100%;min-height:240px}
+.chart svg{display:block;max-width:100%}
+.gl{stroke:var(--grid);stroke-width:1}
+.zl{stroke:var(--ink2);stroke-width:1;opacity:.55}
+.ax{fill:var(--ink2);font-size:10.5px}
+.cross{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 3}
+.lg{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;font-size:12px;color:var(--ink2)}
+.lg span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:10px;height:10px;border-radius:2px;flex:none}
+.pie-wrap{display:flex;gap:18px;align-items:center;flex-wrap:wrap;justify-content:center}
+.pie-lg{display:flex;flex-direction:column;gap:7px;font-size:12.5px;min-width:150px}
+.pie-lg div{display:flex;align-items:center;gap:8px}
+.pie-lg b{margin-left:auto;padding-left:12px;font-weight:600}
+.tip{position:fixed;z-index:60;pointer-events:none;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;box-shadow:0 6px 22px rgba(0,0,0,.2);font-size:12px;max-width:250px}
+.tip .tt{font-weight:600;margin-bottom:4px}
+.tip .tr{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.tip .tr b{margin-left:auto;padding-left:14px}
+</style>
+
+<header class="head"><div class="inner head-row">
+  <div class="brand">
+    <div class="logo" aria-hidden="true">IM</div>
+    <div><h1>Imarat Group</h1><p>RE Sales Management Dashboard</p></div>
+  </div>
+  <div class="head-tools">
+    <div class="seg" role="group" aria-label="Amount unit">
+      <button id="uM" type="button" aria-pressed="true">M PKR</button>
+      <button id="uR" type="button" aria-pressed="false">Raw PKR</button>
+    </div>
+    <span class="pill" id="pill" data-s="loading"><i class="dot"></i><span id="pillTxt">Connecting to Google Sheets</span></span>
+    <button class="sync" id="sync" type="button" title="Read the latest data from the Google Sheet">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 1-15.5 6.2M3 12a9 9 0 0 1 15.5-6.2"/><path d="M18.5 2v4.2h-4.2M5.5 22v-4.2h4.2"/></svg>
+      <span>Sync</span>
+    </button>
+  </div>
+</div></header>
+
+<div class="filt"><div class="inner filt-row">
+  <label>Financial Year <select id="fy" aria-label="Financial Year"></select></label>
+  <label>Month <select id="mo" aria-label="Month"></select></label>
+  <button class="reset" id="reset" type="button">Reset Filters</button>
+</div></div>
+<div class="banner" id="banner" hidden><div class="inner" id="bannerTxt"></div></div>
+
+<main class="inner">
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab1" aria-selected="true" aria-controls="t1" type="button">Executive Summary</button>
+    <button class="tab" role="tab" id="tab2" aria-selected="false" aria-controls="t2" type="button">Cash Flow &amp; Receivables</button>
+  </div>
+
+  <section class="pane" id="t1" role="tabpanel" aria-labelledby="tab1">
+    <div class="kpis" id="kpi1"></div>
+    <div class="panel">
+      <h2>RE Sales P&amp;L</h2>
+      <p class="sub" id="plSub"></p>
+      <div id="plBox"></div>
+    </div>
+    <div class="grid2">
+      <div class="panel">
+        <h2>Revenue vs Expense vs Profit/Loss Trend</h2>
+        <p class="sub" id="trendSub"></p>
+        <div class="chart" id="trend"></div>
+      </div>
+      <div class="panel">
+        <h2>Expense Breakdown</h2>
+        <p class="sub" id="pieSub"></p>
+        <div class="chart" id="pie"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pane" id="t2" role="tabpanel" aria-labelledby="tab2" hidden>
+    <div class="kpis" id="kpi2"></div>
+    <div class="panel">
+      <h2>Detailed Receivables — from RE Sales</h2>
+      <p class="sub" id="recSub"></p>
+      <div id="recBox"></div>
+    </div>
+    <div class="grid2 even">
+      <div class="panel">
+        <h2>Accumulated Cashflow Trend</h2>
+        <p class="sub" id="accSub"></p>
+        <div class="chart" id="acc"></div>
+      </div>
+      <div class="panel">
+        <h2>Net Cashflow by Month</h2>
+        <p class="sub" id="netSub"></p>
+        <div class="chart" id="net"></div>
+      </div>
+    </div>
+  </section>
+</main>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+/*PURE-START*/
+const MON_ORDER=["Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun"];
+function num(v){
+  if(v===null||v===undefined||v==="") return null;
+  if(typeof v==="number") return v;
+  let s=String(v).trim();
+  if(!s||s==="-"||s==="–") return null;
+  const neg=/^\(.*\)$/.test(s)||/^-/.test(s);
+  s=s.replace(/[^0-9.]/g,"");
+  if(!s) return null;
+  const n=parseFloat(s);
+  return isNaN(n)?null:(neg?-n:n);
+}
+function monthFY(mon,yr){ return "FY "+(MON_ORDER.indexOf(mon)<6?yr+1:yr); }
+function parseSheet(values){
+  if(!Array.isArray(values)) return null;
+  const h=values.findIndex(r=>Array.isArray(r)&&String(r[1]||"").trim().toLowerCase()==="description");
+  if(h<0) return null;
+  const head=values[h], months=[];
+  for(let c=2;c<head.length;c++){
+    const m=/^([A-Za-z]{3})[- ](\d{2})$/.exec(String(head[c]||"").trim());
+    if(m){ const mon=m[1][0].toUpperCase()+m[1].slice(1).toLowerCase(); months.push({col:c,label:mon+"-"+m[2],mon:mon,yr:2000+parseInt(m[2],10)}); }
+  }
+  if(!months.length) return null;
+  let fyRow=null;
+  for(let r=h-1;r>=0&&!fyRow;r--){
+    const row=values[r];
+    if(Array.isArray(row)&&row.some(x=>/^FY\s*\d{4}$/i.test(String(x||"").trim()))) fyRow=row;
+  }
+  months.forEach(m=>{
+    const f=fyRow?String(fyRow[m.col]||"").trim():"";
+    m.fy=/^FY\s*\d{4}$/i.test(f)?f.replace(/\s+/," ").toUpperCase():monthFY(m.mon,m.yr);
+  });
+  const rows=[]; let lastGap=true;
+  for(let r=h+1;r<values.length;r++){
+    const row=Array.isArray(values[r])?values[r]:[];
+    const label=String(row[1]||"").trim();
+    if(!label){ if(!lastGap&&rows.length){rows.push({type:"gap"});lastGap=true;} continue; }
+    const cells=months.map(m=>num(row[m.col]));
+    if(cells.every(x=>x===null)){ rows.push({type:"section",label:label}); lastGap=false; continue; }
+    rows.push({type:"line",label:label,src:String(row[2]||"").trim(),vals:cells.map(x=>x===null?0:x)});
+    lastGap=false;
+  }
+  while(rows.length&&rows[rows.length-1].type==="gap") rows.pop();
+  return {months:months,rows:rows};
+}
+function filterIdx(T,fy,month){
+  const out=[];
+  T.forEach((m,i)=>{ if((fy==="Overall"||m.fy===fy)&&(month==="Overall"||m.mon===month)) out.push(i); });
+  return out;
+}
+function rangeIdx(a,b){ const o=[]; for(let i=a;i<=b;i++) o.push(i); return o; }
+function trendIdxOf(T,fy,month){
+  const f=filterIdx(T,fy,month);
+  if(month==="Overall"||fy==="Overall"||f.length!==1) return f;
+  const sel=f[0];
+  if(T[sel].mon==="Jul") return rangeIdx(Math.max(0,sel-2),sel);
+  let st=sel; while(st>0&&T[st-1].fy===fy) st--;
+  return rangeIdx(st,sel);
+}
+function findLine(sh,re){ return sh?sh.rows.find(r=>r.type==="line"&&re.test(r.label)):undefined; }
+function sumRow(row,idx){ return row?idx.reduce((a,i)=>a+row.vals[i],0):0; }
+function expenseLines(pl){
+  const out=[]; let on=false;
+  for(const r of pl.rows){
+    if(r.type==="section"&&/cost of sales/i.test(r.label)){on=true;continue;}
+    if(r.type==="line"&&/^net sales/i.test(r.label)){on=true;continue;}
+    if(r.type==="line"&&/^total expenses/i.test(r.label)) break;
+    if(on&&r.type==="line") out.push(r);
+  }
+  return out;
+}
+function calcSummary(pl,idx){
+  const g=findLine(pl,/^gross sales/i), n=findLine(pl,/^net sales/i), e=findLine(pl,/^total expenses/i), p=findLine(pl,/^net profit/i);
+  const gross=sumRow(g,idx), rev=n?sumRow(n,idx):gross, exp=sumRow(e,idx), pnl=p?sumRow(p,idx):rev-exp;
+  return {gross:gross,rev:rev,fuel:gross-rev,exp:exp,pnl:pnl};
+}
+function calcReceivables(pl,cf,e){
+  const upto=rangeIdx(0,e);
+  const imarat=expenseLines(pl).filter(r=>/^imarat$/i.test(r.src));
+  const R=imarat.reduce((a,r)=>a+sumRow(r,upto),0);
+  const cfIdx=new Map(cf.months.map((m,i)=>[m.label,i]));
+  const cfAt=(row,lbl)=>{ const i=cfIdx.get(lbl); return row&&i!==undefined?row.vals[i]:0; };
+  const paid=findLine(cf,/^paid to imarat/i);
+  const payments=[];
+  for(let i=0;i<=e;i++){ const v=-cfAt(paid,pl.months[i].label); if(v!==0) payments.push({label:pl.months[i].label,amt:v}); }
+  const received=payments.reduce((a,p)=>a+p.amt,0);
+  const cumNP=sumRow(findLine(pl,/^net profit/i),upto);
+  const zCash=findLine(cf,/^zameen payment/i), zAm=findLine(pl,/^zameen payment/i);
+  let cash=0; for(let i=0;i<=e;i++) cash+=-cfAt(zCash,pl.months[i].label);
+  const prepaid=Math.max(0,cash-sumRow(zAm,upto));
+  return {asAt:pl.months[e].label,R:R,payments:payments,received:received,cumNP:cumNP,prepaid:prepaid,remaining:R-received};
+}
+function acctFmt(v,unit){
+  if(v===null||v===undefined||isNaN(v)) return "–";
+  if(v===0) return "–";
+  const m=unit==="M", d=m?2:0, val=m?v/1e6:v, r=+val.toFixed(d);
+  const s=Math.abs(r).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+  return r<0?"("+s+")":s;
+}
+/*PURE-END*/
+
+/* ---------- state ---------- */
+const SHEET_ID="1vE7mA264f3plyc-tYScMmVkftXkVENLV7RL_5h_frrw";
+const SERVER="Google Sheets", TOOL="get_values";
+const RANGES={pl:"'P&L Detail'",cf:"'Cash Flow'"};
+const S={pl:null,cf:null,unit:"M",fy:"Overall",month:"Overall",tab:"t1",src:"none",syncedAt:null,err:null,syncing:false,mcp:null,db:null,raw:null,snapRaw:null,saving:false,fyKey:""};
+const $=id=>document.getElementById(id);
+const A=v=>acctFmt(v,S.unit);
+const unitLbl=()=>S.unit==="M"?"PKR M":"PKR";
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function fmtTime(ms){ if(!ms) return ""; const d=new Date(ms); const same=new Date().toDateString()===d.toDateString();
+  return same?d.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}):d.toLocaleDateString([], {day:"numeric",month:"short"})+" "+d.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}); }
+
+/* Saved copy of the sheet, used when this view cannot reach Google Sheets. Overwritten by live data. */
+const EMBED={"pl":[["Imarat Group"],["RE Sales P&L Summary"],["","","","FY 2025","FY 2025","FY 2025","FY 2025","FY 2025","FY 2025","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2027","FY 2027","FY 2027"],["","Description","Paid / Received From","Jan-25","Feb-25","Mar-25","Apr-25","May-25","Jun-25","Jul-25","Aug-25","Sep-25","Oct-25","Nov-25","Dec-25","Jan-26","Feb-26","Mar-26","Apr-26","May-26","Jun-26","Jul-26","Aug-26","Sep-26"],["","Gross Sales","RE Sales Business","146,120","600,060","584,820","1,072,290","992,160","1,307,818","1,210,950","2,937,320","2,850,319","2,300,900","1,361,000","1,175,670","1,307,000","3,086,325","1,234,500","2,170,983","2,108,675","3,555,870","2,030,612","1,804,524","2,461,232"],["","Less: Fuel","RE Sales Business","0","0","0","0","0","0","0","0","0","0","0","0","200,000","200,000","200,000","200,000","200,000","200,000","200,000","200,000","200,000"],["","Net Sales","","146,120","600,060","584,820","1,072,290","992,160","1,307,818","1,210,950","2,937,320","2,850,319","2,300,900","1,361,000","1,175,670","1,107,000","2,886,325","1,034,500","1,970,983","1,908,675","3,355,870","1,830,612","1,604,524","2,261,232"],[],["","Cost of Sales"],["","Business Related Expense","RE Sales Business","0","0","10,000","0","35,160","0","0","0","10,000","124,390","6,000","0","0","88,990","0","7,860","0","0","259,200","27,668","0"],["","Zameen payment (amortized in 12 months)","RE Sales Business","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","194,944","194,944","194,944"],["","Zameen Expense","RE Sales Business","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","585,750"],["","Salaries","Imarat","0","2,088,539","2,165,000","2,125,000","2,010,000","1,919,193","2,081,695","2,056,659","2,215,659","2,205,659","1,842,019","1,756,175","1,653,595","1,824,237","1,691,659","821,659","1,711,659","1,827,909","1,991,033","1,881,659","1,948,303"],["","Payroll other benefits","Imarat","0","0","0","0","0","0","0","0","0","0","0","0","64,944","69,761","61,393","62,544","64,187","103,735","91,438","78,806","85,698"],["","Office Rent","Imarat","0","0","0","0","0","0","0","0","0","0","0","0","25,000","75,000","25,000","0","55,000","55,000","55,000","55,000","50,000"],["","Utilities","Imarat","0","0","0","0","0","0","0","0","0","0","0","0","59,488","6,831","4,995","998","21,134","22,738","26,067","34,408","37,416"],["","Internet","Imarat","0","0","0","0","0","0","0","0","0","0","0","0","2,779","2,779","2,779","10,335","3,340","12,130","10,677","4,002","10,371"],["","Internet (UAN Billing)","Imarat","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","18,630","18,630","18,630"],["","Office Supplies","Imarat","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","3,900"],["","Repair and Maintenance","Imarat","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","5,000"],["","Total Expenses","","0","2,088,539","2,175,000","2,125,000","2,045,160","1,919,193","2,081,695","2,056,659","2,225,659","2,330,049","1,848,019","1,756,175","1,805,806","2,067,598","1,785,826","903,396","1,855,320","2,021,512","2,646,989","2,295,117","2,940,012"],[],["","EBITDA","","146,120","1,488,479","1,590,180","1,052,710","1,053,000","611,375","870,745","880,661","624,660","29,149","487,019","580,505","698,806","818,727","751,326","1,067,587","53,355","1,334,358","816,377","690,593","678,780"],[],["","Interest Expense","20%","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0"],[],["","Net Profit","","146,120","-1,488,479","-1,590,180","-1,052,710","-1,053,000","-611,375","-870,745","880,661","624,660","-29,149","-487,019","-580,505","-698,806","818,727","-751,326","1,067,587","53,355","1,334,358","-816,377","-690,593","-678,780"]],"cf":[["Imarat Group"],["RE Sales P&L Summary"],[],["","","","FY 2025","FY 2025","FY 2025","FY 2025","FY 2025","FY 2025","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2026","FY 2027","FY 2027","FY 2027"],[],["","Description","Paid / Received From","Jan-25","Feb-25","Mar-25","Apr-25","May-25","Jun-25","Jul-25","Aug-25","Sep-25","Oct-25","Nov-25","Dec-25","Jan-26","Feb-26","Mar-26","Apr-26","May-26","Jun-26","Jul-26","Aug-26","Sep-26"],["","Monthly Sales","RE Sales Business","146,120","600,060","584,820","1,072,290","992,160","1,307,818","1,210,950","2,937,320","2,850,319","2,300,900","1,361,000","1,175,670","1,307,000","3,086,325","1,234,500","2,170,983","2,108,675","3,555,870","2,030,612","1,804,524","2,461,232"],["","Less: Fuel","RE Sales Business","0","0","0","0","0","0","0","0","0","0","0","0","200,000","200,000","200,000","200,000","200,000","200,000","200,000","200,000","200,000"],["","Net Sales","RE Sales Business","146,120","600,060","584,820","1,072,290","992,160","1,307,818","1,210,950","2,937,320","2,850,319","2,300,900","1,361,000","1,175,670","1,107,000","2,886,325","1,034,500","1,970,983","1,908,675","3,355,870","1,830,612","1,604,524","2,261,232"],[],["","Outflow:"],["","Business Related Expense","RE Sales Business","0","0","(10,000)","0","(35,160)","0","0","0","(10,000)","(124,390)","(6,000)","0","0","(88,990)","0","(7,860)","0","0","(259,200)","(27,668)","0"],["","Zameen payment (amortized in 12 months)","RE Sales Business","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","(2,339,331)","0","0"],["","Zameen Expense","RE Sales Business","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","(585,750)"],["","Paid to Imarat","RE Sales Business","0","0","0","0","0","0","(5,800,000)","(1,566,720)","(1,701,319)","0","0","0","0","0","0","0","0","(800,000)","0","(13,900,000)","0"],["","Total Outflow","","0","0","(10,000)","0","(35,160)","0","(5,800,000)","(1,566,720)","(1,711,319)","(124,390)","(6,000)","0","0","(88,990)","0","(7,860)","0","(800,000)","(2,598,531)","(13,927,668)","(585,750)"],[],["","Monthly Cashflow","","146,120","600,060","574,820","1,072,290","957,000","1,307,818","(4,589,050)","1,370,600","1,139,000","2,176,510","1,355,000","1,175,670","1,107,000","2,797,335","1,034,500","1,963,123","1,908,675","2,555,870","(767,919)","(12,323,144)","1,675,482"],["","Accumulated Cashflow","","146,120","746,180","1,321,000","2,393,290","3,350,290","4,658,108","69,058","1,439,658","2,578,658","4,755,168","6,110,168","7,285,838","8,392,838","11,190,173","12,224,673","14,187,796","16,096,471","18,652,341","17,884,422","5,561,278","7,236,760"]],"syncedAt":"2026-11-11T06:36:22.876Z"};
+
+/* ---------- sync ---------- */
+function toMatrix(res){
+  let p=res&&res.payload;
+  if(typeof p==="string"){ try{p=JSON.parse(p);}catch(e){} }
+  if(p&&Array.isArray(p.values)) return p.values;
+  if(p&&p.valueRange&&Array.isArray(p.valueRange.values)) return p.valueRange.values;
+  if(Array.isArray(p)) return p;
+  const sc=res&&res.structuredContent; if(sc&&Array.isArray(sc.values)) return sc.values;
+  const t=res&&Array.isArray(res.content)?res.content.find(c=>c&&c.type==="text"):null;
+  if(t){ try{ const j=JSON.parse(t.text); if(j&&Array.isArray(j.values)) return j.values; }catch(e){} }
+  return null;
+}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function syncNow(retried){
+  if(!S.mcp||S.syncing) return;
+  S.syncing=true; setBusy(true);
+  try{
+    const a=await S.mcp.callTool(SERVER,TOOL,{spreadsheetId:SHEET_ID,range:RANGES.pl},{cache:false});
+    const b=await S.mcp.callTool(SERVER,TOOL,{spreadsheetId:SHEET_ID,range:RANGES.cf},{cache:false});
+    const m1=toMatrix(a), m2=toMatrix(b);
+    const pl=m1&&parseSheet(m1), cf=m2&&parseSheet(m2);
+    if(!pl||!cf) throw {code:"bad_shape"};
+    S.pl=pl; S.cf=cf; S.src="live"; S.syncedAt=Date.now(); S.err=null;
+    S.raw={pl:JSON.stringify(m1),cf:JSON.stringify(m2)};
+    saveSnapshot();
+  }catch(e){
+    if(e&&e.retryable&&!retried){ S.syncing=false; await sleep((e.retryAfterMs||1500)+Math.random()*600); return syncNow(true); }
+    S.err=e||{code:"unknown"};
+  }
+  S.syncing=false; setBusy(false); renderAll();
+}
+async function saveSnapshot(){
+  if(!S.db||!S.raw||S.saving) return;
+  if(S.snapRaw&&S.snapRaw.pl===S.raw.pl&&S.snapRaw.cf===S.raw.cf) return;
+  S.saving=true;
+  try{ await S.db.doc("snapshot/latest").set({pl:S.raw.pl,cf:S.raw.cf,syncedAt:new Date().toISOString()}); S.snapRaw={pl:S.raw.pl,cf:S.raw.cf}; }catch(e){}
+  S.saving=false;
+}
+function subscribeSnap(){
+  S.db.doc("snapshot/latest").onSnapshot(snap=>{
+    if(!snap.exists) return;
+    const d=snap.data()||{}; S.snapRaw={pl:d.pl,cf:d.cf};
+    if(S.src==="live") return;
+    if((Date.parse(d.syncedAt)||0)<=(S.syncedAt||0)&&S.pl) return;
+    try{
+      const pl=parseSheet(JSON.parse(d.pl)), cf=parseSheet(JSON.parse(d.cf));
+      if(pl&&cf){ S.pl=pl; S.cf=cf; S.src="cache"; S.syncedAt=Date.parse(d.syncedAt)||null; renderAll(); }
+    }catch(e){}
+  },()=>{});
+}
+function setBusy(b){ const s=$("sync"); s.disabled=b; s.classList.toggle("busy",b); }
+function errText(e){
+  const c=e&&e.code;
+  if(c==="no_mcp") return "This view cannot reach Google Sheets, so it shows the saved copy from "+fmtTime(S.syncedAt)+". Open the dashboard inside Claude for live sync, or ask Claude to refresh the copy.";
+  if(c==="not_in_manifest"||c==="approval_required"||c==="consent_required") return "Access to Google Sheets was not allowed for this page. Press Sync to be asked again.";
+  if(c==="server_not_connected"||c==="selection_required") return "Google Sheets is not connected. Add it in Claude Settings, then Connectors, and press Sync.";
+  if(c==="needs_reauth") return "Google Sheets needs to be reconnected in Claude Settings, then Connectors.";
+  if(c==="blocked_by_policy") return "Your organization blocks Google Sheets for this page.";
+  if(c==="bad_shape") return "The sheet came back in a layout this dashboard does not recognise. Check the Description and month header rows.";
+  if(c==="tool_error") return "Google returned an error for this sheet. Check that the P&L Detail and Cash Flow tabs still exist.";
+  if(c==="server_unavailable"||c==="upstream_error"||c==="rate_limited") return "Google Sheets did not answer. Press Sync to try again.";
+  return "Sync did not complete. Press Sync to try again.";
+}
+
+/* ---------- filters ---------- */
+function fyList(){ const o=[]; S.pl.months.forEach(m=>{ if(o.indexOf(m.fy)<0) o.push(m.fy); }); return o; }
+function buildFilters(){
+  const fy=$("fy"), mo=$("mo");
+  const key=S.pl?fyList().join("|")+"#"+S.fy+"#"+S.month+"#"+S.pl.months.length:"none";
+  if(key===S.fyKey) return;
+  S.fyKey=key;
+  if(!S.pl){ fy.innerHTML='<option>Overall</option>'; mo.innerHTML='<option>Overall</option>'; return; }
+  const fys=fyList(); if(S.fy!=="Overall"&&fys.indexOf(S.fy)<0) S.fy="Overall";
+  fy.innerHTML=["Overall"].concat(fys).map(f=>`<option value="${esc(f)}"${f===S.fy?" selected":""}>${esc(f)}</option>`).join("");
+  const have=new Set(S.pl.months.filter(m=>S.fy==="Overall"||m.fy===S.fy).map(m=>m.mon));
+  if(S.month!=="Overall"&&!have.has(S.month)) S.month="Overall";
+  mo.innerHTML=["Overall"].concat(MON_ORDER).map(m=>`<option value="${m}"${m===S.month?" selected":""}${m!=="Overall"&&!have.has(m)?" disabled":""}>${m}</option>`).join("");
+}
+
+/* ---------- chart helpers ---------- */
+function niceTicks(min,max,n){
+  if(min===max) max=min+1;
+  const raw=(max-min)/n, mag=Math.pow(10,Math.floor(Math.log10(raw))), nm=raw/mag;
+  const step=(nm<=1?1:nm<=2?2:nm<=2.5?2.5:nm<=5?5:10)*mag;
+  const lo=Math.floor(min/step)*step, hi=Math.ceil(max/step)*step, t=[];
+  for(let v=lo;v<=hi+step/2;v+=step) t.push(+v.toFixed(6));
+  return t;
+}
+function axisFmt(v){
+  if(S.unit==="M"){ const x=v/1e6; return (Math.abs(x)>=10?x.toFixed(0):+x.toFixed(1)).toString(); }
+  const a=Math.abs(v); if(a>=1e6) return +(v/1e6).toFixed(1)+"M"; if(a>=1e3) return +(v/1e3).toFixed(0)+"K"; return String(v);
+}
+function monoPath(pts){
+  const n=pts.length; if(n<2) return "";
+  const dx=[],m=[],t=[];
+  for(let i=0;i<n-1;i++){ dx[i]=pts[i+1][0]-pts[i][0]; m[i]=(pts[i+1][1]-pts[i][1])/(dx[i]||1); }
+  t[0]=m[0]; t[n-1]=m[n-2];
+  for(let i=1;i<n-1;i++) t[i]=m[i-1]*m[i]<=0?0:(m[i-1]+m[i])/2;
+  for(let i=0;i<n-1;i++){
+    if(m[i]===0){t[i]=0;t[i+1]=0;continue;}
+    const a=t[i]/m[i], b=t[i+1]/m[i], s=a*a+b*b;
+    if(s>9){const k=3/Math.sqrt(s); t[i]=k*a*m[i]; t[i+1]=k*b*m[i];}
+  }
+  let d="M"+pts[0][0].toFixed(1)+","+pts[0][1].toFixed(1);
+  for(let i=0;i<n-1;i++){
+    const h=dx[i]/3;
+    d+=" C"+(pts[i][0]+h).toFixed(1)+","+(pts[i][1]+t[i]*h).toFixed(1)+" "+(pts[i+1][0]-h).toFixed(1)+","+(pts[i+1][1]-t[i+1]*h).toFixed(1)+" "+pts[i+1][0].toFixed(1)+","+pts[i+1][1].toFixed(1);
+  }
+  return d;
+}
+const tip=$("tip");
+function showTip(e,title,rows){
+  tip.innerHTML='<div class="tt">'+esc(title)+'</div>'+rows.map(r=>'<div class="tr">'+(r.c?'<i class="sw" style="background:'+r.c+'"></i>':'')+'<span>'+esc(r.n)+'</span><b>'+esc(r.v)+'</b></div>').join("");
+  tip.hidden=false;
+  const w=tip.offsetWidth,h=tip.offsetHeight; let x=e.clientX+14,y=e.clientY+14;
+  if(x+w>window.innerWidth-8) x=e.clientX-w-14; if(y+h>window.innerHeight-8) y=e.clientY-h-14;
+  tip.style.left=Math.max(8,x)+"px"; tip.style.top=Math.max(8,y)+"px";
+}
+function hideTip(){ tip.hidden=true; }
+function attachHover(svg,xs,labels,rowsFor){
+  const hit=svg.querySelector(".hit"), cross=svg.querySelector(".cross");
+  function at(e){
+    const b=svg.getBoundingClientRect(), x=e.clientX-b.left; let bi=0,bd=1e9;
+    xs.forEach((v,i)=>{const d=Math.abs(v-x); if(d<bd){bd=d;bi=i;}});
+    cross.setAttribute("x1",xs[bi]); cross.setAttribute("x2",xs[bi]); cross.style.display="";
+    showTip(e,labels[bi],rowsFor(bi));
+  }
+  hit.addEventListener("pointermove",at); hit.addEventListener("pointerdown",at);
+  hit.addEventListener("pointerleave",()=>{cross.style.display="none";hideTip();});
+}
+function xLabels(labels,x,W,padL,padR,y){
+  const max=Math.max(2,Math.floor((W-padL-padR)/52)), step=Math.ceil(labels.length/max); let s="";
+  labels.forEach((l,i)=>{ if(i%step===0||i===labels.length-1) s+=`<text class="ax" x="${x(i)}" y="${y}" text-anchor="middle">${esc(l)}</text>`; });
+  return s;
+}
+function lineChart(el,labels,series,opt){
+  opt=opt||{};
+  const W=Math.max(280,el.clientWidth||600), H=opt.h||280, direct=W>=520&&series.length>1;
+  const padL=46,padR=direct?104:34,padT=14,padB=30;
+  let mn=0,mx=0; series.forEach(s=>s.vals.forEach(v=>{mn=Math.min(mn,v);mx=Math.max(mx,v);}));
+  const ticks=niceTicks(mn,mx,4), lo=ticks[0], hi=ticks[ticks.length-1];
+  const x=i=>labels.length===1?padL+(W-padL-padR)/2:padL+i*(W-padL-padR)/(labels.length-1);
+  const y=v=>padT+(H-padT-padB)*(1-(v-lo)/((hi-lo)||1));
+  let g=""; ticks.forEach(t=>{ g+=`<line class="gl" x1="${padL}" x2="${W-padR}" y1="${y(t)}" y2="${y(t)}"/><text class="ax" x="${padL-8}" y="${y(t)+4}" text-anchor="end">${axisFmt(t)}</text>`; });
+  if(lo<0) g+=`<line class="zl" x1="${padL}" x2="${W-padR}" y1="${y(0)}" y2="${y(0)}"/>`;
+  const gid="g"+Math.floor(Math.random()*1e6);
+  let body="", marks="", ends=[];
+  const dots=labels.length<=14;
+  series.forEach((s,si)=>{
+    const pts=s.vals.map((v,i)=>[x(i),y(v)]);
+    if(si===0&&pts.length>1&&opt.area){ body+=`<path d="${monoPath(pts)} L${pts[pts.length-1][0].toFixed(1)},${y(Math.max(lo,Math.min(0,hi)))} L${pts[0][0].toFixed(1)},${y(Math.max(lo,Math.min(0,hi)))} Z" fill="url(#${gid})" stroke="none"/>`; }
+    if(pts.length>1) body+=`<path d="${monoPath(pts)}" fill="none" style="stroke:${s.color}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"${s.dash?` stroke-dasharray="${s.dash}"`:""}/>`;
+    pts.forEach((p,i)=>{
+      const last=i===pts.length-1;
+      if(last) marks+=`<circle cx="${p[0]}" cy="${p[1]}" r="5" style="fill:${s.color}"/>`;
+      else if(dots) marks+=`<circle cx="${p[0]}" cy="${p[1]}" r="3.5" style="fill:var(--surface);stroke:${s.color}" stroke-width="2"/>`;
+    });
+    ends.push({y:pts[pts.length-1][1],s:s});
+  });
+  let dl="";
+  if(direct){
+    ends.sort((a,b)=>a.y-b.y);
+    for(let i=1;i<ends.length;i++) if(ends[i].y-ends[i-1].y<14) ends[i].y=ends[i-1].y+14;
+    ends.forEach(e=>{ dl+=`<rect x="${W-padR+12}" y="${e.y-4}" width="8" height="8" rx="2" style="fill:${e.s.color}"/><text class="ax" x="${W-padR+25}" y="${e.y+4}">${esc(e.s.name)}</text>`; });
+  }
+  const defs=opt.area?`<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" style="stop-color:${series[0].color};stop-opacity:.22"/><stop offset="100%" style="stop-color:${series[0].color};stop-opacity:.02"/></linearGradient></defs>`:"";
+  const svg=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opt.aria||"Line chart")}">${defs}${g}${body}<line class="cross" x1="0" x2="0" y1="${padT}" y2="${H-padB}" style="display:none"/>${marks}${dl}${xLabels(labels,x,W,padL,padR,H-8)}<rect class="hit" x="${padL}" y="0" width="${W-padL-padR}" height="${H}" fill="transparent"/></svg>`;
+  const legend=series.length>1?'<div class="lg">'+series.map(s=>`<span><i class="sw" style="background:${s.color}"></i>${esc(s.name)}</span>`).join("")+'</div>':"";
+  el.innerHTML=svg+legend;
+  attachHover(el.querySelector("svg"),labels.map((_,i)=>x(i)),labels,i=>series.map(s=>({c:s.color,n:s.name,v:A(s.vals[i])||"–"})));
+}
+function barChart(el,labels,vals,opt){
+  opt=opt||{};
+  const W=Math.max(280,el.clientWidth||600), H=opt.h||280, padL=46,padR=14,padT=14,padB=30;
+  let mn=0,mx=0; vals.forEach(v=>{mn=Math.min(mn,v);mx=Math.max(mx,v);});
+  const ticks=niceTicks(mn,mx,4), lo=ticks[0], hi=ticks[ticks.length-1];
+  const y=v=>padT+(H-padT-padB)*(1-(v-lo)/((hi-lo)||1));
+  const slot=(W-padL-padR)/labels.length, bw=Math.max(5,Math.min(38,slot*0.62));
+  const xs=labels.map((_,i)=>padL+slot*i+slot/2);
+  let g=""; ticks.forEach(t=>{ g+=`<line class="gl" x1="${padL}" x2="${W-padR}" y1="${y(t)}" y2="${y(t)}"/><text class="ax" x="${padL-8}" y="${y(t)+4}" text-anchor="end">${axisFmt(t)}</text>`; });
+  let bars=""; const zero=y(0);
+  vals.forEach((v,i)=>{ const top=Math.min(y(v),zero), h=Math.max(1,Math.abs(y(v)-zero)); bars+=`<rect x="${xs[i]-bw/2}" y="${top}" width="${bw}" height="${h}" rx="3" style="fill:${v<0?"var(--s2)":"var(--s1)"}"/>`; });
+  const svg=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opt.aria||"Bar chart")}">${g}<line class="zl" x1="${padL}" x2="${W-padR}" y1="${zero}" y2="${zero}"/><line class="cross" x1="0" x2="0" y1="${padT}" y2="${H-padB}" style="display:none"/>${bars}${xLabels(labels,i=>xs[i],W,padL,padR,H-8)}<rect class="hit" x="${padL}" y="0" width="${W-padL-padR}" height="${H}" fill="transparent"/></svg>`;
+  el.innerHTML=svg+'<div class="lg"><span><i class="sw" style="background:var(--s1)"></i>Net inflow</span><span><i class="sw" style="background:var(--s2)"></i>Net outflow</span></div>';
+  attachHover(el.querySelector("svg"),xs,labels,i=>[{c:vals[i]<0?"var(--s2)":"var(--s1)",n:"Net cashflow",v:A(vals[i])||"–"}]);
+}
+function pieChart(el,slices){
+  const total=slices.reduce((a,s)=>a+s.v,0);
+  if(total<=0){ el.innerHTML='<div class="empty">No expenses in this period.</div>'; return; }
+  const W=el.clientWidth||400, size=Math.round(Math.max(150,Math.min(300,W<440?W-8:W*0.5))), r=size/2;
+  let ang=-Math.PI/2, paths="";
+  slices.forEach((s,i)=>{
+    const a=s.v/total*Math.PI*2, a2=ang+a, x1=r+r*Math.cos(ang), y1=r+r*Math.sin(ang), x2=r+r*Math.cos(a2), y2=r+r*Math.sin(a2);
+    paths+= slices.length===1?`<circle data-i="${i}" cx="${r}" cy="${r}" r="${r-1}" style="fill:${s.c};stroke:var(--surface)" stroke-width="2"/>`
+      :`<path data-i="${i}" d="M${r},${r} L${x1.toFixed(2)},${y1.toFixed(2)} A${r-1},${r-1} 0 ${a>Math.PI?1:0} 1 ${x2.toFixed(2)},${y2.toFixed(2)} Z" style="fill:${s.c};stroke:var(--surface)" stroke-width="2"/>`;
+    ang=a2;
+  });
+  el.innerHTML=`<div class="pie-wrap"><svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" role="img" aria-label="Expense breakdown by line">${paths}</svg><div class="pie-lg">${slices.map(s=>`<div><i class="sw" style="background:${s.c}"></i><span>${esc(s.n)}</span><b>${(s.v/total*100).toFixed(1)}%</b></div>`).join("")}</div></div>`;
+  el.querySelectorAll("[data-i]").forEach(n=>{
+    const s=slices[+n.getAttribute("data-i")];
+    const f=e=>showTip(e,s.n,[{c:s.c,n:(s.v/total*100).toFixed(1)+"% of expenses",v:A(s.v)}]);
+    n.addEventListener("pointermove",f); n.addEventListener("pointerdown",f); n.addEventListener("pointerleave",hideTip);
+  });
+}
+
+/* ---------- render ---------- */
+function kpi(cls,label,val,sub){ return `<div class="kpi ${cls}"><div class="k-label">${label}</div><div class="k-val">${val}<span class="k-unit">${unitLbl()}</span></div><div class="k-sub">${sub}</div></div>`; }
+function kpiBlank(cls,label){ return `<div class="kpi ${cls}"><div class="k-label">${label}</div><div class="k-val">–</div><div class="k-sub">Waiting for sheet data</div></div>`; }
+function winLabel(idx){ if(!idx.length) return ""; const T=S.pl.months; return idx.length===1?T[idx[0]].label:T[idx[0]].label+" to "+T[idx[idx.length-1]].label; }
+function scopeText(idx){
+  if(!idx.length) return "No data for this selection";
+  return (S.fy==="Overall"?"All years":S.fy)+" · "+(S.month==="Overall"?"all months":S.month+(S.fy==="Overall"?" across years":""))+" · "+winLabel(idx);
+}
+function renderChrome(){
+  const p=$("pill"); let st="loading", tx="Connecting to Google Sheets";
+  if(S.src==="live"){ st="live"; tx="Live · synced "+fmtTime(S.syncedAt); }
+  else if(S.src==="cache"){ st="cache"; tx="Saved copy · "+fmtTime(S.syncedAt); }
+  else if(S.err){ st="error"; tx="Not connected"; }
+  p.setAttribute("data-s",st); $("pillTxt").textContent=tx;
+  const b=$("banner");
+  if(S.err){ b.hidden=false; $("bannerTxt").textContent=errText(S.err); } else b.hidden=true;
+  $("sync").disabled=S.syncing||(!S.mcp);
+  $("sync").title=S.mcp?"Read the latest data from the Google Sheet":"Live sync needs Google Sheets connected in Claude";
+  $("uM").setAttribute("aria-pressed",S.unit==="M"); $("uR").setAttribute("aria-pressed",S.unit==="R");
+}
+function renderEmpty(){
+  $("kpi1").innerHTML=kpiBlank("rev","Revenue")+kpiBlank("exp","Total Expense")+kpiBlank("pl","Profit / Loss")+kpiBlank("rec","Receivable from RE Sales");
+  $("kpi2").innerHTML=kpiBlank("tot","Total Receivable from RE")+kpiBlank("got","Amount Received from RE")+kpiBlank("rec","Remaining Receivable from RE");
+  const msg='<div class="empty">'+(S.err?esc(errText(S.err)):"Reading the Google Sheet…")+'</div>';
+  ["plBox","trend","pie","recBox","acc","net"].forEach(id=>{$(id).innerHTML=msg;});
+  ["plSub","trendSub","pieSub","recSub","accSub","netSub"].forEach(id=>{$(id).textContent="";});
+}
+function plTable(idx){
+  const pl=S.pl, T=pl.months, multi=idx.length>1, ncol=2+idx.length+(multi?1:0);
+  let h1='<tr><th rowspan="2" class="c1">Description</th><th rowspan="2" class="src">Paid / Received From</th>', i=0;
+  while(i<idx.length){ let j=i; while(j+1<idx.length&&T[idx[j+1]].fy===T[idx[i]].fy) j++; h1+=`<th class="fy" colspan="${j-i+1}">${esc(T[idx[i]].fy)}</th>`; i=j+1; }
+  if(multi) h1+='<th rowspan="2">Total</th>';
+  h1+="</tr><tr>"+idx.map(k=>`<th>${esc(T[k].label)}</th>`).join("")+"</tr>";
+  let body="";
+  pl.rows.forEach(r=>{
+    if(r.type==="gap"){ body+=`<tr class="gap"><td colspan="${ncol}"></td></tr>`; return; }
+    if(r.type==="section"){ body+=`<tr class="sec"><td class="c1" colspan="${ncol}">${esc(r.label)}</td></tr>`; return; }
+    const net=/^net profit/i.test(r.label), tot=/^(net sales|total expenses|ebitda)/i.test(r.label);
+    const cell=v=>`<td${v<0?' class="neg"':""}>${A(v)}</td>`;
+    body+=`<tr${net?' class="net"':tot?' class="tot"':""}><td class="c1">${esc(r.label)}</td><td class="src">${esc(r.src)}</td>${idx.map(k=>cell(r.vals[k])).join("")}${multi?cell(sumRow(r,idx)):""}</tr>`;
+  });
+  const eb=findLine(pl,/^ebitda/i), np=findLine(pl,/^net profit/i);
+  const quirk=eb&&np&&np.vals.some(v=>v<0)&&eb.vals.every((v,k)=>Math.abs(v)===Math.abs(np.vals[k]));
+  return `<div class="tw"><table><thead>${h1}</thead><tbody>${body}</tbody></table></div>`+(quirk?'<p class="note">The EBITDA row in the sheet shows losses as positive figures. Profit / Loss on this dashboard uses the Net Profit row.</p>':"");
+}
+function recTable(rc){
+  const row=(l,v,cls)=>`<tr${cls?` class="${cls}"`:""}><td class="c1">${l}</td><td${v<0?' class="neg"':""}>${A(v)}</td></tr>`;
+  let b=row("Receivable from RE (expenses paid by Imarat)",rc.R);
+  rc.payments.forEach(p=>{ b+=row("Paid to Imarat · "+esc(p.label),-p.amt); });
+  b+=row("Remaining receivable from RE",rc.remaining,"net");
+  return `<div class="tw"><table class="rec"><thead><tr><th class="c1">Item</th><th>${unitLbl()}</th></tr></thead><tbody>${b}</tbody></table></div>`;
+}
+function renderAll(){
+  renderChrome(); buildFilters();
+  if(!S.pl){ renderEmpty(); return; }
+  const T=S.pl.months, idx=filterIdx(T,S.fy,S.month), tr=trendIdxOf(T,S.fy,S.month);
+  const sc=scopeText(idx);
+  if(!idx.length){
+    $("kpi1").innerHTML=kpiBlank("rev","Revenue")+kpiBlank("exp","Total Expense")+kpiBlank("pl","Profit / Loss")+kpiBlank("rec","Receivable from RE Sales");
+    $("kpi2").innerHTML=kpiBlank("tot","Total Receivable from RE")+kpiBlank("got","Amount Received from RE")+kpiBlank("rec","Remaining Receivable from RE");
+    ["plBox","trend","pie","recBox","acc","net"].forEach(id=>{$(id).innerHTML='<div class="empty">No data for this selection.</div>';});
+    return;
+  }
+  const sm=calcSummary(S.pl,idx), e=idx[idx.length-1];
+  const rc=S.cf?calcReceivables(S.pl,S.cf,e):null;
+  $("kpi1").innerHTML=
+    kpi("rev","Revenue",A(sm.rev)||"–","Net of fuel · gross "+(A(sm.gross)||"–"))+
+    kpi("exp","Total Expense",A(sm.exp)||"–",(sm.rev?(sm.exp/sm.rev*100).toFixed(1)+"% of revenue":"No revenue in period"))+
+    kpi("pl"+(sm.pnl<0?" loss":""),"Profit / Loss",A(sm.pnl)||"–",sm.pnl<0?"Loss for the period":"Profit for the period")+
+    (rc?kpi("rec","Receivable from RE Sales",A(rc.remaining)||"–","As at "+esc(rc.asAt)):kpiBlank("rec","Receivable from RE Sales"));
+  $("plSub").textContent=sc+" · "+unitLbl();
+  $("plBox").innerHTML=plTable(idx);
+
+  $("trendSub").textContent=winLabel(tr)+" · "+unitLbl();
+  const ns=findLine(S.pl,/^net sales/i)||findLine(S.pl,/^gross sales/i), te=findLine(S.pl,/^total expenses/i), np=findLine(S.pl,/^net profit/i);
+  const lab=tr.map(i=>T[i].label), pick=row=>tr.map(i=>row?row.vals[i]:0);
+  lineChart($("trend"),lab,[
+    {name:"Revenue",color:"var(--s1)",vals:pick(ns)},
+    {name:"Expense",color:"var(--s2)",vals:pick(te)},
+    {name:"Profit/Loss",color:"var(--s3)",vals:pick(np),dash:"5 4"}
+  ],{area:true,aria:"Revenue, expense and profit or loss by month"});
+
+  // expense mix: top six lines overall keep a fixed colour, the rest fold into Other
+  const lines=expenseLines(S.pl), allIdx=T.map((_,i)=>i);
+  const ranked=lines.slice().sort((a,b)=>Math.abs(sumRow(b,allIdx))-Math.abs(sumRow(a,allIdx)));
+  const top=ranked.slice(0,6), cols=["--p1","--p2","--p3","--p4","--p5","--p6"], slices=[];
+  top.forEach((l,k)=>{ const v=sumRow(l,idx); if(v>0) slices.push({n:l.label.replace(/\s*\(amortized.*\)/i,""),v:v,c:"var("+cols[k]+")"}); });
+  const other=ranked.slice(6).reduce((a,l)=>a+sumRow(l,idx),0);
+  if(other>0) slices.push({n:"Other lines",v:other,c:"var(--pO)"});
+  slices.sort((a,b)=>b.v-a.v);
+  $("pieSub").textContent=sc;
+  pieChart($("pie"),slices);
+
+  if(!S.cf||!rc){ $("kpi2").innerHTML=kpiBlank("tot","Total Receivable from RE")+kpiBlank("got","Amount Received from RE")+kpiBlank("rec","Remaining Receivable from RE"); $("recBox").innerHTML='<div class="empty">Cash Flow tab not available.</div>'; return; }
+  $("kpi2").innerHTML=
+    kpi("tot","Total Receivable from RE",A(rc.R)||"–","Expenses paid by Imarat to "+esc(rc.asAt))+
+    kpi("got","Amount Received from RE",A(rc.received)||"–",rc.payments.length+" payment"+(rc.payments.length===1?"":"s")+" to Imarat")+
+    kpi("rec","Remaining Receivable from RE",A(rc.remaining)||"–","Receivable less amounts received");
+  $("recSub").textContent="As at "+rc.asAt+", cumulative from the start of the project · "+unitLbl();
+  $("recBox").innerHTML=recTable(rc);
+
+  const CT=S.cf.months, cIdx=tr.map(i=>CT.findIndex(m=>m.label===T[i].label)).filter(i=>i>=0);
+  const acc=findLine(S.cf,/^accumulated cashflow/i), net=findLine(S.cf,/^monthly cashflow/i), cl=cIdx.map(i=>CT[i].label);
+  $("accSub").textContent=winLabel(tr)+" · "+unitLbl();
+  $("netSub").textContent=winLabel(tr)+" · "+unitLbl();
+  lineChart($("acc"),cl,[{name:"Accumulated cashflow",color:"var(--s1)",vals:cIdx.map(i=>acc?acc.vals[i]:0)}],{area:true,aria:"Accumulated cashflow by month"});
+  barChart($("net"),cl,cIdx.map(i=>net?net.vals[i]:0),{aria:"Net cashflow by month"});
+}
+
+/* ---------- events ---------- */
+$("fy").addEventListener("change",e=>{ S.fy=e.target.value; S.month="Overall"; renderAll(); });
+$("mo").addEventListener("change",e=>{ S.month=e.target.value; renderAll(); });
+$("reset").addEventListener("click",()=>{ S.fy="Overall"; S.month="Overall"; renderAll(); });
+$("uM").addEventListener("click",()=>{ S.unit="M"; renderAll(); });
+$("uR").addEventListener("click",()=>{ S.unit="R"; renderAll(); });
+$("sync").addEventListener("click",()=>{ if(S.mcp) syncNow(false); });
+function setTab(id){
+  S.tab=id;
+  ["t1","t2"].forEach(t=>{ $(t).hidden=t!==id; $("tab"+t.slice(1)).setAttribute("aria-selected",t===id); });
+  renderAll();
+}
+$("tab1").addEventListener("click",()=>setTab("t1"));
+$("tab2").addEventListener("click",()=>setTab("t2"));
+let lastW=0;
+if(window.ResizeObserver){ new ResizeObserver(()=>{ const w=document.body.clientWidth; if(Math.abs(w-lastW)>6){ lastW=w; if(S.pl) renderAll(); } }).observe(document.body); }
+
+/* ---------- boot ---------- */
+(function loadEmbedded(){
+  try{
+    const pl=parseSheet(EMBED.pl), cf=parseSheet(EMBED.cf);
+    if(pl&&cf){ S.pl=pl; S.cf=cf; S.src="cache"; S.syncedAt=Date.parse(EMBED.syncedAt)||null; }
+  }catch(e){}
+})();
+renderAll();
+(function boot(){
+  const c=window.claude;
+  if(!c||!c.use){ S.err={code:"no_mcp"}; renderChrome(); return; }
+  c.use("db").then(db=>{ S.db=db; if(db) subscribeSnap(); }).catch(()=>{});
+  c.use("mcp").then(m=>{
+    S.mcp=m;
+    if(m){ renderChrome(); syncNow(false); }
+    else { S.err={code:"no_mcp"}; renderAll(); }
+  }).catch(()=>{ S.err={code:"no_mcp"}; renderAll(); });
+  setInterval(()=>{ if(!document.hidden&&S.mcp&&S.src==="live") syncNow(false); },60000);
+})();
+</script>
+
+</body></html>
